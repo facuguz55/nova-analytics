@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Syne, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -78,9 +79,10 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${syne.variable} ${barlowCondensed.variable} antialiased`}
+        className={`${syne.variable} ${barlowCondensed.variable} min-h-full flex flex-col bg-[#0a0a0f] text-[#F1F5F9] antialiased`}
       >
         {children}
+        <Toaster theme="dark" />
       </body>
     </html>
   );

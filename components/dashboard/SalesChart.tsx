@@ -1,13 +1,10 @@
-"use client";
+﻿"use client";
 
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from "recharts";
 
-// ─────────────────────────────────────────────
-// Mock data — últimos 30 días (Mayo 2026)
-// ─────────────────────────────────────────────
 const generateData = () => {
   const seed = [
     310000, 280000, 420000, 390000, 510000, 470000, 320000,
@@ -35,9 +32,6 @@ const generateData = () => {
 
 const DATA = generateData();
 
-// ─────────────────────────────────────────────
-// Custom tooltip
-// ─────────────────────────────────────────────
 function CustomTooltip({ active, payload, label }: {
   active?: boolean;
   payload?: Array<{ name: string; value: number; color: string }>;
@@ -56,45 +50,29 @@ function CustomTooltip({ active, payload, label }: {
     <div
       className="rounded-xl p-3 shadow-xl"
       style={{
-        background: "#0d1424",
-        border: "1px solid #1e293b",
-        fontFamily: "var(--font-barlow)",
+        background: "#111118",
+        border: "1px solid rgba(124,58,237,0.3)",
         minWidth: "180px",
       }}
     >
-      <p
-        className="mb-2"
-        style={{ fontSize: "11px", color: "#64748b", fontWeight: 600 }}
-      >
+      <p className="mb-2 text-[11px] text-[#94A3B8] font-semibold">
         {label} — Mayo 2026
       </p>
       {payload.map((entry) => (
         <div key={entry.name} className="flex items-center justify-between gap-4 mb-1">
           <div className="flex items-center gap-1.5">
-            <div
-              className="rounded-full"
-              style={{
-                width: "8px",
-                height: "8px",
-                background: entry.color,
-              }}
-            />
-            <span style={{ fontSize: "12px", color: "#94a3b8" }}>
-              {entry.name === "ventas" ? "Ventas" : "Inversión Meta"}
+            <div className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
+            <span className="text-xs text-[#94A3B8]">
+              {entry.name === "ventas" ? "Ventas" : "Inversion Meta"}
             </span>
           </div>
-          <span style={{ fontSize: "13px", fontWeight: 700, color: "#f1f5f9" }}>
-            {fmt(entry.value)}
-          </span>
+          <span className="text-xs font-bold text-[#F1F5F9]">{fmt(entry.value)}</span>
         </div>
       ))}
     </div>
   );
 }
 
-// ─────────────────────────────────────────────
-// Chart component
-// ─────────────────────────────────────────────
 export default function SalesChart() {
   const fmt = (n: number) => {
     if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -104,112 +82,59 @@ export default function SalesChart() {
 
   return (
     <div
-      className="rounded-xl p-5"
-      style={{
-        background: "var(--bg-card)",
-        border: "1px solid var(--border)",
-      }}
+      className="rounded-2xl p-5"
+      style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3
-            style={{
-              fontFamily: "var(--font-syne)",
-              fontSize: "15px",
-              fontWeight: 700,
-              color: "var(--text)",
-            }}
+            className="font-bold text-[#F1F5F9]"
+            style={{ fontFamily: "var(--font-syne)", fontSize: "15px" }}
           >
-            Ventas vs Inversión Meta
+            Ventas vs Inversion Meta
           </h3>
-          <p
-            style={{
-              fontFamily: "var(--font-barlow)",
-              fontSize: "12px",
-              color: "var(--text-muted)",
-              marginTop: "2px",
-            }}
-          >
-            Mayo 2026 — últimos 30 días
-          </p>
+          <p className="text-xs text-[#94A3B8] mt-0.5">Mayo 2026 — ultimos 30 dias</p>
         </div>
-
-        {/* Legend pills */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-sm" style={{ background: "#e1691e" }} />
-            <span
-              style={{
-                fontFamily: "var(--font-barlow)",
-                fontSize: "12px",
-                color: "var(--text-muted)",
-              }}
-            >
-              Ventas
-            </span>
+            <span className="text-xs text-[#94A3B8]">Ventas</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-sm" style={{ background: "#a855f7" }} />
-            <span
-              style={{
-                fontFamily: "var(--font-barlow)",
-                fontSize: "12px",
-                color: "var(--text-muted)",
-              }}
-            >
-              Meta Ads
-            </span>
+            <div className="w-3 h-3 rounded-sm" style={{ background: "#7C3AED" }} />
+            <span className="text-xs text-[#94A3B8]">Meta Ads</span>
           </div>
         </div>
       </div>
 
-      {/* Chart */}
       <ResponsiveContainer width="100%" height={240}>
         <AreaChart data={DATA} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="gradVentas" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#e1691e" stopOpacity={0.25} />
+              <stop offset="5%" stopColor="#e1691e" stopOpacity={0.2} />
               <stop offset="95%" stopColor="#e1691e" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gradMeta" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#a855f7" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+              <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.2} />
+              <stop offset="95%" stopColor="#7C3AED" stopOpacity={0} />
             </linearGradient>
           </defs>
-
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="#1e293b"
-            vertical={false}
-          />
-
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.1)" vertical={false} />
           <XAxis
             dataKey="day"
-            tick={{
-              fontFamily: "var(--font-barlow)",
-              fontSize: 11,
-              fill: "#64748b",
-            }}
+            tick={{ fontSize: 11, fill: "#94A3B8" }}
             axisLine={false}
             tickLine={false}
             interval={4}
           />
-
           <YAxis
             tickFormatter={fmt}
-            tick={{
-              fontFamily: "var(--font-barlow)",
-              fontSize: 11,
-              fill: "#64748b",
-            }}
+            tick={{ fontSize: 11, fill: "#94A3B8" }}
             axisLine={false}
             tickLine={false}
             width={52}
           />
-
           <Tooltip content={<CustomTooltip />} />
-
           <Area
             type="monotone"
             dataKey="ventas"
@@ -222,11 +147,11 @@ export default function SalesChart() {
           <Area
             type="monotone"
             dataKey="meta"
-            stroke="#a855f7"
+            stroke="#7C3AED"
             strokeWidth={2}
             fill="url(#gradMeta)"
             dot={false}
-            activeDot={{ r: 4, fill: "#a855f7", strokeWidth: 0 }}
+            activeDot={{ r: 4, fill: "#7C3AED", strokeWidth: 0 }}
           />
         </AreaChart>
       </ResponsiveContainer>

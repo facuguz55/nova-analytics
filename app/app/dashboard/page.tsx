@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import {
   DollarSign, ShoppingCart, TrendingUp, Users,
-  Activity, Zap,
+  Activity, Brain, ArrowRight,
 } from "lucide-react";
 import MetricCard from "@/components/dashboard/MetricCard";
 import SalesChart from "@/components/dashboard/SalesChart";
@@ -9,45 +9,38 @@ import OrdersTable from "@/components/dashboard/OrdersTable";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-// ─────────────────────────────────────────────
-// Mock metrics
-// ─────────────────────────────────────────────
 const METRICS = [
   {
     label: "Ventas hoy",
     value: "$ 127.400",
-    subtext: "2 órdenes · Se reinicia en 6h",
+    subtext: "2 ordenes · Se reinicia en 6h",
     change: +12.4,
     icon: DollarSign,
     iconColor: "#e1691e",
-    accentBottom: "#e1691e",
   },
   {
     label: "Ventas semana",
     value: "$ 892.300",
-    subtext: "26 órdenes · Se reinicia en 1d 6h",
+    subtext: "26 ordenes · Se reinicia en 1d 6h",
     change: +8.7,
     icon: TrendingUp,
     iconColor: "#22c55e",
-    accentBottom: "#22c55e",
   },
   {
     label: "Ventas mes",
     value: "$ 7.838.909",
-    subtext: "86 órdenes · Mayo 2026",
+    subtext: "86 ordenes · Mayo 2026",
     change: +23.1,
     icon: Activity,
-    iconColor: "#a855f7",
-    accentBottom: "#a855f7",
+    iconColor: "#7C3AED",
   },
   {
-    label: "Órdenes pagadas",
+    label: "Ordenes pagadas",
     value: "284",
     subtext: "Acumulado del mes",
     change: -3.2,
     icon: ShoppingCart,
-    iconColor: "#1e3c69",
-    accentBottom: "#1e3c69",
+    iconColor: "#2563EB",
   },
 ];
 
@@ -55,72 +48,59 @@ const KPI_SECONDARY = [
   {
     label: "Clientes recurrentes",
     value: "55",
-    subtext: "Ver lista →",
+    sub: "Ver lista",
     icon: Users,
     iconColor: "#e1691e",
   },
   {
     label: "Ticket promedio",
     value: "$ 27.601",
-    subtext: "Por orden pagada",
+    sub: "Por orden pagada",
     icon: DollarSign,
-    iconColor: "#a855f7",
+    iconColor: "#7C3AED",
   },
   {
     label: "Nuevos clientes",
     value: "38",
-    subtext: "Este mes",
+    sub: "Este mes",
     icon: Users,
     iconColor: "#22c55e",
   },
 ];
 
-// ─────────────────────────────────────────────
-// Page
-// ─────────────────────────────────────────────
 export default function DashboardPage() {
   return (
     <div className="p-6 space-y-6 max-w-screen-2xl">
 
-      {/* ── Header del dashboard ── */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2
-            style={{
-              fontFamily: "var(--font-syne)",
-              fontSize: "26px",
-              fontWeight: 800,
-              color: "var(--text)",
-              letterSpacing: "-0.02em",
-            }}
+            className="text-3xl font-black text-[#F1F5F9]"
+            style={{ fontFamily: "var(--font-syne)", letterSpacing: "-0.02em" }}
           >
-            Buen día, Facundo 👋
+            Buen dia, Facundo 👋
           </h2>
-          <p
-            style={{
-              fontFamily: "var(--font-barlow)",
-              fontSize: "14px",
-              color: "var(--text-muted)",
-              marginTop: "4px",
-            }}
-          >
+          <p className="text-sm text-[#94A3B8] mt-1">
             Actualizado: 12:56 hs ·{" "}
-            <span style={{ color: "#22c55e" }}>● TiendaNube conectado</span>
+            <span className="text-green-400">● TiendaNube conectado</span>
           </p>
         </div>
 
-        {/* Month selector */}
-        <div className="flex items-center gap-1 rounded-xl p-1" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+        {/* Selector de mes */}
+        <div
+          className="flex items-center gap-1 rounded-xl p-1"
+          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        >
           {["Ene", "Feb", "Mar", "Abr", "May", "Jun"].map((m) => (
             <button
               key={m}
-              className="rounded-lg px-3 py-1.5 transition-all duration-150"
+              className="rounded-lg px-3 py-1.5 text-sm transition-all duration-150"
               style={{
-                fontFamily: "var(--font-barlow)",
-                fontSize: "13px",
+                fontFamily: "var(--font-syne)",
                 fontWeight: m === "May" ? 700 : 400,
-                color: m === "May" ? "white" : "var(--text-muted)",
-                background: m === "May" ? "#e1691e" : "transparent",
+                color: m === "May" ? "white" : "#94A3B8",
+                background: m === "May" ? "#7C3AED" : "transparent",
                 cursor: "pointer",
               }}
             >
@@ -130,166 +110,110 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── KPI cards principales ── */}
+      {/* KPI principales */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {METRICS.map((m) => (
           <MetricCard key={m.label} {...m} />
         ))}
       </div>
 
-      {/* ── KPI secundarios ── */}
+      {/* KPI secundarios */}
       <div
-        className="rounded-xl p-1"
-        style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
+        className="rounded-2xl overflow-hidden"
+        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
       >
         <div
-          className="px-4 py-2.5"
-          style={{ borderBottom: "1px solid var(--border)" }}
+          className="px-5 py-3"
+          style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}
         >
-          <p
-            style={{
-              fontFamily: "var(--font-barlow)",
-              fontSize: "11px",
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              color: "var(--text-muted)",
-              textTransform: "uppercase",
-            }}
-          >
-            Actividad y conversión
+          <p className="text-[11px] font-semibold tracking-widest text-[#94A3B8] uppercase">
+            Actividad y conversion
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0">
-          {KPI_SECONDARY.map((k, i) => (
-            <div
-              key={k.label}
-              className="p-5"
-              style={{
-                borderRight:
-                  i < KPI_SECONDARY.length - 1 ? "1px solid var(--border)" : "none",
-              }}
-            >
-              <div className="flex items-start justify-between">
-                <p
-                  style={{
-                    fontFamily: "var(--font-barlow)",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    letterSpacing: "0.08em",
-                    color: "var(--text-muted)",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {k.label}
-                </p>
-                <div
-                  className="flex items-center justify-center rounded-lg"
-                  style={{
-                    width: "28px",
-                    height: "28px",
-                    background: `${k.iconColor}18`,
-                  }}
-                >
-                  <k.icon size={13} color={k.iconColor} strokeWidth={2} />
+        <div className="grid grid-cols-1 sm:grid-cols-3">
+          {KPI_SECONDARY.map((k, i) => {
+            const Icon = k.icon;
+            return (
+              <div
+                key={k.label}
+                className="p-5"
+                style={{
+                  borderRight: i < KPI_SECONDARY.length - 1 ? "1px solid rgba(124,58,237,0.15)" : "none",
+                }}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <p className="text-[11px] font-semibold tracking-widest text-[#94A3B8] uppercase">
+                    {k.label}
+                  </p>
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{ background: `${k.iconColor}20` }}
+                  >
+                    <Icon size={13} color={k.iconColor} strokeWidth={2} />
+                  </div>
                 </div>
+                <p
+                  className="text-3xl font-black text-[#F1F5F9] leading-none mb-1"
+                  style={{ fontFamily: "var(--font-syne)" }}
+                >
+                  {k.value}
+                </p>
+                <p className="text-xs text-[#7C3AED] cursor-pointer hover:text-[#8B5CF6] transition-colors">
+                  {k.sub} →
+                </p>
               </div>
-              <p
-                className="mt-2 leading-none"
-                style={{
-                  fontFamily: "var(--font-syne)",
-                  fontSize: "32px",
-                  fontWeight: 800,
-                  color: "var(--text)",
-                  letterSpacing: "-0.03em",
-                }}
-              >
-                {k.value}
-              </p>
-              <p
-                className="mt-1"
-                style={{
-                  fontFamily: "var(--font-barlow)",
-                  fontSize: "12px",
-                  color: "#e1691e",
-                  cursor: "pointer",
-                }}
-              >
-                {k.subtext}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      {/* ── Gráfico y tabla ── */}
-      <div className="grid grid-cols-1 gap-6">
-        {/* Chart */}
-        <SalesChart />
+      {/* Grafico */}
+      <SalesChart />
 
-        {/* IA insight banner */}
+      {/* IA insight banner */}
+      <div
+        className="flex items-center gap-4 rounded-2xl p-5"
+        style={{
+          background: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(37,99,235,0.05))",
+          border: "1px solid rgba(124,58,237,0.25)",
+        }}
+      >
         <div
-          className="flex items-center gap-4 rounded-xl p-4"
+          className="flex items-center justify-center rounded-xl flex-shrink-0"
+          style={{ width: "44px", height: "44px", background: "rgba(124,58,237,0.15)" }}
+        >
+          <Brain size={20} color="#8B5CF6" strokeWidth={2} />
+        </div>
+        <div className="flex-1">
+          <p
+            className="font-bold text-[#F1F5F9] mb-1"
+            style={{ fontFamily: "var(--font-syne)", fontSize: "14px" }}
+          >
+            Insight IA del dia
+          </p>
+          <p className="text-sm text-[#94A3B8]">
+            Tus ventas subieron{" "}
+            <span className="text-green-400 font-semibold">+23%</span> vs el mes pasado.
+            Los{" "}
+            <span className="text-[#e1691e] font-semibold">viernes y sabados</span>{" "}
+            generan el 38% de la facturacion. Considerar aumentar la inversion Meta esos dias.
+          </p>
+        </div>
+        <button
+          className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
           style={{
-            background: "linear-gradient(135deg, rgba(168,85,247,0.08), rgba(225,105,30,0.06))",
-            border: "1px solid rgba(168,85,247,0.2)",
+            color: "#8B5CF6",
+            background: "rgba(124,58,237,0.12)",
+            border: "1px solid rgba(124,58,237,0.25)",
           }}
         >
-          <div
-            className="flex items-center justify-center rounded-xl flex-shrink-0"
-            style={{
-              width: "40px",
-              height: "40px",
-              background: "linear-gradient(135deg, rgba(168,85,247,0.3), rgba(225,105,30,0.2))",
-            }}
-          >
-            <Zap size={18} color="#a855f7" strokeWidth={2.5} />
-          </div>
-          <div className="flex-1">
-            <p
-              style={{
-                fontFamily: "var(--font-syne)",
-                fontSize: "14px",
-                fontWeight: 700,
-                color: "var(--text)",
-              }}
-            >
-              Insight IA del día
-            </p>
-            <p
-              style={{
-                fontFamily: "var(--font-barlow)",
-                fontSize: "13px",
-                color: "var(--text-subtle)",
-                marginTop: "2px",
-              }}
-            >
-              Tus ventas subieron un{" "}
-              <span style={{ color: "#22c55e", fontWeight: 600 }}>+23%</span> vs el mes pasado.
-              Los{" "}
-              <span style={{ color: "#e1691e", fontWeight: 600 }}>
-                viernes y sábados
-              </span>{" "}
-              generan el 38% de la facturación. Considerar aumentar la inversión Meta esos días.
-            </p>
-          </div>
-          <div
-            className="flex-shrink-0 px-3 py-1.5 rounded-lg cursor-pointer"
-            style={{
-              fontFamily: "var(--font-barlow)",
-              fontSize: "12px",
-              fontWeight: 600,
-              color: "#a855f7",
-              background: "rgba(168,85,247,0.1)",
-              border: "1px solid rgba(168,85,247,0.2)",
-            }}
-          >
-            Ver análisis completo →
-          </div>
-        </div>
-
-        {/* Orders table */}
-        <OrdersTable />
+          Ver analisis
+          <ArrowRight size={14} />
+        </button>
       </div>
+
+      {/* Tabla de ordenes */}
+      <OrdersTable />
     </div>
   );
 }

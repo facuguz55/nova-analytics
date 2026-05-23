@@ -1,5 +1,6 @@
-import { Bell, Search } from "lucide-react";
-import ThemeToggle from "@/components/layout/ThemeToggle";
+﻿"use client";
+
+import { Bell, Search, Settings } from "lucide-react";
 
 interface NavbarProps {
   pageTitle?: string;
@@ -11,126 +12,95 @@ export default function Navbar({ pageTitle, pageSubtitle }: NavbarProps) {
     <header
       className="flex items-center justify-between px-6 flex-shrink-0"
       style={{
-        height: "56px",
-        background: "var(--bg-sidebar)",
-        borderBottom: "1px solid var(--border)",
+        height: "64px",
+        background: "#0d0d14",
+        borderBottom: "1px solid rgba(124,58,237,0.15)",
       }}
     >
-      {/* Left: Page title */}
+      {/* Left: breadcrumb / titulo */}
       <div className="flex items-center gap-3">
         {pageTitle && (
           <div>
             <h1
-              className="leading-none"
-              style={{
-                fontFamily: "var(--font-syne)",
-                fontSize: "16px",
-                fontWeight: 700,
-                color: "var(--text)",
-              }}
+              className="leading-none font-bold text-[#F1F5F9]"
+              style={{ fontFamily: "var(--font-syne)", fontSize: "16px" }}
             >
               {pageTitle}
             </h1>
             {pageSubtitle && (
-              <p
-                style={{
-                  fontFamily: "var(--font-barlow)",
-                  fontSize: "12px",
-                  color: "var(--text-muted)",
-                  marginTop: "1px",
-                }}
-              >
-                {pageSubtitle}
-              </p>
+              <p className="text-xs text-[#94A3B8] mt-0.5">{pageSubtitle}</p>
             )}
           </div>
         )}
       </div>
 
-      {/* Right: Actions */}
+      {/* Right: acciones */}
       <div className="flex items-center gap-2">
-        {/* Search button */}
         <button
-          className="flex items-center justify-center rounded-lg transition-all duration-150"
+          className="flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(124,58,237,0.1)]"
           style={{
-            width: "34px",
-            height: "34px",
-            background: "var(--bg-elevated)",
-            border: "1px solid var(--border)",
-            color: "var(--text-muted)",
-            cursor: "pointer",
+            width: "36px",
+            height: "36px",
+            background: "rgba(124,58,237,0.06)",
+            border: "1px solid rgba(124,58,237,0.2)",
+            color: "#94A3B8",
           }}
           aria-label="Buscar"
         >
           <Search size={15} strokeWidth={2} />
         </button>
 
-        {/* Notifications */}
         <div className="relative">
           <button
-            className="flex items-center justify-center rounded-lg transition-all duration-150"
+            className="flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(124,58,237,0.1)]"
             style={{
-              width: "34px",
-              height: "34px",
-              background: "var(--bg-elevated)",
-              border: "1px solid var(--border)",
-              color: "var(--text-muted)",
-              cursor: "pointer",
+              width: "36px",
+              height: "36px",
+              background: "rgba(124,58,237,0.06)",
+              border: "1px solid rgba(124,58,237,0.2)",
+              color: "#94A3B8",
             }}
             aria-label="Notificaciones"
           >
             <Bell size={15} strokeWidth={2} />
           </button>
-          {/* Badge */}
           <span
-            className="absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full text-white"
-            style={{
-              width: "14px",
-              height: "14px",
-              background: "#e1691e",
-              fontFamily: "var(--font-barlow)",
-              fontSize: "9px",
-              fontWeight: 700,
-            }}
+            className="absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full text-white text-[9px] font-bold"
+            style={{ width: "14px", height: "14px", background: "#7C3AED" }}
           >
             3
           </span>
         </div>
 
-        {/* Theme toggle */}
-        <ThemeToggle />
+        <button
+          className="flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(124,58,237,0.1)]"
+          style={{
+            width: "36px",
+            height: "36px",
+            background: "rgba(124,58,237,0.06)",
+            border: "1px solid rgba(124,58,237,0.2)",
+            color: "#94A3B8",
+          }}
+          aria-label="Configuracion"
+        >
+          <Settings size={15} strokeWidth={2} />
+        </button>
 
         {/* Avatar */}
         <div
-          className="flex items-center gap-2 rounded-lg px-2 py-1 cursor-pointer transition-all duration-150"
+          className="flex items-center gap-2 rounded-xl px-3 py-1.5 cursor-pointer transition-all hover:bg-[rgba(124,58,237,0.1)]"
           style={{
-            background: "var(--bg-elevated)",
-            border: "1px solid var(--border)",
+            background: "rgba(124,58,237,0.06)",
+            border: "1px solid rgba(124,58,237,0.2)",
           }}
         >
           <div
-            className="rounded-full flex items-center justify-center flex-shrink-0 text-white"
-            style={{
-              width: "24px",
-              height: "24px",
-              background: "linear-gradient(135deg, #e1691e, #a855f7)",
-              fontFamily: "var(--font-syne)",
-              fontSize: "10px",
-              fontWeight: 700,
-            }}
+            className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-[10px] font-bold"
+            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)", fontFamily: "var(--font-syne)" }}
           >
             F
           </div>
-          <span
-            style={{
-              fontFamily: "var(--font-barlow)",
-              fontSize: "13px",
-              fontWeight: 500,
-              color: "var(--text)",
-            }}
-          >
-            Facundo
-          </span>
+          <span className="text-sm font-medium text-[#F1F5F9]">Facundo</span>
         </div>
       </div>
     </header>
