@@ -288,11 +288,11 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-end justify-center gap-2 mb-2">
-              <span className="text-2xl text-[#94A3B8] font-medium">USD</span>
+              <span className="text-2xl text-[#94A3B8] font-medium">$</span>
               <span
                 className="text-7xl font-black"
               >
-                59
+                77.000
               </span>
               <span className="text-[#94A3B8] mb-3">/mes</span>
             </div>
@@ -342,7 +342,7 @@ export default function LandingPage() {
             href="/register"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-[#7C3AED] to-[#2563EB] hover:opacity-90 text-white px-10 py-5 rounded-xl font-bold text-lg transition-all hover:scale-105 shadow-xl shadow-[rgba(124,58,237,0.3)]"
           >
-            Empezar ahora — USD 59/mes
+            Empezar ahora — $77.000/mes
             <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
