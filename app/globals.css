@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────
+   Nota: Syne + Barlow Condensed se cargan vía
+   next/font/google en app/layout.tsx (variables
+   CSS: --font-syne y --font-barlow)
+───────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────
+   CSS VARIABLES — NOVA ANALYTICS
+   Dark mode por defecto
+───────────────────────────────────────────── */
+:root {
+  /* Nova brand */
+  --nova-orange: #e1691e;
+  --nova-orange-hover: #c85a15;
+  --nova-orange-glow: rgba(225, 105, 30, 0.25);
+  --nova-navy: #1e3c69;
+  --nova-violet: #a855f7;
+  --nova-violet-glow: rgba(168, 85, 247, 0.2);
+
+  /* Fondos dark (default) */
+  --bg: #0a0f1e;
+  --bg-card: #111827;
+  --bg-sidebar: #0d1424;
+  --bg-elevated: #162032;
+  --bg-overlay: rgba(10, 15, 30, 0.85);
+
+  /* Texto */
+  --text: #f1f5f9;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+
+  /* Bordes */
+  --border: #1e293b;
+  --border-muted: #0f172a;
+
+  /* Estados */
+  --success: #22c55e;
+  --success-bg: rgba(34, 197, 94, 0.1);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.1);
+
+  /* Shadcn/ui tokens — dark */
+  --background: 222 47% 7%;
+  --foreground: 214 32% 95%;
+  --card: 222 47% 10%;
+  --card-foreground: 214 32% 95%;
+  --popover: 222 47% 9%;
+  --popover-foreground: 214 32% 95%;
+  --primary: 24 74% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 215 55% 27%;
+  --secondary-foreground: 214 32% 95%;
+  --muted: 222 47% 14%;
+  --muted-foreground: 215 20% 55%;
+  --accent: 271 91% 65%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --ring: 24 74% 50%;
+  --radius: 0.625rem;
+
+  /* Tipografía */
+  --font-syne: "Syne", sans-serif;
+  --font-barlow: "Barlow Condensed", sans-serif;
+}
+
+/* Light mode override */
+.light {
+  --bg: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-sidebar: #f1f5f9;
+  --bg-elevated: #e2e8f0;
+  --bg-overlay: rgba(248, 250, 252, 0.85);
+
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+
+  --border: #e2e8f0;
+  --border-muted: #f1f5f9;
+
+  /* Shadcn/ui tokens — light */
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 24 74% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 215 55% 27%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 271 91% 65%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 24 74% 50%;
+}
+
+/* ─────────────────────────────────────────────
+   BASE STYLES
+───────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-barlow);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings → Syne */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-syne);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+/* ─────────────────────────────────────────────
+   SCROLLBAR — estilo Nova
+───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-sidebar);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────
+   SELECTION
+───────────────────────────────────────────── */
+::selection {
+  background-color: var(--nova-orange-glow);
+  color: var(--text);
+}
+
+/* ─────────────────────────────────────────────
+   UTILIDADES NOVA
+───────────────────────────────────────────── */
+
+/* Glow naranja */
+.nova-glow-orange {
+  box-shadow: 0 0 20px var(--nova-orange-glow);
+}
+
+/* Glow violeta */
+.nova-glow-violet {
+  box-shadow: 0 0 20px var(--nova-violet-glow);
+}
+
+/* Gradiente naranja → violeta */
+.nova-gradient {
+  background: linear-gradient(135deg, var(--nova-orange), var(--nova-violet));
+}
+
+/* Texto gradiente */
+.nova-gradient-text {
+  background: linear-gradient(135deg, var(--nova-orange), var(--nova-violet));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Borde naranja sutil */
+.nova-border-orange {
+  border-color: var(--nova-orange);
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* Card hover */
+.nova-card-hover {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.nova-card-hover:hover {
+  border-color: rgba(225, 105, 30, 0.4);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Animación fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s ease forwards;
+}
+
+/* Animación slide-in desde la izquierda (sidebar) */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.25s ease forwards;
+}
+
+/* Pulse suave para indicadores live */
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50%       { opacity: 0.8; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);  }
+}
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
