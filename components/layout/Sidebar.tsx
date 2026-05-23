@@ -81,7 +81,7 @@ export default function Sidebar() {
           <div className="overflow-hidden">
             <p
               className="font-bold leading-none tracking-tight truncate text-[#F1F5F9]"
-              style={{ fontFamily: "var(--font-syne)", fontSize: "15px" }}
+              style={{ fontSize: "15px" }}
             >
               Nova Analytics
             </p>
@@ -185,7 +185,7 @@ export default function Sidebar() {
         >
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-xs"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)", fontFamily: "var(--font-syne)" }}
+            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
           >
             NA
           </div>
@@ -222,3 +222,4 @@ export default function Sidebar() {
     </aside>
   );
 }
+

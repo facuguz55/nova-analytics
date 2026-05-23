@@ -44,14 +44,14 @@ export default function RegisterPage() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#2563EB] flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "var(--font-syne)" }}>
+            <span className="font-bold text-xl tracking-tight">
               Nova Analytics
             </span>
           </Link>
         </div>
 
         <div className="bg-[#111118] border border-[rgba(124,58,237,0.2)] rounded-2xl p-8">
-          <h1 className="text-2xl font-black mb-1" style={{ fontFamily: "var(--font-syne)" }}>
+          <h1 className="text-2xl font-black mb-1">
             Crear cuenta
           </h1>
           <p className="text-[#94A3B8] text-sm mb-8">Empieza a centralizar tu negocio hoy.</p>
@@ -121,3 +121,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

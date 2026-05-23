@@ -89,7 +89,7 @@ export default function SalesChart() {
         <div>
           <h3
             className="font-bold text-[#F1F5F9]"
-            style={{ fontFamily: "var(--font-syne)", fontSize: "15px" }}
+            style={{ fontSize: "15px" }}
           >
             Ventas vs Inversion Meta
           </h3>
@@ -158,3 +158,4 @@ export default function SalesChart() {
     </div>
   );
 }
+

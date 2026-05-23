@@ -23,7 +23,7 @@ export default function Navbar({ pageTitle, pageSubtitle }: NavbarProps) {
           <div>
             <h1
               className="leading-none font-bold text-[#F1F5F9]"
-              style={{ fontFamily: "var(--font-syne)", fontSize: "16px" }}
+              style={{ fontSize: "16px" }}
             >
               {pageTitle}
             </h1>
@@ -96,7 +96,7 @@ export default function Navbar({ pageTitle, pageSubtitle }: NavbarProps) {
         >
           <div
             className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-[10px] font-bold"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)", fontFamily: "var(--font-syne)" }}
+            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
           >
             F
           </div>
@@ -106,3 +106,4 @@ export default function Navbar({ pageTitle, pageSubtitle }: NavbarProps) {
     </header>
   );
 }
+

@@ -16,7 +16,7 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#2563EB] flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-lg tracking-tight" style={{ fontFamily: "var(--font-syne)" }}>
+            <span className="font-bold text-lg tracking-tight">
               Nova Analytics
             </span>
           </div>
@@ -46,7 +46,6 @@ export default function LandingPage() {
 
           <h1
             className="text-5xl md:text-7xl font-black tracking-tight leading-tight mb-6"
-            style={{ fontFamily: "var(--font-syne)" }}
           >
             Tu negocio,{" "}
             <span className="gradient-text">un solo panel</span>
@@ -77,7 +76,6 @@ export default function LandingPage() {
               <div key={stat.label} className="text-center">
                 <div
                   className="text-2xl font-black text-white"
-                  style={{ fontFamily: "var(--font-syne)" }}
                 >
                   {stat.value}
                 </div>
@@ -97,7 +95,6 @@ export default function LandingPage() {
             </div>
             <h2
               className="text-4xl md:text-5xl font-black mb-4"
-              style={{ fontFamily: "var(--font-syne)" }}
             >
               En 3 pasos y listo
             </h2>
@@ -132,7 +129,6 @@ export default function LandingPage() {
                 className="relative bg-[#111118] border border-[rgba(124,58,237,0.2)] rounded-2xl p-7 hover:border-[rgba(124,58,237,0.4)] transition-all group"
               >
                 <div className="absolute top-6 right-6 text-5xl font-black text-[rgba(124,58,237,0.08)] group-hover:text-[rgba(124,58,237,0.12)] transition-colors select-none"
-                  style={{ fontFamily: "var(--font-syne)" }}
                 >
                   {item.step}
                 </div>
@@ -141,7 +137,6 @@ export default function LandingPage() {
                 </div>
                 <h3
                   className="text-xl font-bold mb-3"
-                  style={{ fontFamily: "var(--font-syne)" }}
                 >
                   {item.title}
                 </h3>
@@ -158,7 +153,6 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <h2
               className="text-4xl md:text-5xl font-black mb-4"
-              style={{ fontFamily: "var(--font-syne)" }}
             >
               Todo incluido en{" "}
               <span className="gradient-text">un solo sistema</span>
@@ -206,7 +200,7 @@ export default function LandingPage() {
                   {feat.icon}
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-1" style={{ fontFamily: "var(--font-syne)" }}>{feat.title}</h4>
+                  <h4 className="font-semibold mb-1">{feat.title}</h4>
                   <p className="text-sm text-[#94A3B8] leading-relaxed">{feat.desc}</p>
                 </div>
               </div>
@@ -224,7 +218,6 @@ export default function LandingPage() {
             </div>
             <h2
               className="text-4xl font-black mb-4"
-              style={{ fontFamily: "var(--font-syne)" }}
             >
               Conecta tus plataformas
             </h2>
@@ -264,7 +257,6 @@ export default function LandingPage() {
                 </div>
                 <h3
                   className="font-bold text-lg mb-2"
-                  style={{ fontFamily: "var(--font-syne)" }}
                 >
                   {integration.name}
                 </h3>
@@ -283,7 +275,6 @@ export default function LandingPage() {
           </div>
           <h2
             className="text-4xl font-black mb-4"
-            style={{ fontFamily: "var(--font-syne)" }}
           >
             Un solo plan, todo incluido
           </h2>
@@ -300,7 +291,6 @@ export default function LandingPage() {
               <span className="text-2xl text-[#94A3B8] font-medium">USD</span>
               <span
                 className="text-7xl font-black"
-                style={{ fontFamily: "var(--font-syne)" }}
               >
                 59
               </span>
@@ -340,7 +330,6 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto text-center">
           <h2
             className="text-4xl md:text-5xl font-black mb-6"
-            style={{ fontFamily: "var(--font-syne)" }}
           >
             Todo tu negocio,{" "}
             <span className="gradient-text">en un lugar</span>
@@ -366,7 +355,7 @@ export default function LandingPage() {
             <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#7C3AED] to-[#2563EB] flex items-center justify-center">
               <Zap className="w-3 h-3 text-white" />
             </div>
-            <span className="font-semibold text-white" style={{ fontFamily: "var(--font-syne)" }}>
+            <span className="font-semibold text-white">
               Nova Analytics
             </span>
             <span>— by Nova Agency</span>
@@ -378,4 +367,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
 

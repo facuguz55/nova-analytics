@@ -63,7 +63,6 @@ export default function MetricCard({
       <div>
         <p
           className="text-2xl font-black text-[#F1F5F9] leading-none mb-0.5"
-          style={{ fontFamily: "var(--font-syne)" }}
         >
           {value}
         </p>
@@ -73,3 +72,4 @@ export default function MetricCard({
     </div>
   );
 }
+

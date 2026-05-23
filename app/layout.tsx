@@ -1,21 +1,11 @@
 import type { Metadata } from "next";
-import { Syne, Barlow_Condensed } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 
-const syne = Syne({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-syne",
-  display: "swap",
-});
-
-const barlowCondensed = Barlow_Condensed({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-barlow",
-  display: "swap",
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -79,7 +69,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${syne.variable} ${barlowCondensed.variable} min-h-full flex flex-col bg-[#0a0a0f] text-[#F1F5F9] antialiased`}
+        className={`${inter.variable} min-h-full flex flex-col bg-[#0a0a0f] text-[#F1F5F9] antialiased`}
       >
         {children}
         <Toaster theme="dark" />

@@ -77,7 +77,7 @@ export default function DashboardPage() {
         <div>
           <h2
             className="text-3xl font-black text-[#F1F5F9]"
-            style={{ fontFamily: "var(--font-syne)", letterSpacing: "-0.02em" }}
+            style={{ letterSpacing: "-0.02em" }}
           >
             Buen dia, Facundo 👋
           </h2>
@@ -97,7 +97,6 @@ export default function DashboardPage() {
               key={m}
               className="rounded-lg px-3 py-1.5 text-sm transition-all duration-150"
               style={{
-                fontFamily: "var(--font-syne)",
                 fontWeight: m === "May" ? 700 : 400,
                 color: m === "May" ? "white" : "#94A3B8",
                 background: m === "May" ? "#7C3AED" : "transparent",
@@ -154,7 +153,6 @@ export default function DashboardPage() {
                 </div>
                 <p
                   className="text-3xl font-black text-[#F1F5F9] leading-none mb-1"
-                  style={{ fontFamily: "var(--font-syne)" }}
                 >
                   {k.value}
                 </p>
@@ -187,7 +185,7 @@ export default function DashboardPage() {
         <div className="flex-1">
           <p
             className="font-bold text-[#F1F5F9] mb-1"
-            style={{ fontFamily: "var(--font-syne)", fontSize: "14px" }}
+            style={{ fontSize: "14px" }}
           >
             Insight IA del dia
           </p>
@@ -217,3 +215,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

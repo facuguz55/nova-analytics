@@ -39,7 +39,7 @@ export default function OrdersTable() {
         style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}
       >
         <div>
-          <h3 className="font-bold text-[#F1F5F9]" style={{ fontFamily: "var(--font-syne)", fontSize: "15px" }}>
+          <h3 className="font-bold text-[#F1F5F9]" style={{ fontSize: "15px" }}>
             Ultimas ordenes
           </h3>
           <p className="text-xs text-[#94A3B8] mt-0.5">Mayo 2026</p>
@@ -118,3 +118,4 @@ export default function OrdersTable() {
     </div>
   );
 }
+
