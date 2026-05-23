@@ -1,41 +1,29 @@
-/**
- * Layout del dashboard — wrappea todas las rutas /app/xxx
- * Contiene Sidebar + Navbar
- * TODO: Implementar en Fase UI
- */
+import Sidebar from "@/components/layout/Sidebar";
+import Navbar from "@/components/layout/Navbar";
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "var(--bg)" }}>
-      {/* Sidebar — placeholder */}
-      <aside
-        className="w-64 flex-shrink-0 border-r"
-        style={{
-          background: "var(--bg-sidebar)",
-          borderColor: "var(--border)",
-        }}
-      >
-        {/* TODO: Sidebar component */}
-      </aside>
+    <div
+      className="flex h-screen overflow-hidden"
+      style={{ background: "var(--bg)" }}
+    >
+      {/* Sidebar */}
+      <Sidebar />
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Navbar — placeholder */}
-        <header
-          className="h-14 border-b flex items-center px-6"
-          style={{
-            background: "var(--bg-card)",
-            borderColor: "var(--border)",
-          }}
+      {/* Main column */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        {/* Navbar */}
+        <Navbar pageTitle="Nova Analytics" pageSubtitle="Mayo 2026" />
+
+        {/* Scrollable content */}
+        <main
+          className="flex-1 overflow-y-auto"
+          style={{ background: "var(--bg)" }}
         >
-          {/* TODO: Navbar component */}
-        </header>
-
-        {/* Page content */}
-        <main className="flex-1 overflow-auto p-6">
           {children}
         </main>
       </div>
