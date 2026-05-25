@@ -17,6 +17,19 @@ export async function getTiendaNubeConnection(): Promise<TiendaNubeConnection | 
 
   const supabase = await createClient();
 
+  // Primero obtener el workspace_id del usuario y filtrar explícitamente.
+  // Sin este filtro, la query depende 100% de que RLS esté configurado con
+  // workspace_id = (SELECT workspace_id FROM users WHERE id = auth.uid())
+  // lo cual puede fallar silenciosamente si la política no está exacta.
+  const { data: rawUserRow } = await supabase
+    .from("users")
+    .select("workspace_id")
+    .eq("id", user.id)
+    .single();
+
+  const userRow = rawUserRow as unknown as { workspace_id: string | null } | null;
+  if (!userRow?.workspace_id) return null;
+
   type IntRow = {
     access_token_encrypted: string | null;
     store_id: string | null;
@@ -28,6 +41,7 @@ export async function getTiendaNubeConnection(): Promise<TiendaNubeConnection | 
     .from("integrations")
     .select("access_token_encrypted, store_id, status, metadata")
     .eq("provider", "tiendanube")
+    .eq("workspace_id", userRow.workspace_id)  // filtro explícito — no depende solo de RLS
     .maybeSingle();
 
   const integration = raw as unknown as IntRow | null;

@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import {
   Store, Mail, Target, CheckCircle2, AlertCircle,
-  Link2Off, RefreshCw, ExternalLink, Shield, Lock, Eye, Server, Zap, RotateCw,
+  Link2Off, RefreshCw, ExternalLink, Shield, Lock, Eye, Server, Zap,
 } from "lucide-react";
 import { disconnectIntegration } from "@/app/app/actions";
 import { toast } from "sonner";
@@ -33,7 +33,6 @@ function IntegrationCard({
   integration,
   connectHref,
   onDisconnect,
-  onSync,
   comingSoon,
 }: {
   icon: React.ElementType;
@@ -44,25 +43,10 @@ function IntegrationCard({
   integration: IntegrationRow | null;
   connectHref: string;
   onDisconnect: () => Promise<void>;
-  onSync?: () => Promise<void>;
   comingSoon?: boolean;
 }) {
   const [disconnecting, setDisconnecting] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const isConnected = integration?.status === "active";
-
-  async function handleSync() {
-    if (!onSync) return;
-    setSyncing(true);
-    try {
-      await onSync();
-      toast.success("Sincronización completada");
-    } catch {
-      toast.error("Error al sincronizar. Intentá de nuevo.");
-    } finally {
-      setSyncing(false);
-    }
-  }
 
   async function handleDisconnect() {
     if (!confirm(`¿Desconectar ${name}? Se revocarán los tokens de acceso.`)) return;
@@ -149,13 +133,16 @@ function IntegrationCard({
               </div>
             )}
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#94A3B8]">Última sync</span>
+              <span className="text-[#94A3B8]">Conectado desde</span>
               <span className="text-[#22c55e]">
                 {new Date(integration.updated_at).toLocaleDateString("es-AR", {
                   day: "2-digit", month: "2-digit", year: "2-digit",
-                  hour: "2-digit", minute: "2-digit",
                 })}
               </span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#94A3B8]">Modo</span>
+              <span className="text-[#22c55e] font-semibold">⚡ Tiempo real</span>
             </div>
           </div>
         )}
@@ -165,17 +152,6 @@ function IntegrationCard({
           <div className="flex gap-2 mt-auto pt-1">
             {isConnected ? (
               <div className="flex flex-col gap-2 w-full">
-                {onSync && (
-                  <button
-                    onClick={handleSync}
-                    disabled={syncing}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
-                    style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)", color: "white" }}
-                  >
-                    <RotateCw size={13} strokeWidth={2.5} className={syncing ? "animate-spin" : ""} />
-                    {syncing ? "Sincronizando..." : "Sincronizar ahora"}
-                  </button>
-                )}
                 <div className="flex gap-2">
                   <a
                     href={connectHref}
@@ -269,22 +245,16 @@ function URLParamHandler() {
 }
 
 export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) {
-  async function syncTiendaNube() {
-    const res = await fetch("/api/tiendanube/sync", { method: "POST" });
-    if (!res.ok) throw new Error("Sync failed");
-  }
-
   const cards = [
     {
       icon: Store,
       name: "TiendaNube",
-      description: "Sincronizá órdenes, productos, clientes y stock en tiempo real desde tu tienda.",
+      description: "Datos en tiempo real — órdenes, productos y clientes se cargan directo desde tu tienda al entrar.",
       color: "#3B82F6",
       bgColor: "rgba(59,130,246,0.12)",
       integration: tiendanube,
       connectHref: "/api/auth/tiendanube",
       onDisconnect: () => disconnectIntegration("tiendanube"),
-      onSync: syncTiendaNube,
       comingSoon: false,
     },
     {

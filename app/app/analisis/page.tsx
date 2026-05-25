@@ -1,9 +1,10 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import AnalisisClient from "./AnalisisClient";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
-import { getOrdersForRange } from "@/lib/tiendanube/client";
+import { getOrders } from "@/lib/tiendanube/client";
+import type { TNOrder } from "@/lib/tiendanube/client";
 
-export const metadata: Metadata = { title: "Analisis" };
+export const metadata: Metadata = { title: "Análisis" };
 
 export default async function AnalisisPage({
   searchParams,
@@ -15,53 +16,29 @@ export default async function AnalisisPage({
 
   const connection = await getTiendaNubeConnection();
 
-  let paidOrders: Array<{ total: string; status: string; payment_status: string; created_at: string }> = [];
-
-  if (connection) {
-    const result = await Promise.allSettled([getOrdersForRange(connection.opts, { days }, 3)]);
-    if (result[0].status === "fulfilled") {
-      paidOrders = result[0].value.filter((o) => o.payment_status === "paid" || o.status === "closed");
-    }
+  if (!connection) {
+    return <AnalisisClient initialOrders={[]} days={days} isConnected={false} />;
   }
 
-  const now = new Date();
-  const monthlyData = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const nextD = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-    const monthOrders = paidOrders.filter((o) => {
-      const date = new Date(o.created_at);
-      return date >= d && date < nextD;
+  // Cargar solo la primera página (100 órdenes) en el servidor — rápido.
+  // El cliente carga el resto de manera progresiva via /api/tiendanube/orders.
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+
+  let initialOrders: TNOrder[] = [];
+  try {
+    initialOrders = await getOrders(connection.opts, 1, 100, {
+      since: since.toISOString().split("T")[0],
     });
-    monthlyData.push({
-      month: d.toLocaleDateString("es-AR", { month: "short", year: "2-digit" }),
-      ventas: monthOrders.reduce((acc, o) => acc + parseFloat(o.total), 0),
-      ordenes: monthOrders.length,
-    });
+  } catch {
+    // Si falla la primera carga, el cliente mostrará su propia pantalla de error
   }
-
-  const weekDays = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
-  const byWeekday = weekDays.map((day, idx) => {
-    const dayOrders = paidOrders.filter((o) => new Date(o.created_at).getDay() === idx);
-    return {
-      day,
-      ventas: dayOrders.reduce((acc, o) => acc + parseFloat(o.total), 0),
-      ordenes: dayOrders.length,
-    };
-  });
-
-  const byHour = Array.from({ length: 24 }, (_, h) => {
-    const hourOrders = paidOrders.filter((o) => new Date(o.created_at).getHours() === h);
-    return { hora: `${String(h).padStart(2, "0")}:00`, ordenes: hourOrders.length };
-  });
 
   return (
     <AnalisisClient
-      monthlyData={monthlyData}
-      byWeekday={byWeekday}
-      byHour={byHour}
-      totalOrders={paidOrders.length}
-      hasData={paidOrders.length > 0}
+      initialOrders={initialOrders}
+      days={days}
+      isConnected={true}
     />
   );
 }
