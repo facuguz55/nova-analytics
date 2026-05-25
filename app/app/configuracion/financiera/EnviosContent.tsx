@@ -1,15 +1,15 @@
 "use client";
 
-import { Truck, ArrowRight, Package, CheckCircle } from "lucide-react";
+import { Truck, ArrowRight, Package, CheckCircle, Mail, Store as StoreIcon, Handshake, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
 const SHIPPING_METHODS = [
-  { name: "Correo Argentino",  logo: "📦", type: "nacional" },
-  { name: "OCA",               logo: "🚛", type: "nacional" },
-  { name: "Andreani",          logo: "📮", type: "nacional" },
-  { name: "Mercado Envíos",    logo: "🟡", type: "marketplace" },
-  { name: "Tu propio retiro",  logo: "🏪", type: "local" },
-  { name: "A convenir",        logo: "🤝", type: "personalizado" },
+  { name: "Correo Argentino",  icon: Mail,        color: "#2563EB", type: "nacional" },
+  { name: "OCA",               icon: Truck,       color: "#22c55e", type: "nacional" },
+  { name: "Andreani",          icon: Package,     color: "#f59e0b", type: "nacional" },
+  { name: "Mercado Envíos",    icon: ShoppingBag, color: "#facc15", type: "marketplace" },
+  { name: "Tu propio retiro",  icon: StoreIcon,   color: "#8B5CF6", type: "local" },
+  { name: "A convenir",        icon: Handshake,   color: "#e1691e", type: "personalizado" },
 ];
 
 export default function EnviosContent({
@@ -78,25 +78,33 @@ export default function EnviosContent({
         <p className="text-sm font-semibold text-[#F1F5F9]">Métodos en tu tienda</p>
 
         <div className="space-y-2">
-          {SHIPPING_METHODS.map((m) => (
-            <div
-              key={m.name}
-              className="flex items-center gap-3 rounded-xl px-4 py-3"
-              style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}
-            >
-              <span className="text-xl">{m.logo}</span>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-[#F1F5F9]">{m.name}</p>
-                <p className="text-xs text-[#64748B] capitalize">{m.type}</p>
-              </div>
+          {SHIPPING_METHODS.map((m) => {
+            const Icon = m.icon;
+            return (
               <div
-                className="text-xs font-semibold rounded-xl px-3 py-1.5"
-                style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)", color: "#64748B" }}
+                key={m.name}
+                className="flex items-center gap-3 rounded-xl px-4 py-3"
+                style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}
               >
-                Costo: —
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: `${m.color}18`, border: `1px solid ${m.color}30` }}
+                >
+                  <Icon size={16} color={m.color} strokeWidth={2} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-[#F1F5F9]">{m.name}</p>
+                  <p className="text-xs text-[#64748B] capitalize">{m.type}</p>
+                </div>
+                <div
+                  className="text-xs font-semibold rounded-xl px-3 py-1.5"
+                  style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)", color: "#64748B" }}
+                >
+                  Costo: —
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div

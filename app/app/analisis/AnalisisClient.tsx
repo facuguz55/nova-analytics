@@ -6,8 +6,18 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, AreaChart, Area,
 } from "recharts";
-import { Loader2, Store, ArrowRight, Calendar, ChevronDown } from "lucide-react";
+import { Loader2, Store, ArrowRight, Calendar, ChevronDown, Check } from "lucide-react";
 import type { TNOrder } from "@/lib/tiendanube/client";
+
+// ── Currencies ───────────────────────────────────────────────────────────────
+const CURRENCIES = [
+  { code: "ARS", symbol: "$",  label: "Pesos arg." },
+  { code: "USD", symbol: "U$", label: "Dólar USA" },
+  { code: "EUR", symbol: "€",  label: "Euro" },
+  { code: "BRL", symbol: "R$", label: "Real bras." },
+  { code: "UYU", symbol: "$U", label: "Peso uru." },
+];
+const USD_TO_CURRENCY: Record<string, number> = { ARS: 1, USD: 1, EUR: 0.92, BRL: 5.0, UYU: 39 };
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,6 +28,7 @@ interface Props {
   since: string;
   until: string;
   activePreset: string;
+  usdRate: number;
   isConnected: boolean;
 }
 
@@ -35,11 +46,29 @@ const PRESETS = [
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const fmt = (n: number) => {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}k`;
-  return `$${n.toFixed(0)}`;
-};
+function makeFmt(currency: string, usdRate: number, redondeo: boolean) {
+  const cur = CURRENCIES.find((c) => c.code === currency);
+  const sym = cur?.symbol ?? "$";
+
+  return function fmt(arsAmount: number): string {
+    // Convertir
+    let val = arsAmount;
+    if (currency !== "ARS") {
+      const inUsd = arsAmount / usdRate;
+      val = currency === "USD" ? inUsd : inUsd * (USD_TO_CURRENCY[currency] ?? 1);
+    }
+
+    if (redondeo) {
+      if (Math.abs(val) >= 1_000_000) return `${sym}${(val / 1_000_000).toFixed(1)}M`;
+      if (Math.abs(val) >= 1_000)     return `${sym}${(val / 1_000).toFixed(0)}k`;
+      return `${sym}${Math.round(val)}`;
+    }
+    return `${sym}${new Intl.NumberFormat("es-AR", {
+      minimumFractionDigits: currency === "ARS" ? 0 : 2,
+      maximumFractionDigits: currency === "ARS" ? 0 : 2,
+    }).format(val)}`;
+  };
+}
 
 function filterByStatus(orders: TNOrder[], filter: StatusFilter): TNOrder[] {
   if (filter === "all") return orders;
@@ -130,18 +159,21 @@ function DateRangeSelector({
   const [customSince, setCustomSince] = useState(since);
   const [customUntil, setCustomUntil] = useState(until);
 
+  const today = new Date().toISOString().split("T")[0];
+  const isCustomActive = activePreset === "custom";
+
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      {/* Preset buttons */}
+      {/* Preset pills */}
       <div className="flex gap-0.5 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}>
         {PRESETS.map((p) => (
           <button
             key={p.key}
             onClick={() => { onChange(p.key); setShowCustom(false); }}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
             style={{
               background: activePreset === p.key && !showCustom ? "#7C3AED" : "transparent",
-              color: activePreset === p.key && !showCustom ? "#fff" : "#64748B",
+              color: activePreset === p.key && !showCustom ? "#fff" : "#94A3B8",
             }}
           >
             {p.label}
@@ -149,63 +181,112 @@ function DateRangeSelector({
         ))}
       </div>
 
-      {/* Custom date range */}
+      {/* Custom date range — chip + popover prolijo */}
       <div className="relative">
         <button
           onClick={() => setShowCustom(!showCustom)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
           style={{
-            background: showCustom || activePreset === "custom" ? "rgba(124,58,237,0.15)" : "rgba(124,58,237,0.06)",
-            border: `1px solid ${showCustom || activePreset === "custom" ? "rgba(124,58,237,0.4)" : "rgba(124,58,237,0.2)"}`,
-            color: showCustom || activePreset === "custom" ? "#8B5CF6" : "#64748B",
+            background: isCustomActive ? "#7C3AED" : showCustom ? "rgba(124,58,237,0.15)" : "rgba(124,58,237,0.06)",
+            border: `1px solid ${isCustomActive ? "#7C3AED" : showCustom ? "rgba(124,58,237,0.4)" : "rgba(124,58,237,0.2)"}`,
+            color: isCustomActive ? "#fff" : showCustom ? "#8B5CF6" : "#94A3B8",
           }}
         >
-          <Calendar size={12} strokeWidth={2} />
-          {activePreset === "custom" ? `${since} → ${until}` : "Personalizado"}
-          <ChevronDown size={11} strokeWidth={2} className={`transition-transform ${showCustom ? "rotate-180" : ""}`} />
+          <Calendar size={12} strokeWidth={2.5} />
+          {isCustomActive
+            ? <span className="font-bold">{since} → {until}</span>
+            : "Personalizado"}
+          <ChevronDown size={10} strokeWidth={2.5} className={`transition-transform ${showCustom ? "rotate-180" : ""}`} />
         </button>
 
         {showCustom && (
-          <div
-            className="absolute right-0 top-full mt-1.5 rounded-xl p-4 z-20 space-y-3"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)", minWidth: "240px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
-          >
-            <p className="text-xs font-bold text-[#F1F5F9]">Rango personalizado</p>
-            <div className="space-y-2">
-              <div>
-                <label className="block text-[10px] font-semibold text-[#64748B] uppercase tracking-widest mb-1">Desde</label>
-                <input
-                  type="date"
-                  value={customSince}
-                  onChange={(e) => setCustomSince(e.target.value)}
-                  className="w-full rounded-lg px-3 py-2 text-sm text-[#F1F5F9] outline-none"
-                  style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
-                />
+          <>
+            {/* Backdrop para cerrar al click fuera */}
+            <div
+              className="fixed inset-0 z-10"
+              onClick={() => setShowCustom(false)}
+            />
+
+            <div
+              className="absolute right-0 top-full mt-2 rounded-2xl overflow-hidden z-20"
+              style={{
+                background: "#111118",
+                border: "1px solid rgba(124,58,237,0.35)",
+                minWidth: "320px",
+                boxShadow: "0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.1)",
+              }}
+            >
+              {/* Header */}
+              <div
+                className="px-5 py-3 flex items-center gap-2"
+                style={{ borderBottom: "1px solid rgba(124,58,237,0.15)", background: "rgba(124,58,237,0.04)" }}
+              >
+                <Calendar size={14} color="#8B5CF6" strokeWidth={2.5} />
+                <p className="text-sm font-bold text-[#F1F5F9]">Rango personalizado</p>
               </div>
-              <div>
-                <label className="block text-[10px] font-semibold text-[#64748B] uppercase tracking-widest mb-1">Hasta</label>
-                <input
-                  type="date"
-                  value={customUntil}
-                  onChange={(e) => setCustomUntil(e.target.value)}
-                  className="w-full rounded-lg px-3 py-2 text-sm text-[#F1F5F9] outline-none"
-                  style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
-                />
+
+              {/* Body */}
+              <div className="p-5 space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-[#64748B] uppercase tracking-widest">Desde</label>
+                    <input
+                      type="date"
+                      value={customSince}
+                      max={customUntil || today}
+                      onChange={(e) => setCustomSince(e.target.value)}
+                      className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-[#F1F5F9] outline-none transition-all focus:border-purple-500"
+                      style={{
+                        background: "#0D0D12",
+                        border: "1px solid rgba(124,58,237,0.25)",
+                        colorScheme: "dark",
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-[#64748B] uppercase tracking-widest">Hasta</label>
+                    <input
+                      type="date"
+                      value={customUntil}
+                      min={customSince || undefined}
+                      max={today}
+                      onChange={(e) => setCustomUntil(e.target.value)}
+                      className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-[#F1F5F9] outline-none transition-all focus:border-purple-500"
+                      style={{
+                        background: "#0D0D12",
+                        border: "1px solid rgba(124,58,237,0.25)",
+                        colorScheme: "dark",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Botones */}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setShowCustom(false)}
+                    className="flex-1 rounded-xl py-2.5 text-xs font-semibold text-[#94A3B8] transition-all hover:text-[#F1F5F9]"
+                    style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)" }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (customSince && customUntil) {
+                        onChange("custom", customSince, customUntil);
+                        setShowCustom(false);
+                      }
+                    }}
+                    disabled={!customSince || !customUntil}
+                    className="flex-1 rounded-xl py-2.5 text-xs font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
+                    style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+                  >
+                    Aplicar
+                  </button>
+                </div>
               </div>
             </div>
-            <button
-              onClick={() => {
-                if (customSince && customUntil) {
-                  onChange("custom", customSince, customUntil);
-                  setShowCustom(false);
-                }
-              }}
-              className="w-full rounded-lg py-2 text-sm font-bold text-white transition-all hover:opacity-80"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
-            >
-              Aplicar
-            </button>
-          </div>
+          </>
         )}
       </div>
     </div>
@@ -214,7 +295,7 @@ function DateRangeSelector({
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function AnalisisClient({ initialOrders, since, until, activePreset, isConnected }: Props) {
+export default function AnalisisClient({ initialOrders, since, until, activePreset, usdRate, isConnected }: Props) {
   const router   = useRouter();
   const pathname = usePathname();
 
@@ -224,6 +305,20 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
   const [fullyLoaded,  setFullyLoaded]  = useState(initialOrders.length < 100);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("paid");
   const [fetchError,   setFetchError]   = useState(false);
+  const [currency,     setCurrency]     = useState("ARS");
+  const [showCurr,     setShowCurr]     = useState(false);
+  const [redondeo,     setRedondeo]     = useState(true);
+
+  // Sincronizar preferencias globales (Navbar)
+  useEffect(() => {
+    const r = localStorage.getItem("nova-redondeo");
+    if (r !== null) setRedondeo(r === "true");
+    function onR(e: Event) { setRedondeo((e as CustomEvent).detail); }
+    window.addEventListener("nova-redondeo-change", onR);
+    return () => window.removeEventListener("nova-redondeo-change", onR);
+  }, []);
+
+  const fmt = useMemo(() => makeFmt(currency, usdRate, redondeo), [currency, usdRate, redondeo]);
 
   // Carga progresiva
   const loadNextPage = useCallback(async (page: number) => {
@@ -323,12 +418,52 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
           <p className="text-sm text-[#94A3B8] mt-0.5">Evolución histórica y patrones de ventas</p>
         </div>
 
-        <DateRangeSelector
-          activePreset={activePreset}
-          since={since}
-          until={until}
-          onChange={handleRangeChange}
-        />
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Currency selector */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCurr(!showCurr)}
+              className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all hover:bg-[rgba(124,58,237,0.15)]"
+              style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.25)", color: "#8B5CF6" }}
+            >
+              {currency}
+              <ChevronDown size={11} strokeWidth={2.5} className={`transition-transform ${showCurr ? "rotate-180" : ""}`} />
+            </button>
+            {showCurr && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowCurr(false)} />
+                <div
+                  className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-20 py-1"
+                  style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)", minWidth: "160px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
+                >
+                  {CURRENCIES.map((c) => (
+                    <button
+                      key={c.code}
+                      onClick={() => { setCurrency(c.code); setShowCurr(false); }}
+                      className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold transition-colors hover:bg-[rgba(124,58,237,0.08)]"
+                      style={{ color: c.code === currency ? "#8B5CF6" : "#94A3B8" }}
+                    >
+                      <span>{c.code} — {c.label}</span>
+                      {c.code === currency && <Check size={11} strokeWidth={2.5} color="#7C3AED" />}
+                    </button>
+                  ))}
+                  {currency !== "ARS" && (
+                    <p className="px-4 py-1.5 text-[10px] text-[#475569] border-t" style={{ borderColor: "rgba(124,58,237,0.12)" }}>
+                      {currency === "USD" ? `1 USD = ${usdRate.toLocaleString("es-AR")} ARS` : "Tasa aprox. vs USD"}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          <DateRangeSelector
+            activePreset={activePreset}
+            since={since}
+            until={until}
+            onChange={handleRangeChange}
+          />
+        </div>
       </div>
 
       {/* Tabs de estado */}

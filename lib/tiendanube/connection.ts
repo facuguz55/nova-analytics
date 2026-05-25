@@ -49,7 +49,16 @@ export async function getTiendaNubeConnection(): Promise<TiendaNubeConnection | 
     return null;
   }
 
-  const accessToken = decrypt(integration.access_token_encrypted);
+  // Defensiva: si decrypt() falla (p.ej. ENCRYPTION_KEY mal configurada en
+  // Vercel, o token corrupto), no rompemos toda la página — devolvemos null.
+  let accessToken: string;
+  try {
+    accessToken = decrypt(integration.access_token_encrypted);
+  } catch (err) {
+    console.error("[tiendanube] decrypt failed:", err);
+    return null;
+  }
+
   return {
     opts: { accessToken, storeId: integration.store_id },
     storeName: integration.metadata?.store_name ?? null,

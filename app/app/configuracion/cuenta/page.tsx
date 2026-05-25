@@ -18,6 +18,13 @@ export default async function CuentaPage() {
   const userRow = rawUserRow as unknown as UserRow | null;
   const workspace = userRow?.workspaces ?? null;
 
+  // Detectar proveedor de auth (google, github, email, etc.)
+  // Si tiene identities con provider != "email", es OAuth y no puede cambiar password local.
+  const identities = (user as any).identities ?? [];
+  const providers: string[] = identities.map((i: any) => i.provider).filter(Boolean);
+  const isOAuthUser = providers.length > 0 && providers.every((p) => p !== "email");
+  const authProvider = providers[0] ?? "email";
+
   return (
     <CuentaClient
       user={{
@@ -27,6 +34,8 @@ export default async function CuentaPage() {
         avatar_url: userRow?.avatar_url ?? null,
         role: userRow?.role ?? "user",
         created_at: userRow?.created_at ?? user.created_at ?? "",
+        authProvider,
+        isOAuthUser,
       }}
       workspace={workspace ? {
         name: workspace.name,

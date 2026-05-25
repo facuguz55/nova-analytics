@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 
 type ChartPoint = { date: string; revenue: number; orders: number; profit: number };
 type Order = {
@@ -29,13 +30,15 @@ interface DashboardData {
 
 type ChartMode = "profit" | "revenue" | "orders";
 
-function fmt(n: number, redondeo: boolean) {
+function fmt(n: number, redondeo: boolean, currency = "ARS") {
   if (redondeo) {
-    if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
-    if (n >= 1000)    return `$${(n / 1000).toFixed(1)}K`;
+    if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000)     return `$${(n / 1_000).toFixed(1)}K`;
     return `$${Math.round(n)}`;
   }
-  return formatCurrency(n);
+  // Sin redondeo: número completo con separadores
+  const cur = currency === "USD" ? "USD" : "ARS";
+  return formatCurrency(n, cur as "ARS" | "USD");
 }
 
 function StatusDot({ status }: { status: string }) {
@@ -47,27 +50,33 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const [chartMode, setChartMode] = useState<ChartMode>("profit");
   const [redondeo, setRedondeo] = useState(true);
   const [currency, setCurrency] = useState("ARS");
+  const [modoSimple, setModoSimple] = useState(false);
 
   useEffect(() => {
     const r = localStorage.getItem("nova-redondeo");
     if (r !== null) setRedondeo(r === "true");
     const c = localStorage.getItem("nova-currency");
     if (c) setCurrency(c);
+    const s = localStorage.getItem("nova-modo-simple");
+    if (s !== null) setModoSimple(s === "true");
 
     function onRedondeo(e: Event) { setRedondeo((e as CustomEvent).detail); }
     function onCurrency(e: Event) { setCurrency((e as CustomEvent).detail); }
+    function onModo(e: Event)     { setModoSimple((e as CustomEvent).detail === "simple"); }
     window.addEventListener("nova-redondeo-change", onRedondeo);
     window.addEventListener("nova-currency-change", onCurrency);
+    window.addEventListener("nova-modo-change", onModo);
     return () => {
       window.removeEventListener("nova-redondeo-change", onRedondeo);
       window.removeEventListener("nova-currency-change", onCurrency);
+      window.removeEventListener("nova-modo-change", onModo);
     };
   }, []);
 
   // Conversión de moneda
   const rate = currency === "ARS" ? 1 : currency === "USD" ? 1 / data.usdRate : 1 / data.usdRate;
   function convert(n: number) { return n * rate; }
-  function fmtC(n: number)    { return fmt(convert(n), redondeo); }
+  function fmtC(n: number)    { return fmt(convert(n), redondeo, currency); }
 
   const now = new Date();
   const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
@@ -77,24 +86,86 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const chartColor = chartMode === "orders" ? "#2563EB" : chartMode === "profit" ? "#22c55e" : "#7C3AED";
   const isOrders   = chartMode === "orders";
 
-  // Métricas Tienda
+  // Métricas Tienda con labels dual (Pro/Simple) y tooltips explicativos
   const TIENDA_METRICS = [
-    { label: "Orders",      value: String(data.orders),                icon: ShoppingCart, color: "#2563EB" },
-    { label: "Revenue",     value: fmtC(data.revenue),                  icon: DollarSign,  color: "#7C3AED" },
-    { label: "AOV",         value: fmtC(data.aov),                      icon: TrendingUp,  color: "#8B5CF6" },
-    { label: "Net Profit",  value: fmtC(data.netProfit),                icon: BarChart2,   color: "#22c55e" },
-    { label: "Profit %",    value: `${data.profitPct.toFixed(1)}%`,     icon: Target,      color: "#f59e0b" },
-    { label: "Net Rev.",    value: fmtC(data.netRevenue),               icon: DollarSign,  color: "#e1691e" },
+    {
+      label: modoSimple ? "Pedidos"          : "Orders",
+      value: String(data.orders),
+      icon: ShoppingCart, color: "#2563EB",
+      tip:  "Cantidad total de órdenes recibidas en este período (incluye pagadas, pendientes y canceladas).",
+      tipSimple: "Cuántos pedidos te hicieron en total este mes.",
+    },
+    {
+      label: modoSimple ? "Ventas"           : "Revenue",
+      value: fmtC(data.revenue),
+      icon: DollarSign,  color: "#7C3AED",
+      tip:  "Facturación bruta de las órdenes pagas (incluye impuestos y antes de comisiones).",
+      tipSimple: "Plata total que entró por tus ventas, antes de descontar impuestos.",
+    },
+    {
+      label: modoSimple ? "Ticket promedio"  : "AOV",
+      value: fmtC(data.aov),
+      icon: TrendingUp,  color: "#8B5CF6",
+      tip:  "Average Order Value: Revenue ÷ cantidad de órdenes pagas. Indica cuánto gasta un cliente por compra.",
+      tipSimple: "Cuánto te gasta en promedio cada cliente en una compra.",
+    },
+    {
+      label: modoSimple ? "Ganancia neta"    : "Net Profit",
+      value: fmtC(data.netProfit),
+      icon: BarChart2,   color: "#22c55e",
+      tip:  "Net Revenue × (1 − fee de plataforma). Lo que te queda después de impuestos y comisiones de la plataforma.",
+      tipSimple: "La plata real que te queda después de pagar impuestos y comisiones.",
+    },
+    {
+      label: modoSimple ? "% Ganancia"       : "Profit %",
+      value: `${data.profitPct.toFixed(1)}%`,
+      icon: Target,      color: "#f59e0b",
+      tip:  "Net Profit ÷ Revenue × 100. Margen porcentual sobre tu facturación bruta.",
+      tipSimple: "Qué porcentaje de tus ventas se convierte en ganancia real.",
+    },
+    {
+      label: modoSimple ? "Sin impuestos"    : "Net Rev.",
+      value: fmtC(data.netRevenue),
+      icon: DollarSign,  color: "#e1691e",
+      tip:  "Net Revenue: Revenue ÷ (1 + IVA). Tu facturación sin impuestos.",
+      tipSimple: "Lo que ganaste sin contar el IVA que tenés que pagar.",
+    },
   ];
 
-  // Métricas Anuncios (placeholder hasta conectar Meta)
+  // Métricas Anuncios
   const ANUNCIOS_METRICS = [
-    { label: "Ad Spend",  value: "—", icon: DollarSign,  color: "#1877F2" },
-    { label: "MER",       value: "—", icon: BarChart2,   color: "#22c55e" },
-    { label: "ROAS",      value: "—", icon: TrendingUp,  color: "#8B5CF6" },
-    { label: "CPA",       value: "—", icon: Target,      color: "#f59e0b" },
-    { label: "Net AOV",   value: "—", icon: DollarSign,  color: "#e1691e" },
-    { label: "True CPA",  value: "—", icon: Zap,         color: "#2563EB" },
+    {
+      label: modoSimple ? "Inversión Ads" : "Ad Spend",
+      value: "—", icon: DollarSign,  color: "#1877F2",
+      tip:  "Cuánto gastaste en publicidad de Meta (Facebook + Instagram) en el período.",
+      tipSimple: "Plata que invertiste en publicidad de Facebook e Instagram.",
+    },
+    {
+      label: "MER", value: "—", icon: BarChart2,   color: "#22c55e",
+      tip:  "Marketing Efficiency Ratio: Revenue total ÷ Ad Spend total. Mide cuánto vendiste por cada peso invertido en ads.",
+      tipSimple: "Cuántas veces te volvió la plata que invertiste en publicidad.",
+    },
+    {
+      label: "ROAS", value: "—", icon: TrendingUp,  color: "#8B5CF6",
+      tip:  "Return on Ad Spend: Revenue atribuible a ads ÷ Ad Spend. Diferencia con MER: solo cuenta ventas que vinieron de los ads.",
+      tipSimple: "Por cada peso que invertís en ads, cuántos pesos te vuelven en ventas atribuibles.",
+    },
+    {
+      label: modoSimple ? "Costo x venta" : "CPA",
+      value: "—", icon: Target,      color: "#f59e0b",
+      tip:  "Cost Per Acquisition: Ad Spend ÷ órdenes generadas por ads.",
+      tipSimple: "Cuánto te cuesta conseguir un cliente nuevo desde los anuncios.",
+    },
+    {
+      label: "Net AOV", value: "—", icon: DollarSign,  color: "#e1691e",
+      tip:  "Ticket promedio neto de las ventas que vinieron de ads (sin impuestos ni comisiones).",
+      tipSimple: "Ticket promedio real de los clientes que vienen por publicidad.",
+    },
+    {
+      label: "True CPA", value: "—", icon: Zap,         color: "#2563EB",
+      tip:  "CPA ajustado a Net Profit: cuánto cuesta un cliente nuevo en relación a la ganancia neta que deja.",
+      tipSimple: "El costo real de cada cliente nuevo, considerando lo que te deja de ganancia.",
+    },
   ];
 
   return (
@@ -157,7 +228,10 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                 className="p-4 flex flex-col gap-1"
                 style={{ borderRight: i < TIENDA_METRICS.length - 1 ? "1px solid rgba(124,58,237,0.1)" : "none" }}>
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] text-[#64748B] font-medium">{m.label}</p>
+                  <div className="flex items-center gap-1">
+                    <p className="text-[11px] text-[#64748B] font-medium">{m.label}</p>
+                    <InfoTooltip text={m.tip} simpleText={m.tipSimple} size={11} />
+                  </div>
                   <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: `${m.color}15` }}>
                     <Icon size={11} color={m.color} strokeWidth={2} />
                   </div>

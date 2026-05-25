@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AnalisisClient from "./AnalisisClient";
+import { createClient } from "@/lib/supabase/server";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getOrders } from "@/lib/tiendanube/client";
 import type { TNOrder } from "@/lib/tiendanube/client";
@@ -64,6 +65,21 @@ export default async function AnalisisPage({
     until = range.until;
   }
 
+  // Obtener usd_rate del workspace
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  let usdRate = 1100;
+  if (user) {
+    const { data: rawUserRow } = await supabase
+      .from("users").select("workspace_id").eq("id", user.id).single();
+    const workspaceId = (rawUserRow as unknown as { workspace_id: string | null } | null)?.workspace_id;
+    if (workspaceId) {
+      const { data: rawCfg } = await supabase
+        .from("financial_config").select("usd_rate").eq("workspace_id", workspaceId).single();
+      usdRate = (rawCfg as unknown as { usd_rate: number } | null)?.usd_rate ?? 1100;
+    }
+  }
+
   const connection = await getTiendaNubeConnection();
 
   if (!connection) {
@@ -73,6 +89,7 @@ export default async function AnalisisPage({
         since={since}
         until={until}
         activePreset={activePreset}
+        usdRate={usdRate}
         isConnected={false}
       />
     );
@@ -91,6 +108,7 @@ export default async function AnalisisPage({
       since={since}
       until={until}
       activePreset={activePreset}
+      usdRate={usdRate}
       isConnected={true}
     />
   );

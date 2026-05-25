@@ -76,9 +76,14 @@ export default function TiendaClient({
     const val = convert(arsAmount);
     const cur = CURRENCIES.find((c) => c.code === currency);
     const sym = cur?.symbol ?? "$";
-    if (val >= 1_000_000) return `${sym}${(val / 1_000_000).toFixed(1)}M`;
-    if (val >= 1_000)     return `${sym}${(val / 1_000).toFixed(0)}k`;
-    return `${sym}${val.toFixed(currency === "ARS" ? 0 : 2)}`;
+
+    // ARS: número completo con separadores ($1.740.000)
+    if (currency === "ARS") {
+      return `${sym}${new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 }).format(val)}`;
+    }
+
+    // Otras monedas: dos decimales con separador
+    return `${sym}${new Intl.NumberFormat("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val)}`;
   }
 
   const paidOrders  = allOrders.filter((o) => o.payment_status === "paid" || o.status === "closed");

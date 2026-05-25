@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search, ChevronDown, DollarSign, LayoutGrid, X } from "lucide-react";
+import { Bell, Search, ChevronDown, DollarSign, LayoutGrid, X, Sparkles, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -36,6 +36,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
   const [searchQ,    setSearchQ]        = useState("");
   const [showSecciones, setShowSecciones] = useState(false);
   const [redondeo,   setRedondeo]       = useState(true);
+  const [modoSimple, setModoSimple]     = useState(false);
   const [selected,   setSelected]       = useState(0);
   const inputRef     = useRef<HTMLInputElement>(null);
   const seccionesRef = useRef<HTMLDivElement>(null);
@@ -50,10 +51,16 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
       )
     : SEARCH_ITEMS.slice(0, 8);
 
-  // Persistir redondeo
+  // Persistir preferencias
   useEffect(() => {
     const r = localStorage.getItem("nova-redondeo");
     if (r !== null) setRedondeo(r === "true");
+    const s = localStorage.getItem("nova-modo-simple");
+    if (s !== null) {
+      const v = s === "true";
+      setModoSimple(v);
+      document.documentElement.setAttribute("data-modo", v ? "simple" : "pro");
+    }
   }, []);
 
   // Abrir con Ctrl+K / ⌘K
@@ -96,6 +103,14 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
     setRedondeo(next);
     localStorage.setItem("nova-redondeo", String(next));
     window.dispatchEvent(new CustomEvent("nova-redondeo-change", { detail: next }));
+  }
+
+  function toggleModoSimple() {
+    const next = !modoSimple;
+    setModoSimple(next);
+    localStorage.setItem("nova-modo-simple", String(next));
+    document.documentElement.setAttribute("data-modo", next ? "simple" : "pro");
+    window.dispatchEvent(new CustomEvent("nova-modo-change", { detail: next ? "simple" : "pro" }));
   }
 
   // Cerrar Secciones al click fuera
@@ -156,6 +171,35 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
                 className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-50 py-2"
                 style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", minWidth: "190px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
               >
+                <p className="px-4 py-1.5 text-[10px] font-semibold tracking-widest text-[#475569] uppercase">MODO DE VISTA</p>
+
+                {/* Modo Simple/Pro */}
+                <div className="flex items-center justify-between px-4 py-2.5">
+                  <div className="flex items-center gap-2.5">
+                    {modoSimple
+                      ? <GraduationCap size={13} strokeWidth={2} color="#22c55e" />
+                      : <Sparkles size={13} strokeWidth={2} color="#8B5CF6" />}
+                    <div>
+                      <p className="text-xs font-semibold text-[#F1F5F9]">{modoSimple ? "Modo Simple" : "Modo Pro"}</p>
+                      <p className="text-[10px] text-[#475569]">
+                        {modoSimple ? "Términos en español, sin jerga" : "Métricas técnicas completas"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={toggleModoSimple}
+                    className="relative flex-shrink-0 rounded-full transition-all duration-200"
+                    style={{ width: "32px", height: "18px", background: modoSimple ? "#22c55e" : "#7C3AED" }}
+                  >
+                    <span
+                      className="absolute top-0.5 rounded-full bg-white transition-all duration-200"
+                      style={{ width: "14px", height: "14px", left: modoSimple ? "15px" : "2px" }}
+                    />
+                  </button>
+                </div>
+
+                <div className="mx-3 my-1 h-px" style={{ background: "rgba(124,58,237,0.12)" }} />
+
                 <p className="px-4 py-1.5 text-[10px] font-semibold tracking-widest text-[#475569] uppercase">PREFERENCIAS</p>
 
                 {/* Redondeo toggle */}

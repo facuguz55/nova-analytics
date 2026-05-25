@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
+import FloatingAI from "@/components/layout/FloatingAI";
 import PaywallCard from "@/components/paywall/PaywallCard";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -63,7 +64,10 @@ export default async function DashboardLayout({
               <PaywallCard />
             </div>
           ) : (
-            children
+            <>
+              {children}
+              <FloatingAI />
+            </>
           )}
         </main>
       </div>

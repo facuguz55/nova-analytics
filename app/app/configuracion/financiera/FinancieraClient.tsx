@@ -49,51 +49,52 @@ export default function FinancieraClient({ config }: { config: Config }) {
 
   const fields = [
     {
-      label: "Tipo de cambio USD",
+      label: "Cotización USD aplicada",
       name: "usd_rate",
       value: live.usd_rate,
-      suffix: "ARS / USD",
-      description: "Convierte métricas de Meta Ads (USD) a pesos argentinos",
+      suffix: "ARS por 1 USD",
+      description: "Valor de 1 dólar en pesos. Ej: si ponés 1200, significa 1 USD = $1.200 ARS. Lo usamos para convertir el gasto de Meta Ads (en USD) a tu moneda.",
       icon: DollarSign,
       iconColor: "#22c55e",
       step: "1",
       placeholder: "1200",
     },
     {
-      label: "IVA / Impuesto",
+      label: "IVA / Impuesto sobre ventas",
       name: "tax_rate",
       value: live.tax_rate,
-      suffix: "%",
-      description: "Porcentaje de impuesto incluido en el precio de venta",
+      suffix: "% del precio",
+      description: "Porcentaje de IVA incluido en tus precios de venta. En Argentina suele ser 21%. Si vendés solo a consumidor final, dejá 0.",
       icon: Percent,
       iconColor: "#f59e0b",
       step: "0.1",
       placeholder: "21",
     },
     {
-      label: "Comisión plataforma",
+      label: "Comisión global de plataforma",
       name: "platform_fee",
       value: live.platform_fee,
-      suffix: "%",
-      description: "Fee que cobra TiendaNube u otra plataforma sobre cada venta",
+      suffix: "% de la venta",
+      description: "Fee fijo extra sobre cada venta (ej. mensualidad de TiendaNube prorrateada o comisión de un marketplace). Dejá 0 si solo usás MercadoPago/PagoNube — esas comisiones se configuran aparte en la tab Comisiones.",
       icon: Percent,
       iconColor: "#7C3AED",
       step: "0.1",
-      placeholder: "2",
+      placeholder: "0",
     },
   ];
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 space-y-6">
 
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
-            Configuración financiera
+            Parámetros generales
           </h1>
-          <p className="text-sm text-[#94A3B8] mt-1">
-            Parámetros que se usan en los cálculos de rentabilidad, margen neto y ROAS real.
+          <p className="text-sm text-[#94A3B8] mt-1 max-w-2xl">
+            Configurá los tres valores base que se usan en TODOS los cálculos: cotización del dólar, IVA y comisión global de plataforma.
+            Después podés afinar comisiones de pago y costos extras en las otras pestañas.
           </p>
         </div>
         <div
@@ -105,10 +106,10 @@ export default function FinancieraClient({ config }: { config: Config }) {
         </div>
       </div>
 
-      <form ref={formRef} action={handleSubmit} className="space-y-8">
+      <form ref={formRef} action={handleSubmit} className="space-y-6">
 
-        {/* Campos */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        {/* Campos — 3 columnas (1 por cada parámetro) para que ocupen toda la pantalla */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {fields.map((f) => (
             <div
               key={f.name}

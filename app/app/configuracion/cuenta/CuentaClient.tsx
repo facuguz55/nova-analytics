@@ -16,7 +16,18 @@ interface UserData {
   avatar_url: string | null;
   role: string;
   created_at: string;
+  authProvider: string;
+  isOAuthUser: boolean;
 }
+
+const PROVIDER_LABELS: Record<string, string> = {
+  google:   "Google",
+  github:   "GitHub",
+  azure:    "Microsoft",
+  facebook: "Facebook",
+  apple:    "Apple",
+  email:    "Email + contraseña",
+};
 
 interface WorkspaceData {
   name: string;
@@ -191,22 +202,40 @@ export default function CuentaClient({ user, workspace }: Props) {
 
       {/* Seguridad — contraseña */}
       <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
-        <div className="px-6 py-4 flex items-center justify-between cursor-pointer"
-          style={{ borderBottom: showPasswordForm ? "1px solid rgba(124,58,237,0.12)" : "none" }}
-          onClick={() => setShowPasswordForm(!showPasswordForm)}>
+        <div
+          className="px-6 py-4 flex items-center justify-between"
+          style={{
+            borderBottom: showPasswordForm && !user.isOAuthUser ? "1px solid rgba(124,58,237,0.12)" : "none",
+            cursor: user.isOAuthUser ? "default" : "pointer",
+          }}
+          onClick={() => { if (!user.isOAuthUser) setShowPasswordForm(!showPasswordForm); }}
+        >
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(124,58,237,0.1)" }}>
               <Lock size={15} color="#8B5CF6" strokeWidth={2} />
             </div>
             <div>
               <p className="text-sm font-semibold text-[#F1F5F9]">Contraseña</p>
-              <p className="text-xs text-[#64748B]">Cambiá o establecé tu contraseña de acceso</p>
+              <p className="text-xs text-[#64748B]">
+                {user.isOAuthUser
+                  ? `Tu cuenta usa ${PROVIDER_LABELS[user.authProvider] ?? user.authProvider}. Gestioná tu contraseña desde ahí.`
+                  : "Cambiá o establecé tu contraseña de acceso"}
+              </p>
             </div>
           </div>
-          <span className="text-xs text-[#7C3AED] font-semibold">{showPasswordForm ? "Cancelar" : "Cambiar"}</span>
+          {user.isOAuthUser ? (
+            <span
+              className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+              style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}
+            >
+              {PROVIDER_LABELS[user.authProvider] ?? user.authProvider}
+            </span>
+          ) : (
+            <span className="text-xs text-[#7C3AED] font-semibold">{showPasswordForm ? "Cancelar" : "Cambiar"}</span>
+          )}
         </div>
 
-        {showPasswordForm && (
+        {showPasswordForm && !user.isOAuthUser && (
           <div className="p-6 space-y-4">
             <div className="space-y-2">
               <label className="text-xs font-semibold text-[#94A3B8] uppercase tracking-widest">Nueva contraseña</label>
