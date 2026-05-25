@@ -1,81 +1,87 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { createServiceClient } from "@/lib/supabase/service";
+import { decrypt } from "@/lib/encryption";
 import MailsClient from "./MailsClient";
 
 export const metadata: Metadata = { title: "Mails" };
 
-interface MailRow {
+interface GmailMessage {
   id: string;
-  thread_id: string;
-  de: string;
-  nombre: string;
-  asunto: string;
-  cuerpo: string;
-  fecha: string;
-  leido: boolean;
-  categoria: string;
-  resumen: string;
-  respuesta_sugerida: string;
-  respondido: boolean;
+  threadId: string;
+  snippet: string;
+  labelIds?: string[];
+  payload?: { headers: Array<{ name: string; value: string }> };
+  internalDate?: string;
+}
+
+async function fetchInbox(accessToken: string): Promise<GmailMessage[]> {
+  try {
+    const listRes = await fetch(
+      "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=50&labelIds=INBOX",
+      { headers: { Authorization: `Bearer ${accessToken}` }, next: { revalidate: 60 } }
+    );
+    if (!listRes.ok) return [];
+    const { messages } = await listRes.json() as { messages?: Array<{ id: string; threadId: string }> };
+    if (!messages?.length) return [];
+
+    const details = await Promise.all(
+      messages.map((m) =>
+        fetch(
+          `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date&metadataHeaders=To`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        ).then((r) => r.ok ? r.json() : null)
+      )
+    );
+    return details.filter(Boolean) as GmailMessage[];
+  } catch {
+    return [];
+  }
 }
 
 export default async function MailsPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  const service = createServiceClient();
+  type IntRow = { access_token_encrypted: string | null; status: string; metadata: Record<string, string> | null };
+  const { data: rawIntegration } = await supabase
+    .from("integrations")
+    .select("access_token_encrypted, status, metadata")
+    .eq("provider", "gmail")
+    .maybeSingle();
+  const integration = rawIntegration as unknown as IntRow | null;
 
-  // Obtener workspace_id
-  const { data: userRow } = user
-    ? await service.from("users").select("workspace_id").eq("id", user.id).single()
-    : { data: null };
-  const workspaceId = (userRow as { workspace_id: string } | null)?.workspace_id;
+  const isConnected = integration?.status === "active" && !!integration?.access_token_encrypted;
+  let messages: GmailMessage[] = [];
+  let gmailEmail = "";
 
-  // Verificar si Gmail está conectado
-  const { data: gmailRaw } = workspaceId
-    ? await service
-        .from("integrations")
-        .select("status, metadata")
-        .eq("workspace_id", workspaceId)
-        .eq("provider", "gmail")
-        .maybeSingle()
-    : { data: null };
+  if (isConnected && integration?.access_token_encrypted) {
+    try {
+      const accessToken = decrypt(integration.access_token_encrypted);
+      gmailEmail = integration.metadata?.email ?? "";
+      messages = await fetchInbox(accessToken);
+    } catch { /* token expirado */ }
+  }
 
-  const gmail = gmailRaw as { status: string; metadata: { email?: string } | null } | null;
-  const isConnected = gmail?.status === "active";
-  const gmailEmail = gmail?.metadata?.email ?? "";
+  function getHeader(msg: GmailMessage, name: string) {
+    return msg.payload?.headers?.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ?? "";
+  }
 
-  // Cargar mails desde la DB
-  const { data: rawMails } = workspaceId && isConnected
-    ? await service
-        .from("mails")
-        .select("id, thread_id, de, nombre, asunto, cuerpo, fecha, leido, categoria, resumen, respuesta_sugerida, respondido")
-        .eq("workspace_id", workspaceId)
-        .order("fecha", { ascending: false })
-        .limit(50)
-    : { data: [] };
-
-  const mails = ((rawMails ?? []) as unknown as MailRow[]).map((r) => ({
-    id: r.id,
-    threadId: r.thread_id,
-    de: r.de ?? "",
-    nombre: r.nombre ?? "",
-    asunto: r.asunto ?? "(Sin asunto)",
-    cuerpo: r.cuerpo ?? "",
-    fecha: r.fecha ?? new Date().toISOString(),
-    leido: r.leido ?? false,
-    categoria: r.categoria ?? "info",
-    resumen: r.resumen ?? "",
-    respuestaSugerida: r.respuesta_sugerida ?? "",
-    respondido: r.respondido ?? false,
+  const formattedMessages = messages.map((msg) => ({
+    id: msg.id,
+    threadId: msg.threadId,
+    from: getHeader(msg, "From"),
+    to: getHeader(msg, "To"),
+    subject: getHeader(msg, "Subject") || "(Sin asunto)",
+    date: getHeader(msg, "Date"),
+    snippet: msg.snippet ?? "",
+    isUnread: msg.labelIds?.includes("UNREAD") ?? false,
+    internalDate: msg.internalDate ?? "0",
   }));
 
   return (
     <MailsClient
       isConnected={isConnected}
       gmailEmail={gmailEmail}
-      mails={mails}
+      messages={formattedMessages}
     />
   );
 }
