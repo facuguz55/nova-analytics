@@ -36,7 +36,16 @@ export default async function DashboardLayout({
 
   const isSuperAdmin = userRow?.role === "super_admin";
   const plan = workspace?.plan ?? "free";
-  const isLocked = !isSuperAdmin && !["trial", "active", "pro", "agency"].includes(plan);
+
+  // Verificar si el trial venció
+  const trialStartedAt = (workspace as unknown as { trial_started_at?: string | null } | null)?.trial_started_at ?? null;
+  const trialExpired = plan === "trial" && trialStartedAt
+    ? Date.now() > new Date(trialStartedAt).getTime() + 14 * 86_400_000
+    : false;
+
+  const isLocked = !isSuperAdmin && (
+    !["trial", "active", "pro", "agency"].includes(plan) || trialExpired
+  );
 
   const alerts = alertCount ?? 0;
 
