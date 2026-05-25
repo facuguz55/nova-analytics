@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   description:
     "Dashboard de analytics para e-commerce. TiendaNube, Meta Ads y Gmail en un solo lugar.",
   metadataBase: new URL("https://analytics.novaagency.info"),
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     type: "website",
     locale: "es_AR",
@@ -25,12 +30,14 @@ export const metadata: Metadata = {
     title: "Nova Analytics — Dashboard inteligente para e-commerce",
     description:
       "Centralizá TiendaNube, Meta Ads y Gmail en un solo dashboard con IA integrada.",
+    images: [{ url: "/logo.png", width: 512, height: 512, alt: "Nova Analytics" }],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/logo.png"],
   },
   robots: {
-    index: false, // SaaS — no indexable
+    index: false,
     follow: false,
   },
 };
