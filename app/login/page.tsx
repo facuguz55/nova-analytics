@@ -8,6 +8,62 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Suspense } from "react";
 
+function ForgotPassword() {
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [email, setEmail] = useState("");
+  const [open, setOpen] = useState(false);
+
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) { toast.error("Ingresá tu email"); return; }
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
+    });
+    setLoading(false);
+    if (error) { toast.error("Error al enviar el email"); return; }
+    setSent(true);
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-sm text-[#94A3B8] hover:text-[#8B5CF6] transition-colors"
+      >
+        Olvidaste tu contraseña?
+      </button>
+    );
+  }
+
+  if (sent) {
+    return <p className="text-sm text-[#22c55e] text-center">¡Listo! Revisá tu email para el link de recuperación.</p>;
+  }
+
+  return (
+    <form onSubmit={handleReset} className="w-full flex flex-col gap-2">
+      <input
+        type="email"
+        placeholder="tu@email.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7C3AED] transition-colors"
+      />
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full flex items-center justify-center gap-2 border border-[rgba(124,58,237,0.4)] hover:border-[#7C3AED] text-[#8B5CF6] py-2.5 rounded-xl text-sm font-semibold transition-all"
+      >
+        {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+        {loading ? "Enviando..." : "Enviar link de recuperación"}
+      </button>
+    </form>
+  );
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -145,12 +201,15 @@ function LoginForm() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-[#94A3B8] mt-6">
-            No tenes cuenta?{" "}
-            <Link href="/register" className="text-[#8B5CF6] hover:text-white font-medium transition-colors">
-              Crear cuenta gratis
-            </Link>
-          </p>
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <ForgotPassword />
+            <p className="text-sm text-[#94A3B8]">
+              No tenes cuenta?{" "}
+              <Link href="/register" className="text-[#8B5CF6] hover:text-white font-medium transition-colors">
+                Crear cuenta gratis
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
