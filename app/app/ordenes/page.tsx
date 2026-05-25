@@ -8,7 +8,8 @@ import {
   ShoppingCart, DollarSign, TrendingUp, ArrowRight,
   AlertTriangle, Store,
 } from "lucide-react";
-import DateRangeSelector, { presetToDates, type Preset } from "./DateRangeSelector";
+import DateRangeSelector from "./DateRangeSelector";
+import { presetToDates, type Preset } from "./date-utils";
 
 export const metadata: Metadata = { title: "Órdenes" };
 
