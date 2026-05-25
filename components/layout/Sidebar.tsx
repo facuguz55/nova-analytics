@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Bot, Bell, Store, BarChart2,
@@ -10,6 +10,7 @@ import {
   Megaphone, Mail, Plug, DollarSign, User,
   ChevronLeft, ChevronRight, Zap, LogOut,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const NAV_SECTIONS = [
   {
@@ -17,15 +18,15 @@ const NAV_SECTIONS = [
     items: [
       { href: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/app/ia", label: "IA Assistant", icon: Bot, accent: "#8B5CF6" },
-      { href: "/app/alertas", label: "Alertas", icon: Bell, badge: 3 },
+      { href: "/app/alertas", label: "Alertas", icon: Bell },
     ],
   },
   {
     label: "TIENDA",
     items: [
       { href: "/app/tienda", label: "Tienda Web", icon: Store },
-      { href: "/app/analisis", label: "Analisis", icon: BarChart2 },
-      { href: "/app/ordenes", label: "Ordenes", icon: ShoppingCart },
+      { href: "/app/analisis", label: "Análisis", icon: BarChart2 },
+      { href: "/app/ordenes", label: "Órdenes", icon: ShoppingCart },
       { href: "/app/productos", label: "Productos / Stock", icon: Package },
       { href: "/app/clientes", label: "Clientes", icon: Users },
       { href: "/app/rentabilidad", label: "Rentabilidad", icon: TrendingUp },
@@ -35,17 +36,17 @@ const NAV_SECTIONS = [
     label: "MARKETING",
     items: [
       { href: "/app/meta-ads", label: "Meta Ads", icon: Target },
-      { href: "/app/campanas", label: "Campanas", icon: Megaphone },
+      { href: "/app/campanas", label: "Campañas", icon: Megaphone },
     ],
   },
   {
-    label: "COMUNICACION",
+    label: "COMUNICACIÓN",
     items: [
       { href: "/app/mails", label: "Mails", icon: Mail },
     ],
   },
   {
-    label: "CONFIGURACION",
+    label: "CONFIGURACIÓN",
     items: [
       { href: "/app/configuracion/integraciones", label: "Integraciones", icon: Plug },
       { href: "/app/configuracion/financiera", label: "Config. Financiera", icon: DollarSign },
@@ -54,9 +55,40 @@ const NAV_SECTIONS = [
   },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  userName: string;
+  userEmail: string;
+  avatarUrl: string | null;
+  workspaceName: string;
+  workspacePlan: string;
+  activeProviders: string[];
+  alertCount?: number;
+}
+
+export default function Sidebar({
+  userName,
+  userEmail,
+  workspaceName,
+  workspacePlan,
+  alertCount = 0,
+}: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const initials = userName
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("") || "U";
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
 
   return (
     <aside
@@ -72,17 +104,12 @@ export default function Sidebar() {
         className="flex items-center gap-3 px-4 py-5 flex-shrink-0"
         style={{ borderBottom: "1px solid rgba(124,58,237,0.15)", minHeight: "64px" }}
       >
-        <div
-          className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#2563EB] flex items-center justify-center flex-shrink-0"
-        >
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#2563EB] flex items-center justify-center flex-shrink-0">
           <Zap className="w-4 h-4 text-white" />
         </div>
         {!collapsed && (
           <div className="overflow-hidden">
-            <p
-              className="font-bold leading-none tracking-tight truncate text-[#F1F5F9]"
-              style={{ fontSize: "15px" }}
-            >
+            <p className="font-bold leading-none tracking-tight truncate text-[#F1F5F9]" style={{ fontSize: "15px" }}>
               Nova Analytics
             </p>
             <p className="text-[11px] text-[#94A3B8] mt-0.5">Dashboard</p>
@@ -141,23 +168,15 @@ export default function Sidebar() {
                           style={{ width: "3px", height: "20px", background: activeColor }}
                         />
                       )}
-                      <Icon
-                        size={16}
-                        strokeWidth={isActive ? 2.5 : 2}
-                        className="flex-shrink-0"
-                        color={isActive ? activeColor : undefined}
-                      />
+                      <Icon size={16} strokeWidth={isActive ? 2.5 : 2} className="flex-shrink-0" color={isActive ? activeColor : undefined} />
                       {!collapsed && (
                         <>
-                          <span
-                            className="flex-1 truncate text-sm"
-                            style={{ fontWeight: isActive ? 600 : 400 }}
-                          >
+                          <span className="flex-1 truncate text-sm" style={{ fontWeight: isActive ? 600 : 400 }}>
                             {item.label}
                           </span>
-                          {"badge" in item && item.badge ? (
+                          {item.href === "/app/alertas" && alertCount > 0 ? (
                             <span className="flex-shrink-0 text-white rounded-full flex items-center justify-center bg-[#7C3AED] text-[10px] font-bold px-1 min-w-[18px] h-[18px]">
-                              {item.badge}
+                              {alertCount > 9 ? "9+" : alertCount}
                             </span>
                           ) : null}
                         </>
@@ -172,10 +191,7 @@ export default function Sidebar() {
       </nav>
 
       {/* User info */}
-      <div
-        className="flex-shrink-0 p-3"
-        style={{ borderTop: "1px solid rgba(124,58,237,0.15)" }}
-      >
+      <div className="flex-shrink-0 p-3" style={{ borderTop: "1px solid rgba(124,58,237,0.15)" }}>
         <div
           className={cn(
             "flex items-center gap-3 rounded-xl p-2.5 transition-colors cursor-pointer group",
@@ -187,20 +203,32 @@ export default function Sidebar() {
             className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-xs"
             style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
           >
-            NA
+            {initials}
           </div>
           {!collapsed && (
             <div className="flex-1 overflow-hidden">
-              <p className="text-[13px] font-semibold text-[#F1F5F9] truncate">Nova Agency</p>
-              <p className="text-[11px] text-[#94A3B8] truncate">Plan Pro</p>
+              <p className="text-[13px] font-semibold text-[#F1F5F9] truncate">{workspaceName}</p>
+              <p className="text-[11px] truncate capitalize" style={{
+                color: workspacePlan === "active" ? "#22c55e" : workspacePlan === "trial" ? "#f59e0b" : "#64748B"
+              }}>
+                {workspacePlan === "active" ? "Plan activo" : workspacePlan === "trial" ? "Prueba gratuita" : "Sin plan activo"}
+              </p>
             </div>
           )}
           {!collapsed && (
-            <button className="text-[#94A3B8] hover:text-white transition-colors opacity-0 group-hover:opacity-100">
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="text-[#94A3B8] hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+              title="Cerrar sesión"
+            >
               <LogOut className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
+        {!collapsed && (
+          <p className="text-[10px] text-[#64748B] truncate mt-1 px-2.5">{userEmail}</p>
+        )}
       </div>
 
       {/* Collapse toggle */}
@@ -222,4 +250,3 @@ export default function Sidebar() {
     </aside>
   );
 }
-

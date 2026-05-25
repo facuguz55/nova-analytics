@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
+import PaywallCard from "@/components/paywall/PaywallCard";
+import { Analytics } from "@vercel/analytics/next";
 
 export default async function DashboardLayout({
   children,
@@ -15,9 +17,10 @@ export default async function DashboardLayout({
   type UserRow = { name: string | null; email: string; avatar_url: string | null; workspaces: { id: string; name: string; plan: string; status: string } | null };
   type IntRow = { provider: string; status: string };
 
-  const [{ data: rawUserRow }, { data: rawIntegrations }] = await Promise.all([
+  const [{ data: rawUserRow }, { data: rawIntegrations }, { count: alertCount }] = await Promise.all([
     supabase.from("users").select("*, workspaces(id, name, plan, status)").eq("id", user.id).single(),
     supabase.from("integrations").select("provider, status").eq("status", "active"),
+    supabase.from("alerts").select("id", { count: "exact", head: true }).eq("read", false),
   ]);
 
   const userRow = rawUserRow as unknown as UserRow | null;
@@ -26,6 +29,13 @@ export default async function DashboardLayout({
 
   const activeProviders = new Set(integrations.map((i) => i.provider));
 
+  const superAdmins = (process.env.SUPER_ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
+  const isSuperAdmin = superAdmins.includes(user.email ?? "");
+  const plan = workspace?.plan ?? "free";
+  const isLocked = !isSuperAdmin && plan !== "trial" && plan !== "active";
+
+  const alerts = alertCount ?? 0;
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#0a0a0f]">
       <Sidebar
@@ -33,18 +43,33 @@ export default async function DashboardLayout({
         userEmail={userRow?.email ?? user.email ?? ""}
         avatarUrl={userRow?.avatar_url ?? null}
         workspaceName={workspace?.name ?? "Mi Tienda"}
-        workspacePlan={workspace?.plan ?? "free"}
+        workspacePlan={plan}
         activeProviders={Array.from(activeProviders)}
+        alertCount={alerts}
       />
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Navbar
           userName={userRow?.name ?? user.email?.split("@")[0] ?? "Usuario"}
           avatarUrl={userRow?.avatar_url ?? null}
+          alertCount={alerts}
         />
-        <main className="flex-1 overflow-y-auto bg-[#0a0a0f]">
-          {children}
+        <main className="relative flex-1 overflow-y-auto bg-[#0a0a0f]">
+          {isLocked && (
+            <>
+              {/* Preview borroso */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" style={{ filter: "blur(6px)", opacity: 0.35 }}>
+                {children}
+              </div>
+              {/* Overlay paywall */}
+              <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "rgba(10,10,15,0.7)" }}>
+                <PaywallCard />
+              </div>
+            </>
+          )}
+          {!isLocked && children}
         </main>
       </div>
+      <Analytics />
     </div>
   );
 }

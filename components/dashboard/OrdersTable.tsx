@@ -1,25 +1,32 @@
 ﻿"use client";
 
 import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 
-const ORDERS = [
-  { id: "#3961", customer: "Miguel Gonzalez", product: "Zapatillas Nike Air Max — Talle 42", date: "23/5 · 11:12", amount: 78788, status: "paid" },
-  { id: "#3960", customer: "Virginia Wells", product: "Zapatillas Adidas Ultraboost — Talle 39", date: "23/5 · 10:51", amount: 73500, status: "paid" },
-  { id: "#3959", customer: "Nazareno Gonzalez", product: "Campera The North Face — Talle M", date: "22/5 · 10:41", amount: 99000, status: "paid" },
-  { id: "#3958", customer: "Thomas Barrera", product: "Campera The North Face — Talle L", date: "22/5 · 06:38", amount: 99000, status: "paid" },
-  { id: "#3957", customer: "Joaquin Heredia", product: "Remera Oversize Premium — Talle XL", date: "22/5 · 01:47", amount: 29800, status: "pending" },
-  { id: "#3956", customer: "Sonia Anglada", product: "Buzo Canguro Unisex — Talle S", date: "21/5 · 09:30", amount: 45000, status: "paid" },
-  { id: "#3955", customer: "Erica Hoffmann", product: "Jean Slim Fit — Talle 30", date: "21/5 · 11:02", amount: 67900, status: "paid" },
-  { id: "#3953", customer: "Matias Albarracin", product: "Remera Oversize Premium — Talle M", date: "21/5 · 09:06", amount: 29800, status: "cancelled" },
-  { id: "#3952", customer: "Laura Diaz", product: "Zapatillas Puma RS-X — Talle 37", date: "20/5 · 16:22", amount: 58400, status: "paid" },
-  { id: "#3951", customer: "Rodrigo Mendoza", product: "Pantalon Cargo — Talle 34", date: "20/5 · 14:55", amount: 54200, status: "pending" },
-];
+export interface OrderRow {
+  id: string;
+  external_id: string;
+  customer_name: string | null;
+  customer_email: string | null;
+  total: number;
+  status: string | null;
+  created_at: string | null;
+}
 
-const STATUS: Record<string, { bg: string; color: string; label: string; border: string }> = {
-  paid:      { bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.3)",  color: "#22c55e", label: "Pagado"    },
-  pending:   { bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.3)", color: "#f59e0b", label: "Pendiente" },
-  cancelled: { bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.3)",  color: "#ef4444", label: "Cancelado" },
+const STATUS_MAP: Record<string, { bg: string; color: string; label: string; border: string }> = {
+  paid:         { bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.3)",  color: "#22c55e", label: "Pagado"    },
+  pending:      { bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.3)", color: "#f59e0b", label: "Pendiente" },
+  cancelled:    { bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.3)",  color: "#ef4444", label: "Cancelado" },
+  refunded:     { bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.3)",  color: "#ef4444", label: "Reembolsado" },
+  abandoned:    { bg: "rgba(100,116,139,0.1)", border: "rgba(100,116,139,0.3)", color: "#64748B", label: "Abandonado" },
+  open:         { bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.3)", color: "#f59e0b", label: "Abierta"   },
+  closed:       { bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.3)",  color: "#22c55e", label: "Cerrada"   },
 };
+
+function getStatus(s: string | null) {
+  if (!s) return STATUS_MAP["pending"];
+  return STATUS_MAP[s] ?? { bg: "rgba(100,116,139,0.1)", border: "rgba(100,116,139,0.3)", color: "#64748B", label: s };
+}
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("es-AR", {
@@ -28,7 +35,18 @@ const fmt = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
-export default function OrdersTable() {
+function fmtDate(d: string | null) {
+  if (!d) return "—";
+  const date = new Date(d);
+  return date.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" }) + " · " + date.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+}
+
+interface OrdersTableProps {
+  orders?: OrderRow[];
+}
+
+export default function OrdersTable({ orders }: OrdersTableProps) {
+  const rows = orders ?? [];
   return (
     <div
       className="rounded-2xl overflow-hidden"
@@ -44,7 +62,8 @@ export default function OrdersTable() {
           </h3>
           <p className="text-xs text-[#94A3B8] mt-0.5">Mayo 2026</p>
         </div>
-        <button
+        <Link
+          href="/app/ordenes"
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
           style={{
             color: "#8B5CF6",
@@ -54,7 +73,7 @@ export default function OrdersTable() {
         >
           Ver todas
           <ExternalLink size={11} strokeWidth={2.5} />
-        </button>
+        </Link>
       </div>
 
       <div className="overflow-x-auto">
@@ -72,13 +91,19 @@ export default function OrdersTable() {
             </tr>
           </thead>
           <tbody>
-            {ORDERS.map((order, i) => {
-              const st = STATUS[order.status];
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-5 py-10 text-center text-sm text-[#64748B]">
+                  Sin órdenes — conectá TiendaNube para sincronizar
+                </td>
+              </tr>
+            ) : rows.map((order, i) => {
+              const st = getStatus(order.status);
               return (
                 <tr
                   key={order.id}
                   className="transition-colors duration-100"
-                  style={{ borderBottom: i < ORDERS.length - 1 ? "1px solid rgba(124,58,237,0.08)" : "none" }}
+                  style={{ borderBottom: i < rows.length - 1 ? "1px solid rgba(124,58,237,0.08)" : "none" }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLTableRowElement).style.background = "rgba(124,58,237,0.04)";
                   }}
@@ -87,19 +112,19 @@ export default function OrdersTable() {
                   }}
                 >
                   <td className="px-5 py-3 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-[#8B5CF6]">{order.id}</span>
+                    <span className="text-sm font-semibold text-[#8B5CF6]">#{order.external_id}</span>
                   </td>
                   <td className="px-5 py-3 whitespace-nowrap">
-                    <span className="text-sm font-medium text-[#F1F5F9]">{order.customer}</span>
+                    <span className="text-sm font-medium text-[#F1F5F9]">{order.customer_name ?? "Sin nombre"}</span>
                   </td>
-                  <td className="px-5 py-3 max-w-[280px]">
-                    <span className="block truncate text-sm text-[#94A3B8]">{order.product}</span>
-                  </td>
-                  <td className="px-5 py-3 whitespace-nowrap">
-                    <span className="text-xs text-[#64748b]">{order.date}</span>
+                  <td className="px-5 py-3 max-w-[220px]">
+                    <span className="block truncate text-xs text-[#94A3B8]">{order.customer_email ?? "—"}</span>
                   </td>
                   <td className="px-5 py-3 whitespace-nowrap">
-                    <span className="text-sm font-black text-[#F1F5F9]">{fmt(order.amount)}</span>
+                    <span className="text-xs text-[#64748b]">{fmtDate(order.created_at)}</span>
+                  </td>
+                  <td className="px-5 py-3 whitespace-nowrap">
+                    <span className="text-sm font-black text-[#F1F5F9]">{fmt(order.total)}</span>
                   </td>
                   <td className="px-5 py-3 whitespace-nowrap">
                     <span
