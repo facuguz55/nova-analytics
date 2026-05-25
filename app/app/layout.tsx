@@ -35,7 +35,7 @@ export default async function DashboardLayout({
 
   const isSuperAdmin = userRow?.role === "super_admin";
   const plan = workspace?.plan ?? "free";
-  const isLocked = !isSuperAdmin && plan !== "trial" && plan !== "active";
+  const isLocked = !isSuperAdmin && !["trial", "active", "pro", "agency"].includes(plan);
 
   const alerts = alertCount ?? 0;
 
