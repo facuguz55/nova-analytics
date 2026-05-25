@@ -71,10 +71,18 @@ export async function triggerSync() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  // Usar NEXT_PUBLIC_APP_URL, o VERCEL_URL (seteado automáticamente por Vercel), o localhost
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
   const res = await fetch(`${baseUrl}/api/tiendanube/sync`, {
     method: "POST",
-    headers: { Cookie: "" },
+    // Pasar el user id en header interno para que el endpoint pueda autenticar
+    headers: {
+      "x-internal-user-id": user.id,
+      "x-internal-secret": process.env.INTERNAL_API_SECRET ?? "",
+    },
   });
 
   if (!res.ok) throw new Error("Sync failed");
@@ -84,7 +92,15 @@ export async function triggerSync() {
   revalidatePath("/app/clientes");
 }
 
+const VALID_PROVIDERS = ["tiendanube", "gmail", "meta"] as const;
+type ValidProvider = typeof VALID_PROVIDERS[number];
+
 export async function disconnectIntegration(provider: string) {
+  // Whitelist estricta — evita pasar strings arbitrarios a la DB
+  if (!VALID_PROVIDERS.includes(provider as ValidProvider)) {
+    throw new Error("Provider inválido");
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
@@ -146,9 +162,21 @@ export async function markAlertRead(alertId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
+  // Obtener workspace_id del usuario para verificar ownership
+  const { data: rawRow } = await supabase
+    .from("users")
+    .select("workspace_id")
+    .eq("id", user.id)
+    .single();
+
+  const workspaceId = (rawRow as unknown as { workspace_id: string | null } | null)?.workspace_id;
+  if (!workspaceId) return;
+
+  // Filtrar por workspace_id — evita que un usuario marque alertas de otro workspace
   await (supabase as any).from("alerts")
     .update({ read: true })
-    .eq("id", alertId);
+    .eq("id", alertId)
+    .eq("workspace_id", workspaceId);
 
   revalidatePath("/app/alertas");
 }

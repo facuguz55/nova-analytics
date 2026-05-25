@@ -54,8 +54,18 @@ export async function GET(request: Request) {
         }
       }
 
-      const redirectUrl = new URL(next, origin);
-      return NextResponse.redirect(redirectUrl);
+      // Validar que `next` sea un path relativo seguro — previene open redirect
+      const safePath = (() => {
+        if (!next) return "/app/dashboard";
+        // Rechazar URLs absolutas y protocol-relative
+        if (next.includes("://") || next.startsWith("//") || next.startsWith("\\")) return "/app/dashboard";
+        // Solo permitir paths que arrancan con /app o /admin
+        if (!next.startsWith("/app") && !next.startsWith("/admin")) return "/app/dashboard";
+        // Rechazar caracteres peligrosos
+        if (/[<>"']/.test(next)) return "/app/dashboard";
+        return next;
+      })();
+      return NextResponse.redirect(new URL(safePath, origin));
     }
   }
 

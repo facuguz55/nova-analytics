@@ -2,6 +2,35 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/encryption";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
+import { z } from "zod";
+
+// Detecta CRLF — base del email header injection
+const noCRLF = (val: string) => !val.includes("\r") && !val.includes("\n");
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const ReplySchema = z.object({
+  to: z
+    .string()
+    .regex(EMAIL_REGEX, "Email destinatario inválido")
+    .refine(noCRLF, "Carácter inválido en destinatario"),
+  subject: z
+    .string()
+    .max(200, "Asunto demasiado largo")
+    .refine(noCRLF, "Carácter inválido en asunto"),
+  body: z
+    .string()
+    .max(50_000, "Cuerpo demasiado largo"),
+  threadId: z
+    .string()
+    .regex(/^[a-zA-Z0-9_\-]+$/, "threadId inválido")
+    .max(100),
+  inReplyTo: z
+    .string()
+    .max(500)
+    .refine(noCRLF, "Carácter inválido en inReplyTo")
+    .optional(),
+});
 
 export async function POST(request: Request) {
   const ip = getClientIP(request);
@@ -12,9 +41,19 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { to, subject, body, threadId, inReplyTo } = await request.json() as {
-    to: string; subject: string; body: string; threadId: string; inReplyTo?: string;
-  };
+  let rawBody: unknown;
+  try {
+    rawBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
+  }
+
+  const parsed = ReplySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
+  }
+
+  const { to, subject, body, threadId, inReplyTo } = parsed.data;
 
   const { data: raw } = await supabase
     .from("integrations")
@@ -34,10 +73,13 @@ export async function POST(request: Request) {
   const token = decrypt(integration.access_token_encrypted);
   const fromEmail = integration.metadata?.email ?? "";
 
+  // Construir los headers MIME con valores ya validados y sin CRLF
+  const safeSubject = subject.startsWith("Re:") ? subject : `Re: ${subject}`;
+
   const lines = [
     `From: ${fromEmail}`,
     `To: ${to}`,
-    `Subject: ${subject.startsWith("Re:") ? subject : `Re: ${subject}`}`,
+    `Subject: ${safeSubject}`,
     `Content-Type: text/plain; charset=utf-8`,
     ...(inReplyTo ? [`In-Reply-To: ${inReplyTo}`, `References: ${inReplyTo}`] : []),
     ``,

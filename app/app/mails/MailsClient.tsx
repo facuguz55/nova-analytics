@@ -112,8 +112,11 @@ function MailBody({ body, isHtml }: { body: string; isHtml: boolean }) {
         srcDoc={body}
         className="w-full rounded-xl"
         style={{ minHeight: "200px", border: "none", background: "white" }}
-        sandbox="allow-same-origin"
+        sandbox=""
+        // sandbox="" sin permisos — bloquea JS, cookies y acceso al DOM padre
+        // "allow-same-origin" fue eliminado porque permitía ejecutar JS de emails externos
         title="Email"
+        referrerPolicy="no-referrer"
       />
     );
   }

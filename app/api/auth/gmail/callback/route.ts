@@ -2,13 +2,24 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { encrypt } from "@/lib/encryption";
+import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const state = searchParams.get("state");
 
   if (!code) {
     return NextResponse.redirect(`${origin}/app/configuracion/integraciones?error=gmail_no_code`);
+  }
+
+  // Validar state para prevenir CSRF en OAuth
+  const cookieStore = await cookies();
+  const savedState = cookieStore.get("oauth_state_gmail")?.value;
+
+  if (!state || !savedState || state !== savedState) {
+    console.error("Gmail OAuth CSRF: state mismatch");
+    return NextResponse.redirect(`${origin}/app/configuracion/integraciones?error=oauth_invalid`);
   }
 
   const supabase = await createClient();
@@ -77,5 +88,8 @@ export async function GET(request: Request) {
     metadata: { email: profile.email },
   });
 
-  return NextResponse.redirect(`${origin}/app/configuracion/integraciones?success=gmail`);
+  const successResponse = NextResponse.redirect(`${origin}/app/configuracion/integraciones?success=gmail`);
+  // Invalidar el state (one-time use)
+  successResponse.cookies.delete("oauth_state_gmail");
+  return successResponse;
 }

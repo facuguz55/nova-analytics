@@ -57,19 +57,14 @@ export default async function DashboardLayout({
           alertCount={alerts}
         />
         <main className="relative flex-1 overflow-y-auto bg-[#0a0a0f]">
-          {isLocked && (
-            <>
-              {/* Preview borroso */}
-              <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" style={{ filter: "blur(6px)", opacity: 0.35 }}>
-                {children}
-              </div>
-              {/* Overlay paywall */}
-              <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "rgba(10,10,15,0.7)" }}>
-                <PaywallCard />
-              </div>
-            </>
+          {isLocked ? (
+            /* Paywall real: children NUNCA se renderizan en el DOM */
+            <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "rgba(10,10,15,0.95)" }}>
+              <PaywallCard />
+            </div>
+          ) : (
+            children
           )}
-          {!isLocked && children}
         </main>
       </div>
       <Analytics />

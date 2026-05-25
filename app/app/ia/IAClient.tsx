@@ -44,7 +44,7 @@ export default function IAClient({ businessContext }: { businessContext: string 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...messages, userMsg],
-          systemContext: businessContext,
+          // systemContext eliminado — se genera server-side en /api/ia/chat
         }),
       });
 

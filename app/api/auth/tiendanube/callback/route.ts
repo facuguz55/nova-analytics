@@ -2,14 +2,25 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { encrypt } from "@/lib/encryption";
+import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const state = searchParams.get("state");
   const tnStoreId = searchParams.get("user_id"); // TiendaNube envia user_id
 
   if (!code) {
     return NextResponse.redirect(`${origin}/app/configuracion/integraciones?error=no_code`);
+  }
+
+  // Validar state para prevenir CSRF en OAuth
+  const cookieStore = await cookies();
+  const savedState = cookieStore.get("oauth_state_tn")?.value;
+
+  if (!state || !savedState || state !== savedState) {
+    console.error("TiendaNube OAuth CSRF: state mismatch");
+    return NextResponse.redirect(`${origin}/app/configuracion/integraciones?error=oauth_invalid`);
   }
 
   const supabase = await createClient();
@@ -78,5 +89,8 @@ export async function GET(request: Request) {
     headers: { "x-workspace-id": userRow.workspace_id },
   }).catch(() => {});
 
-  return NextResponse.redirect(`${origin}/app/configuracion/integraciones?success=tiendanube`);
+  const successResponse = NextResponse.redirect(`${origin}/app/configuracion/integraciones?success=tiendanube`);
+  // Invalidar el state (one-time use)
+  successResponse.cookies.delete("oauth_state_tn");
+  return successResponse;
 }

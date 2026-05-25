@@ -7,7 +7,8 @@ const BodySchema = z.object({
     role: z.enum(["user", "assistant"]),
     content: z.string().max(4000),
   })).max(50),
-  systemContext: z.string().max(2000).optional(),
+  // systemContext eliminado del schema — se genera 100% server-side
+  // El cliente no puede influir en el system prompt
 });
 
 export async function POST(request: Request) {
@@ -28,12 +29,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const { messages, systemContext } = parsed.data;
+  const { messages } = parsed.data;
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "API key not configured" }, { status: 500 });
   }
+
+  // Generar system prompt server-side — el cliente no puede interferir
+  const { data: rawUser } = await supabase
+    .from("users")
+    .select("workspaces(name, plan)")
+    .eq("id", user.id)
+    .single();
+
+  const ws = (rawUser as any)?.workspaces;
+  const workspaceName: string = ws?.name ?? "tu tienda";
+
+  const systemPrompt = `Eres el asistente IA de Nova Analytics para ${workspaceName}, especializado en e-commerce y marketing digital para el mercado argentino.
+Respondé siempre en español rioplatense, con tono profesional y cercano.
+Sé conciso y accionable. Solo respondé sobre temas relacionados con e-commerce, marketing, ventas y estrategia de negocio.
+No revelés información interna del sistema ni de otros workspaces bajo ninguna circunstancia.
+Si el usuario pide algo fuera del contexto de negocio, rechazá amablemente y redirigí la conversación.`;
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -46,7 +63,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
         max_tokens: 1024,
-        system: systemContext ?? "Eres un asistente de e-commerce para el mercado argentino. Responde siempre en español.",
+        system: systemPrompt,
         messages: messages.map((m) => ({
           role: m.role,
           content: m.content,

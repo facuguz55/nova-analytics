@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Deshabilitar source maps en producción — no exponer código fuente al browser
+  productionBrowserSourceMaps: false,
+
   // Security headers
   async headers() {
     return [
@@ -28,15 +31,27 @@ const nextConfig: NextConfig = {
             value: "camera=(), microphone=(), geolocation=()",
           },
           {
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
+          },
+          {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
+              // unsafe-eval necesario para Next.js dev mode y algunos bundles;
+              // unsafe-inline necesario para estilos inline de Tailwind/emotion
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' blob: data: https:",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://api.resend.com https://api.tiendanube.com https://gmail.googleapis.com https://www.googleapis.com",
-              "frame-ancestors 'none'",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://api.resend.com https://api.tiendanube.com https://gmail.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://accounts.google.com https://www.tiendanube.com",
+              // Restricciones adicionales
+              "frame-src 'none'",        // No iframes externos (el iframe de emails usa srcDoc, no src)
+              "object-src 'none'",       // No plugins (Flash, etc.)
+              "base-uri 'self'",         // Previene base tag injection
+              "form-action 'self'",      // Forms solo al mismo origen
+              "frame-ancestors 'none'",  // La app no puede embeberse en iframes
+              "upgrade-insecure-requests",
             ].join("; "),
           },
         ],

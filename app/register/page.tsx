@@ -20,8 +20,9 @@ export default function RegisterPage() {
     if (!form.name.trim()) e.name = "El nombre es obligatorio";
     if (!form.email.trim()) e.email = "El email es obligatorio";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Email invalido";
-    if (!form.password) e.password = "La contrasena es obligatoria";
-    else if (form.password.length < 6) e.password = "Minimo 6 caracteres";
+    if (!form.password) e.password = "La contraseña es obligatoria";
+    else if (form.password.length < 8) e.password = "Mínimo 8 caracteres";
+    else if (!/[A-Z]/.test(form.password) && !/[0-9]/.test(form.password)) e.password = "Debe incluir al menos un número o mayúscula";
     return e;
   }
 
@@ -135,7 +136,7 @@ export default function RegisterPage() {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Minimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-3 pr-11 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7C3AED] transition-colors"
