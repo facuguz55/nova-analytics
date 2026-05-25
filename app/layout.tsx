@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import AuthErrorHandler from "@/components/auth/AuthErrorHandler";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -72,6 +73,7 @@ export default function RootLayout({
         className={`${inter.variable} min-h-full flex flex-col bg-[#0a0a0f] text-[#F1F5F9] antialiased`}
       >
         {children}
+        <AuthErrorHandler />
         <Toaster theme="dark" />
       </body>
     </html>
