@@ -21,12 +21,12 @@ export default async function FinancieraPage() {
     .select("*")
     .eq("workspace_id", userRow?.workspace_id ?? "")
     .single();
-  type FinConfig = { usd_rate: number; tax_rate: number; platform_fee: number; agency_fee: number };
+  type FinConfig = { usd_rate: number; tax_rate: number; platform_fee: number };
   const config = rawConfig as unknown as FinConfig | null;
 
   return (
     <FinancieraClient
-      config={config ?? { usd_rate: 1200, tax_rate: 21, platform_fee: 2, agency_fee: 0 }}
+      config={config ?? { usd_rate: 1200, tax_rate: 21, platform_fee: 2 }}
     />
   );
 }

@@ -9,7 +9,6 @@ interface Config {
   usd_rate: number;
   tax_rate: number;
   platform_fee: number;
-  agency_fee: number;
 }
 
 export default function FinancieraClient({ config }: { config: Config }) {
@@ -40,8 +39,7 @@ export default function FinancieraClient({ config }: { config: Config }) {
   const exampleSale = 100000;
   const netAfterTax = exampleSale / (1 + live.tax_rate / 100);
   const netAfterPlatform = netAfterTax * (1 - live.platform_fee / 100);
-  const netAfterAgency = netAfterPlatform * (1 - live.agency_fee / 100);
-  const margin = ((netAfterAgency / exampleSale) * 100).toFixed(1);
+  const margin = ((netAfterPlatform / exampleSale) * 100).toFixed(1);
   const usdValue = (exampleSale / (live.usd_rate || 1)).toFixed(2);
 
   const fmt = (n: number) => {
@@ -82,17 +80,6 @@ export default function FinancieraClient({ config }: { config: Config }) {
       iconColor: "#7C3AED",
       step: "0.1",
       placeholder: "2",
-    },
-    {
-      label: "Fee agencia",
-      name: "agency_fee",
-      value: live.agency_fee,
-      suffix: "%",
-      description: "Comisión de Nova Agency sobre las ventas (si aplica)",
-      icon: Percent,
-      iconColor: "#e1691e",
-      step: "0.1",
-      placeholder: "0",
     },
   ];
 
@@ -184,8 +171,7 @@ export default function FinancieraClient({ config }: { config: Config }) {
               {[
                 { label: "Venta bruta", value: fmt(exampleSale), sub: null, color: "#F1F5F9", highlight: false },
                 { label: `Neto después de IVA (${live.tax_rate}%)`, value: fmt(netAfterTax), sub: `− ${fmt(exampleSale - netAfterTax)}`, color: "#94A3B8", highlight: false },
-                { label: `Neto después de plataforma (${live.platform_fee}%)`, value: fmt(netAfterPlatform), sub: `− ${fmt(netAfterTax - netAfterPlatform)}`, color: "#94A3B8", highlight: false },
-                { label: `Neto después de agencia (${live.agency_fee}%)`, value: fmt(netAfterAgency), sub: `− ${fmt(netAfterPlatform - netAfterAgency)}`, color: "#22c55e", highlight: true },
+                { label: `Neto después de plataforma (${live.platform_fee}%)`, value: fmt(netAfterPlatform), sub: `− ${fmt(netAfterTax - netAfterPlatform)}`, color: "#22c55e", highlight: true },
               ].map((row, i, arr) => (
                 <div
                   key={row.label}

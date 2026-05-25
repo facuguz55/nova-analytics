@@ -13,10 +13,9 @@ export async function signOut() {
 }
 
 const FinancialSchema = z.object({
-  usd_rate: z.coerce.number().min(0).max(99999),
-  tax_rate: z.coerce.number().min(0).max(100),
+  usd_rate:     z.coerce.number().min(0).max(99999),
+  tax_rate:     z.coerce.number().min(0).max(100),
   platform_fee: z.coerce.number().min(0).max(100),
-  agency_fee: z.coerce.number().min(0).max(100),
 });
 
 export async function updateFinancialConfig(formData: FormData) {
@@ -25,10 +24,9 @@ export async function updateFinancialConfig(formData: FormData) {
   if (!user) throw new Error("Unauthorized");
 
   const parsed = FinancialSchema.safeParse({
-    usd_rate: formData.get("usd_rate"),
-    tax_rate: formData.get("tax_rate"),
+    usd_rate:     formData.get("usd_rate"),
+    tax_rate:     formData.get("tax_rate"),
     platform_fee: formData.get("platform_fee"),
-    agency_fee: formData.get("agency_fee"),
   });
   if (!parsed.success) throw new Error("Datos inválidos");
 
