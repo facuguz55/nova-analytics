@@ -19,11 +19,12 @@ function ForgotPassword() {
     if (!email.trim()) { toast.error("Ingresá tu email"); return; }
     setLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    // Ignoramos el error intencionalmente: siempre mostramos el mismo mensaje
+    // para no revelar si el email está registrado o no (email enumeration protection)
+    await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
     });
     setLoading(false);
-    if (error) { toast.error("Error al enviar el email"); return; }
     setSent(true);
   }
 
