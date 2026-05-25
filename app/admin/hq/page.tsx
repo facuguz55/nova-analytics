@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { createServiceClient } from "@/lib/supabase/service";
-import { Users, Store, DollarSign, Activity, Plug } from "lucide-react";
+import { Users, Store, DollarSign, Activity, Plug, Sparkles } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Nova HQ — Super Admin" };
@@ -25,12 +25,16 @@ export default async function HQPage() {
   type IntRow = { workspace_id: string; provider: string; status: string };
   type RawOrder = { id: string; total: number; status: string | null; workspace_id: string };
   type AuditRow = { action: string; workspace_id: string | null; created_at: string };
+  type TokenRow = { workspace_id: string | null; input_tokens: number; output_tokens: number };
 
-  const wsRes = await service.from("workspaces").select("*", { count: "exact" }).order("created_at", { ascending: false });
-  const userRes = await service.from("users").select("*", { count: "exact" }).order("created_at", { ascending: false });
-  const intRes = await service.from("integrations").select("workspace_id, provider, status").eq("status", "active");
-  const ordRes = await service.from("tn_orders").select("id, total, status, workspace_id");
-  const auditRes = await service.from("audit_logs").select("action, workspace_id, created_at").order("created_at", { ascending: false }).limit(20);
+  const [wsRes, userRes, intRes, ordRes, auditRes, tokenRes] = await Promise.all([
+    service.from("workspaces").select("*", { count: "exact" }).order("created_at", { ascending: false }),
+    service.from("users").select("*", { count: "exact" }).order("created_at", { ascending: false }),
+    service.from("integrations").select("workspace_id, provider, status").eq("status", "active"),
+    service.from("tn_orders").select("id, total, status, workspace_id"),
+    service.from("audit_logs").select("action, workspace_id, created_at").order("created_at", { ascending: false }).limit(20),
+    service.from("token_usage").select("workspace_id, input_tokens, output_tokens"),
+  ]);
 
   const workspaceCount = wsRes.count ?? 0;
   const userCount = userRes.count ?? 0;
@@ -39,6 +43,34 @@ export default async function HQPage() {
   const allIntegrations = (intRes.data ?? []) as unknown as IntRow[];
   const rawOrders = (ordRes.data ?? []) as unknown as RawOrder[];
   const audits = (auditRes.data ?? []) as unknown as AuditRow[];
+  const tokenRows = (tokenRes.data ?? []) as unknown as TokenRow[];
+
+  // Agregar tokens por workspace
+  const HAIKU_INPUT_COST_PER_M  = 0.80;
+  const HAIKU_OUTPUT_COST_PER_M = 4.00;
+
+  const tokenByWorkspace = tokenRows.reduce((acc, r) => {
+    const key = r.workspace_id ?? "__unknown__";
+    if (!acc[key]) acc[key] = { input: 0, output: 0 };
+    acc[key].input  += r.input_tokens;
+    acc[key].output += r.output_tokens;
+    return acc;
+  }, {} as Record<string, { input: number; output: number }>);
+
+  const totalInputTokens  = tokenRows.reduce((s, r) => s + r.input_tokens,  0);
+  const totalOutputTokens = tokenRows.reduce((s, r) => s + r.output_tokens, 0);
+  const totalCostUSD = (totalInputTokens / 1_000_000) * HAIKU_INPUT_COST_PER_M
+                     + (totalOutputTokens / 1_000_000) * HAIKU_OUTPUT_COST_PER_M;
+
+  const tokenRanking = allWorkspaces
+    .map((ws) => {
+      const t = tokenByWorkspace[ws.id] ?? { input: 0, output: 0 };
+      const cost = (t.input / 1_000_000) * HAIKU_INPUT_COST_PER_M
+                 + (t.output / 1_000_000) * HAIKU_OUTPUT_COST_PER_M;
+      return { ...ws, inputTokens: t.input, outputTokens: t.output, costUSD: cost };
+    })
+    .filter((ws) => ws.inputTokens + ws.outputTokens > 0)
+    .sort((a, b) => b.inputTokens + b.outputTokens - a.inputTokens - a.outputTokens);
   const allOrders = rawOrders.filter(
     (o) => o.status === "paid" || o.status === "closed"
   );
@@ -252,6 +284,85 @@ export default async function HQPage() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Token usage ranking */}
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+      >
+        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+          <div className="flex items-center gap-2">
+            <Sparkles size={15} color="#8B5CF6" strokeWidth={2} />
+            <p className="text-sm font-semibold text-[#F1F5F9]">Uso de tokens IA por workspace</p>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-[#64748B]">
+            <span>{(totalInputTokens + totalOutputTokens).toLocaleString("es-AR")} tokens totales</span>
+            <span
+              className="font-bold px-2 py-0.5 rounded-full"
+              style={{ color: "#8B5CF6", background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.2)" }}
+            >
+              ~${totalCostUSD.toFixed(4)} USD
+            </span>
+          </div>
+        </div>
+
+        {tokenRanking.length === 0 ? (
+          <div className="px-5 py-8 text-center text-sm text-[#64748B]">
+            Sin uso de IA registrado todavía
+          </div>
+        ) : (
+          <div className="divide-y divide-[rgba(124,58,237,0.08)]">
+            {tokenRanking.map((ws, i) => {
+              const total = ws.inputTokens + ws.outputTokens;
+              const maxTotal = (tokenRanking[0].inputTokens + tokenRanking[0].outputTokens) || 1;
+              const pct = (total / maxTotal) * 100;
+              return (
+                <div key={ws.id} className="px-5 py-3 flex items-center gap-4">
+                  {/* Posición */}
+                  <span
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
+                    style={{
+                      background: i === 0 ? "rgba(225,105,30,0.2)" : i === 1 ? "rgba(124,58,237,0.15)" : "rgba(124,58,237,0.07)",
+                      color: i === 0 ? "#e1691e" : i === 1 ? "#8B5CF6" : "#64748B",
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+
+                  {/* Nombre */}
+                  <div className="w-36 flex-shrink-0">
+                    <p className="text-sm font-semibold text-[#F1F5F9] truncate">{ws.name}</p>
+                    <p className="text-[10px] text-[#64748B] capitalize">{ws.plan}</p>
+                  </div>
+
+                  {/* Barra */}
+                  <div className="flex-1 h-1.5 rounded-full" style={{ background: "rgba(124,58,237,0.08)" }}>
+                    <div
+                      className="h-1.5 rounded-full transition-all"
+                      style={{
+                        width: `${pct}%`,
+                        background: i === 0
+                          ? "linear-gradient(90deg, #e1691e, #f59e0b)"
+                          : "linear-gradient(90deg, #7C3AED, #2563EB)",
+                      }}
+                    />
+                  </div>
+
+                  {/* Tokens + costo */}
+                  <div className="text-right flex-shrink-0 w-40">
+                    <p className="text-xs font-bold text-[#F1F5F9]">
+                      {total.toLocaleString("es-AR")} tokens
+                    </p>
+                    <p className="text-[10px] text-[#64748B]">
+                      {ws.inputTokens.toLocaleString()} in · {ws.outputTokens.toLocaleString()} out · <span style={{ color: "#8B5CF6" }}>${ws.costUSD.toFixed(4)}</span>
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Audit log */}

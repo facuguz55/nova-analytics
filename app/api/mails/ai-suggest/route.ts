@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -10,6 +11,8 @@ export async function POST(request: Request) {
     from: string; subject: string; body: string;
   };
 
+  const model = "claude-haiku-4-5-20251001";
+
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -18,7 +21,7 @@ export async function POST(request: Request) {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
+      model,
       max_tokens: 600,
       messages: [{
         role: "user",
@@ -43,7 +46,29 @@ Instrucciones:
     return NextResponse.json({ error: "AI error" }, { status: 500 });
   }
 
-  const data = await res.json() as { content: Array<{ type: string; text: string }> };
+  const data = await res.json() as {
+    content: Array<{ type: string; text: string }>;
+    usage?: { input_tokens: number; output_tokens: number };
+  };
+
   const suggestion = data.content.find((c) => c.type === "text")?.text ?? "";
+
+  // Loggear uso de tokens en background (no bloquea la respuesta)
+  const inputTokens = data.usage?.input_tokens ?? 0;
+  const outputTokens = data.usage?.output_tokens ?? 0;
+  if (inputTokens > 0 || outputTokens > 0) {
+    const service = createServiceClient();
+    service.from("users").select("workspace_id").eq("id", user.id).single().then(({ data: userRow }) => {
+      const workspaceId = (userRow as { workspace_id: string } | null)?.workspace_id;
+      service.from("token_usage").insert({
+        workspace_id: workspaceId ?? null,
+        user_id: user.id,
+        model,
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
+      }).then(() => {/* fire and forget */});
+    });
+  }
+
   return NextResponse.json({ suggestion });
 }
