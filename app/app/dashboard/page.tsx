@@ -20,7 +20,7 @@ async function getDashboardData() {
   const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
   const last60Start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60).toISOString();
 
-  type UserRow = { name: string | null; workspace_id: string | null };
+  type UserRow = { name: string | null; workspace_id: string | null; role: string };
   type OrderShort = { total: number; status: string | null; created_at: string | null };
   type OrderFull = { id: string; external_id: string; customer_name: string | null; customer_email: string | null; total: number; status: string | null; created_at: string | null };
   type CustomerRow = { id: string; orders_count: number };
@@ -33,7 +33,7 @@ async function getDashboardData() {
     { data: rawCustomers },
     { data: rawTnIntegration },
   ] = await Promise.all([
-    supabase.from("users").select("name, workspace_id").eq("id", user.id).single(),
+    supabase.from("users").select("name, workspace_id, role").eq("id", user.id).single(),
     supabase.from("tn_orders").select("total, status, created_at").gte("created_at", last60Start).order("created_at", { ascending: false }),
     supabase.from("tn_orders").select("id, external_id, customer_name, customer_email, total, status, created_at").order("created_at", { ascending: false }).limit(10),
     supabase.from("tn_customers").select("id, orders_count").order("orders_count", { ascending: false }).limit(1000),
@@ -101,6 +101,7 @@ async function getDashboardData() {
 
   return {
     userName: userRow?.name ?? user.email?.split("@")[0] ?? "Usuario",
+    isSuperAdmin: userRow?.role === "super_admin",
     salesHoy,
     salesSemana,
     salesMes,
@@ -123,7 +124,7 @@ export default async function DashboardPage() {
   if (!data) return null;
 
   const {
-    userName, salesHoy, salesSemana, salesMes, ordenesMes,
+    userName, isSuperAdmin, salesHoy, salesSemana, salesMes, ordenesMes,
     ticketPromedio, recurrentes, nuevos, cambioMes,
     todayCount, weekCount, chartData, recentOrders, tnConnected,
   } = data;
@@ -200,13 +201,24 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2
-            className="text-3xl font-black text-[#F1F5F9]"
-            style={{ letterSpacing: "-0.02em" }}
-          >
-            Buen día, {userName.split(" ")[0]} 👋
-          </h2>
-          <p className="text-sm text-[#94A3B8] mt-1">
+          <div className="flex items-center gap-3">
+            <h2
+              className="text-3xl font-black text-[#F1F5F9]"
+              style={{ letterSpacing: "-0.02em" }}
+            >
+              Buen día, {userName.split(" ")[0]} 👋
+            </h2>
+            {isSuperAdmin && (
+              <a
+                href="/admin/hq"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all hover:opacity-80"
+                style={{ background: "rgba(239,68,68,0.12)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)" }}
+              >
+                ⚡ Nova HQ
+              </a>
+            )}
+          </div>
+          <p className="text-sm text-[#94A3B8] mt-1" suppressHydrationWarning>
             {now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })} hs ·{" "}
             {tnConnected ? (
               <span className="text-green-400">● TiendaNube conectado</span>
