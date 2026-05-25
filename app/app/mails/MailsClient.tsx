@@ -177,6 +177,7 @@ export default function MailsClient({
   const [replyBody, setReplyBody] = useState("");
   const [aiSuggestion, setAiSuggestion] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiNoReply, setAiNoReply] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "unread">("all");
@@ -188,6 +189,7 @@ export default function MailsClient({
     setLoadingId(msg.id);
     setReplyBody("");
     setAiSuggestion("");
+    setAiNoReply(null);
     setLocalRead(prev => new Set([...prev, msg.id]));
     try {
       const res = await fetch(`/api/mails/message?id=${msg.id}`);
@@ -205,6 +207,7 @@ export default function MailsClient({
     if (!selected) return;
     setAiLoading(true);
     setAiSuggestion("");
+    setAiNoReply(null);
     try {
       const res = await fetch("/api/mails/ai-suggest", {
         method: "POST",
@@ -215,6 +218,14 @@ export default function MailsClient({
           body: selected.body || selected.snippet,
         }),
       });
+
+      // Email automático / no-reply detectado — no gastar tokens
+      if (res.status === 422) {
+        const data = await res.json() as { message?: string };
+        setAiNoReply(data.message ?? "Este email no admite respuesta automática.");
+        return;
+      }
+
       const data = await res.json() as { suggestion?: string };
       if (data.suggestion) setAiSuggestion(data.suggestion);
       else toast.error("No se pudo generar sugerencia");
@@ -505,15 +516,28 @@ export default function MailsClient({
                   </button>
                 </div>
 
-                <div
-                  className="w-full rounded-xl px-4 py-3 text-sm min-h-[48px]"
-                  style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)", color: aiSuggestion ? "#94A3B8" : "#475569" }}
-                >
-                  {aiLoading
-                    ? <span className="italic text-xs text-[#64748B]">Generando sugerencia...</span>
-                    : aiSuggestion || <span className="italic text-xs">La sugerencia aparecerá acá...</span>
-                  }
-                </div>
+                {aiNoReply ? (
+                  <div
+                    className="w-full rounded-xl px-4 py-3 text-sm flex items-start gap-2.5"
+                    style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)" }}
+                  >
+                    <X size={14} color="#ef4444" strokeWidth={2.5} className="flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-semibold text-[#ef4444] mb-0.5">No se generó sugerencia</p>
+                      <p className="text-xs text-[#f87171] leading-relaxed">{aiNoReply}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="w-full rounded-xl px-4 py-3 text-sm min-h-[48px]"
+                    style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)", color: aiSuggestion ? "#94A3B8" : "#475569" }}
+                  >
+                    {aiLoading
+                      ? <span className="italic text-xs text-[#64748B]">Generando sugerencia...</span>
+                      : aiSuggestion || <span className="italic text-xs">La sugerencia aparecerá acá...</span>
+                    }
+                  </div>
+                )}
 
                 {aiSuggestion && (
                   <button

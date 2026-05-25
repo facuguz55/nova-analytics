@@ -17,6 +17,64 @@ export async function POST(request: Request) {
     from: string; subject: string; body: string;
   };
 
+  // ── Detección de emails no respondibles ────────────────────────────────────
+  // Si es una notificación automática o no-reply, no gastar tokens de IA.
+  const fromLower = String(from ?? "").toLowerCase();
+  const subjectLower = String(subject ?? "").toLowerCase();
+
+  const NO_REPLY_PATTERNS = [
+    /no[-_.]?reply/,
+    /noreply/,
+    /do[-_.]?not[-_.]?reply/,
+    /donotreply/,
+    /notifications?@/,
+    /notification@/,
+    /alerts?@/,
+    /mailer[-_.]?daemon/,
+    /automated?@/,
+    /auto[-_.]?message/,
+    /system@/,
+    /bounces?@/,
+    /postmaster@/,
+    /daemon@/,
+    /support\+[a-z0-9]+@/,   // tickets automáticos tipo support+12345@
+  ];
+
+  const AUTO_SUBJECT_PATTERNS = [
+    /notificaci[oó]n\s+autom[aá]tica/i,
+    /este\s+es\s+un\s+mensaje\s+autom[aá]tico/i,
+    /do\s+not\s+reply/i,
+    /no\s+responder/i,
+    /no\s+reply/i,
+    /automated?\s+(message|email|notification)/i,
+    /\[?autom[aá]tico\]?/i,
+    /google\s+alert/i,
+    /google\s+notification/i,
+    /verificaci[oó]n\s+de\s+cuenta/i,
+    /confirm\s+your\s+email/i,
+    /password\s+reset/i,
+    /invoice\s+#/i,
+    /order\s+confirmation/i,
+    /your\s+receipt/i,
+    /unsubscribe/i,
+  ];
+
+  const isNoReply = NO_REPLY_PATTERNS.some(p => p.test(fromLower));
+  const isAutoSubject = AUTO_SUBJECT_PATTERNS.some(p => p.test(subjectLower));
+
+  if (isNoReply || isAutoSubject) {
+    return NextResponse.json(
+      {
+        error: "no_reply",
+        message: isNoReply
+          ? "Este email fue enviado desde una dirección no-reply. No se puede responder."
+          : "Este parece ser un email automático o notificación. No tiene sentido generar una respuesta.",
+      },
+      { status: 422 }
+    );
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   // Sanitizar el contenido del email antes de enviarlo a la IA
   // Previene prompt injection desde emails externos maliciosos
   const safeFrom = sanitizePlainText(String(from ?? "")).slice(0, 200);
