@@ -14,14 +14,18 @@ export default async function DashboardLayout({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  type UserRow = { name: string | null; email: string; avatar_url: string | null; workspaces: { id: string; name: string; plan: string; status: string } | null };
+  type UserRow = { name: string | null; email: string; avatar_url: string | null; role: string; workspaces: { id: string; name: string; plan: string; status: string } | null };
   type IntRow = { provider: string; status: string };
 
-  const [{ data: rawUserRow }, { data: rawIntegrations }, { count: alertCount }] = await Promise.all([
+  const [userRes, intRes, alertRes] = await Promise.allSettled([
     supabase.from("users").select("*, workspaces(id, name, plan, status)").eq("id", user.id).single(),
     supabase.from("integrations").select("provider, status").eq("status", "active"),
     supabase.from("alerts").select("id", { count: "exact", head: true }).eq("read", false),
   ]);
+
+  const rawUserRow = userRes.status === "fulfilled" ? userRes.value.data : null;
+  const rawIntegrations = intRes.status === "fulfilled" ? intRes.value.data : null;
+  const alertCount = alertRes.status === "fulfilled" ? alertRes.value.count : 0;
 
   const userRow = rawUserRow as unknown as UserRow | null;
   const integrations = (rawIntegrations ?? []) as unknown as IntRow[];
@@ -29,8 +33,7 @@ export default async function DashboardLayout({
 
   const activeProviders = new Set(integrations.map((i) => i.provider));
 
-  const { data: rawProfile } = await supabase.from("users").select("role").eq("id", user.id).single() as { data: { role: string } | null };
-  const isSuperAdmin = rawProfile?.role === "super_admin";
+  const isSuperAdmin = userRow?.role === "super_admin";
   const plan = workspace?.plan ?? "free";
   const isLocked = !isSuperAdmin && plan !== "trial" && plan !== "active";
 
