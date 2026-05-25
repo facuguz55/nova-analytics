@@ -6,6 +6,18 @@ import { formatCurrency } from "@/lib/utils";
 export const metadata: Metadata = { title: "Nova HQ — Super Admin" };
 
 export default async function HQPage() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return (
+      <div className="p-8 flex flex-col items-center justify-center gap-4 text-center">
+        <p className="text-2xl font-black text-[#ef4444]">Falta variable de entorno</p>
+        <p className="text-sm text-[#94A3B8]">
+          <code className="bg-[#111118] px-2 py-1 rounded text-[#f59e0b]">SUPABASE_SERVICE_ROLE_KEY</code> no está configurada en Vercel.
+        </p>
+        <p className="text-xs text-[#64748B]">Vercel → Settings → Environment Variables → agregar la clave.</p>
+      </div>
+    );
+  }
+
   const service = createServiceClient();
 
   type WsRow = { id: string; name: string; slug: string; plan: string; status: string; created_at: string };
