@@ -5,62 +5,49 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard, Bot, Bell, Store, BarChart2,
+  LayoutDashboard, Bot, Bell, BarChart2,
   ShoppingCart, Package, Users, TrendingUp, Target,
   Megaphone, Mail, Plug, DollarSign, User,
   ChevronLeft, ChevronRight, LogOut, Sparkles,
-  Megaphone as MegaphoneIcon, BellRing, Activity,
+  BellRing, Activity,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_SECTIONS = [
   {
-    label: "GENERAL",
+    label: "",
     items: [
       { href: "/app/dashboard", label: "Dashboard",    icon: LayoutDashboard },
-      { href: "/app/ia",        label: "IA Assistant", icon: Bot, accent: "#8B5CF6" },
       { href: "/app/alertas",   label: "Alertas",      icon: Bell },
-      { href: "/app/planes",    label: "Planes",        icon: Sparkles, accent: "#22c55e" },
+      { href: "/app/ia",        label: "IA Assistant", icon: Bot, accent: "#8B5CF6" },
     ],
   },
   {
     label: "TIENDA",
     items: [
-      { href: "/app/tienda", label: "Tienda Web", icon: Store },
-      { href: "/app/analisis", label: "Análisis", icon: BarChart2 },
-      { href: "/app/ordenes", label: "Órdenes", icon: ShoppingCart },
-      { href: "/app/productos", label: "Productos / Stock", icon: Package },
-      { href: "/app/clientes", label: "Clientes", icon: Users },
-      { href: "/app/rentabilidad", label: "Rentabilidad", icon: TrendingUp },
+      { href: "/app/analisis",      label: "Análisis",         icon: BarChart2 },
+      { href: "/app/ordenes",       label: "Órdenes",          icon: ShoppingCart },
+      { href: "/app/clientes",      label: "Clientes",         icon: Users },
+      { href: "/app/productos",     label: "Productos / Stock", icon: Package },
+      { href: "/app/rentabilidad",  label: "Rentabilidad",     icon: TrendingUp },
     ],
   },
   {
     label: "MARKETING",
     items: [
-      { href: "/app/meta-ads", label: "Meta Ads", icon: Target },
-      { href: "/app/campanas", label: "Campañas", icon: Megaphone },
+      { href: "/app/meta-ads",  label: "Meta Ads",  icon: Target },
+      { href: "/app/campanas",  label: "Campañas",  icon: Megaphone },
+      { href: "/app/mails",     label: "Mails",     icon: Mail },
     ],
   },
   {
-    label: "COMUNICACIÓN",
+    label: "AJUSTES",
     items: [
-      { href: "/app/mails", label: "Mails", icon: Mail },
-    ],
-  },
-  {
-    label: "CONFIGURACIÓN",
-    items: [
-      { href: "/app/configuracion/integraciones",    label: "Integraciones",    icon: Plug },
-      { href: "/app/configuracion/financiera",       label: "Finanzas",         icon: DollarSign },
-      { href: "/app/configuracion/notificaciones",   label: "Notificaciones",   icon: BellRing },
-      { href: "/app/configuracion/actividad",        label: "Actividad",        icon: Activity },
-      { href: "/app/configuracion/cuenta",           label: "Mi Cuenta",        icon: User },
-    ],
-  },
-  {
-    label: "NOVA",
-    items: [
-      { href: "/app/changelog", label: "Novedades", icon: MegaphoneIcon, accent: "#e1691e" },
+      { href: "/app/configuracion/integraciones",  label: "Integraciones",  icon: Plug },
+      { href: "/app/configuracion/financiera",     label: "Finanzas",       icon: DollarSign },
+      { href: "/app/configuracion/notificaciones", label: "Notificaciones", icon: BellRing },
+      { href: "/app/configuracion/actividad",      label: "Actividad",      icon: Activity },
+      { href: "/app/configuracion/cuenta",         label: "Mi Cuenta",      icon: User },
     ],
   },
 ];
@@ -202,6 +189,18 @@ export default function Sidebar({
           </div>
         ))}
       </nav>
+
+      {/* Links de fondo — Planes y Novedades */}
+      {!collapsed && (
+        <div className="flex-shrink-0 px-4 pb-2 flex items-center gap-4">
+          <Link href="/app/planes" className="text-[11px] text-[#475569] hover:text-[#22c55e] transition-colors flex items-center gap-1">
+            <Sparkles size={11} /> Planes
+          </Link>
+          <Link href="/app/changelog" className="text-[11px] text-[#475569] hover:text-[#e1691e] transition-colors flex items-center gap-1">
+            <Megaphone size={11} /> Novedades
+          </Link>
+        </div>
+      )}
 
       {/* User info */}
       <div className="flex-shrink-0 p-3" style={{ borderTop: "1px solid rgba(124,58,237,0.15)" }}>
