@@ -115,31 +115,6 @@ export async function deleteAccount(_formData: FormData) {
   redirect("/login");
 }
 
-export async function triggerSync() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-
-  // Usar NEXT_PUBLIC_APP_URL, o VERCEL_URL (seteado automáticamente por Vercel), o localhost
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
-  const res = await fetch(`${baseUrl}/api/tiendanube/sync`, {
-    method: "POST",
-    // Pasar el user id en header interno para que el endpoint pueda autenticar
-    headers: {
-      "x-internal-user-id": user.id,
-      "x-internal-secret": process.env.INTERNAL_API_SECRET ?? (() => { throw new Error("INTERNAL_API_SECRET no configurado"); })(),
-    },
-  });
-
-  if (!res.ok) throw new Error("Sync failed");
-  revalidatePath("/app/dashboard");
-  revalidatePath("/app/ordenes");
-  revalidatePath("/app/productos");
-  revalidatePath("/app/clientes");
-}
 
 const VALID_PROVIDERS = ["tiendanube", "gmail", "meta"] as const;
 type ValidProvider = typeof VALID_PROVIDERS[number];
