@@ -170,9 +170,8 @@ export default async function HQPage() {
               ) : workspaceStats.map((ws, i) => (
                 <tr
                   key={ws.id}
+                  className="hover:bg-[rgba(124,58,237,0.04)] transition-colors"
                   style={{ borderBottom: i < workspaceStats.length - 1 ? "1px solid rgba(124,58,237,0.08)" : "none" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "rgba(124,58,237,0.04)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "transparent"; }}
                 >
                   <td className="px-5 py-3">
                     <div>
