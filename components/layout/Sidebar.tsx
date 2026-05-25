@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Bot, Bell, Store, BarChart2,
   ShoppingCart, Package, Users, TrendingUp, Target,
   Megaphone, Mail, Plug, DollarSign, User,
-  ChevronLeft, ChevronRight, LogOut,
+  ChevronLeft, ChevronRight, LogOut, Percent, PlusCircle, Truck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -48,9 +48,13 @@ const NAV_SECTIONS = [
   {
     label: "CONFIGURACIÓN",
     items: [
-      { href: "/app/configuracion/integraciones", label: "Integraciones", icon: Plug },
-      { href: "/app/configuracion/financiera", label: "Config. Financiera", icon: DollarSign },
-      { href: "/app/configuracion/cuenta", label: "Mi Cuenta", icon: User },
+      { href: "/app/configuracion/integraciones",    label: "Integraciones",     icon: Plug },
+      { href: "/app/configuracion/financiera",       label: "Config. Financiera", icon: DollarSign },
+      { href: "/app/configuracion/cotizaciones",     label: "Cotizaciones",       icon: TrendingUp },
+      { href: "/app/configuracion/comisiones",       label: "Comisiones",         icon: Percent },
+      { href: "/app/configuracion/costos-adicionales", label: "Costos Adicionales", icon: PlusCircle },
+      { href: "/app/configuracion/envios",           label: "Envíos",             icon: Truck },
+      { href: "/app/configuracion/cuenta",           label: "Mi Cuenta",          icon: User },
     ],
   },
 ];
