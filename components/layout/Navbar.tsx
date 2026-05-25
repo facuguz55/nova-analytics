@@ -1,10 +1,11 @@
 "use client";
 
-import { Bell, Search, ChevronDown, DollarSign, LayoutGrid, X, Sparkles, GraduationCap, Megaphone } from "lucide-react";
+import { Bell, Search, ChevronDown, DollarSign, LayoutGrid, X, Sparkles, GraduationCap, Megaphone, Activity, Plug, BellRing, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { CURRENT_VERSION } from "@/lib/changelog";
+import { createClient } from "@/lib/supabase/client";
 
 interface NavbarProps {
   userName: string;
@@ -39,15 +40,23 @@ const SEARCH_ITEMS = [
 ];
 
 export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarProps) {
-  const [showSearch, setShowSearch]     = useState(false);
-  const [searchQ,    setSearchQ]        = useState("");
+  const [showSearch,    setShowSearch]    = useState(false);
+  const [searchQ,       setSearchQ]       = useState("");
   const [showSecciones, setShowSecciones] = useState(false);
-  const [redondeo,   setRedondeo]       = useState(true);
-  const [modoSimple, setModoSimple]     = useState(false);
-  const [selected,   setSelected]       = useState(0);
+  const [showUserMenu,  setShowUserMenu]  = useState(false);
+  const [redondeo,      setRedondeo]      = useState(true);
+  const [modoSimple,    setModoSimple]    = useState(false);
+  const [selected,      setSelected]      = useState(0);
   const inputRef     = useRef<HTMLInputElement>(null);
   const seccionesRef = useRef<HTMLDivElement>(null);
+  const userMenuRef  = useRef<HTMLDivElement>(null);
   const router       = useRouter();
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
 
   const initials = userName.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "U";
 
@@ -124,10 +133,11 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
     window.dispatchEvent(new CustomEvent("nova-modo-change", { detail: next ? "simple" : "pro" }));
   }
 
-  // Cerrar Secciones al click fuera
+  // Cerrar dropdowns al click fuera
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (seccionesRef.current && !seccionesRef.current.contains(e.target as Node)) setShowSecciones(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setShowUserMenu(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -248,12 +258,23 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
             v{CURRENT_VERSION}
           </Link>
 
-          {/* Notificaciones */}
+          {/* Actividad */}
+          <Link
+            href="/app/configuracion/actividad"
+            className="flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(124,58,237,0.1)]"
+            style={{ width: "36px", height: "36px", background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)", color: "#94A3B8" }}
+            title="Registro de actividad"
+          >
+            <Activity size={14} strokeWidth={2} />
+          </Link>
+
+          {/* Alertas */}
           <div className="relative">
             <Link
               href="/app/alertas"
               className="flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(124,58,237,0.1)]"
               style={{ width: "36px", height: "36px", background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)", color: "#94A3B8", display: "flex" }}
+              title="Alertas"
             >
               <Bell size={14} strokeWidth={2} />
             </Link>
@@ -267,25 +288,64 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
             )}
           </div>
 
-          {/* Avatar */}
-          <Link
-            href="/app/configuracion/cuenta"
-            className="flex items-center gap-2 rounded-xl px-3 py-1.5 cursor-pointer transition-all hover:bg-[rgba(124,58,237,0.1)]"
-            style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
-          >
-            {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarUrl} alt={userName} className="w-6 h-6 rounded-full object-cover" />
-            ) : (
+          {/* Avatar + menú de cuenta */}
+          <div ref={userMenuRef} className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-2 rounded-xl px-3 py-1.5 cursor-pointer transition-all hover:bg-[rgba(124,58,237,0.1)]"
+              style={{ background: showUserMenu ? "rgba(124,58,237,0.12)" : "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+            >
+              {avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarUrl} alt={userName} className="w-6 h-6 rounded-full object-cover" />
+              ) : (
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-[10px] font-bold"
+                  style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+                >
+                  {initials}
+                </div>
+              )}
+              <span className="text-sm font-medium text-[#F1F5F9]">{userName.split(" ")[0]}</span>
+              <ChevronDown size={11} strokeWidth={2.5} className={`text-[#64748B] transition-transform ${showUserMenu ? "rotate-180" : ""}`} />
+            </button>
+
+            {showUserMenu && (
               <div
-                className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-[10px] font-bold"
-                style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+                className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-50 py-1.5"
+                style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", minWidth: "200px", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}
               >
-                {initials}
+                <p className="px-4 pt-2 pb-1.5 text-[10px] font-semibold tracking-widest text-[#475569] uppercase">Mi cuenta</p>
+                {[
+                  { href: "/app/configuracion/cuenta",          label: "Perfil",          icon: User },
+                  { href: "/app/configuracion/integraciones",   label: "Integraciones",   icon: Plug },
+                  { href: "/app/configuracion/financiera",      label: "Finanzas",        icon: DollarSign },
+                  { href: "/app/configuracion/notificaciones",  label: "Notificaciones",  icon: BellRing },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 transition-colors text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[rgba(124,58,237,0.06)]"
+                    >
+                      <Icon size={13} strokeWidth={2} className="flex-shrink-0" />
+                      <span className="text-sm">{item.label}</span>
+                    </Link>
+                  );
+                })}
+                <div className="mx-3 my-1 h-px" style={{ background: "rgba(124,58,237,0.1)" }} />
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors text-[#ef4444] hover:bg-[rgba(239,68,68,0.06)]"
+                >
+                  <LogOut size={13} strokeWidth={2} className="flex-shrink-0" />
+                  <span className="text-sm">Cerrar sesión</span>
+                </button>
               </div>
             )}
-            <span className="text-sm font-medium text-[#F1F5F9]">{userName.split(" ")[0]}</span>
-          </Link>
+          </div>
         </div>
       </header>
 
