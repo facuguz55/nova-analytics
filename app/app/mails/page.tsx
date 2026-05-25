@@ -10,27 +10,24 @@ interface GmailMessage {
   threadId: string;
   snippet: string;
   labelIds?: string[];
-  payload?: {
-    headers: Array<{ name: string; value: string }>;
-  };
+  payload?: { headers: Array<{ name: string; value: string }> };
   internalDate?: string;
 }
 
 async function fetchInbox(accessToken: string): Promise<GmailMessage[]> {
   try {
     const listRes = await fetch(
-      "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=20&labelIds=INBOX",
+      "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=50&labelIds=INBOX",
       { headers: { Authorization: `Bearer ${accessToken}` }, next: { revalidate: 60 } }
     );
     if (!listRes.ok) return [];
     const { messages } = await listRes.json() as { messages?: Array<{ id: string; threadId: string }> };
-    if (!messages) return [];
+    if (!messages?.length) return [];
 
-    // Fetch metadata for each message (parallel, max 20)
     const details = await Promise.all(
-      messages.slice(0, 20).map((m) =>
+      messages.map((m) =>
         fetch(
-          `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,
+          `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date&metadataHeaders=To`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         ).then((r) => r.ok ? r.json() : null)
       )
@@ -61,9 +58,7 @@ export default async function MailsPage() {
       const accessToken = decrypt(integration.access_token_encrypted);
       gmailEmail = integration.metadata?.email ?? "";
       messages = await fetchInbox(accessToken);
-    } catch {
-      // Token expirado o inválido
-    }
+    } catch { /* token expirado */ }
   }
 
   function getHeader(msg: GmailMessage, name: string) {
@@ -72,7 +67,9 @@ export default async function MailsPage() {
 
   const formattedMessages = messages.map((msg) => ({
     id: msg.id,
+    threadId: msg.threadId,
     from: getHeader(msg, "From"),
+    to: getHeader(msg, "To"),
     subject: getHeader(msg, "Subject") || "(Sin asunto)",
     date: getHeader(msg, "Date"),
     snippet: msg.snippet ?? "",
