@@ -272,11 +272,11 @@ export default function WorkspacesClient({
                                     className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0"
                                     style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
                                   >
-                                    {(u.name ?? u.email ?? "?")[0]?.toUpperCase()}
+                                    {(u.email ?? u.name ?? "?")[0]?.toUpperCase()}
                                   </div>
                                   <div>
-                                    <p className="text-xs font-medium text-[#F1F5F9]">{u.name ?? "Sin nombre"}</p>
-                                    <p className="text-[11px] text-[#94A3B8]">{u.email}</p>
+                                    <p className="text-xs font-semibold text-[#F1F5F9]">{u.email}</p>
+                                    {u.name && <p className="text-[11px] text-[#64748B]">{u.name}</p>}
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-3">
