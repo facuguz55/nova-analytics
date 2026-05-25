@@ -399,6 +399,68 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
               })()}
             </div>
           )}
+
+          {/* Lista de órdenes filtradas */}
+          {(() => {
+            const tab = STATUS_TABS.find(t => t.key === statusFilter);
+            return (
+              <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+                <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+                  <p className="text-sm font-semibold text-[#F1F5F9]">
+                    Lista de órdenes
+                    {tab && statusFilter !== "all" && (
+                      <span className="ml-2 text-xs font-normal px-2 py-0.5 rounded-full"
+                        style={{ background: `${tab.color}15`, color: tab.color }}>
+                        {tab.label}
+                      </span>
+                    )}
+                  </p>
+                  <span className="text-xs text-[#64748B]">{filtered.length} órdenes</span>
+                </div>
+
+                {filtered.slice(0, 150).map((o, i) => {
+                  const isPaid = o.payment_status === "paid" || o.status === "closed";
+                  const isCancelled = o.status === "cancelled" || o.payment_status === "voided" || o.payment_status === "refunded";
+                  const dotColor = isPaid ? "#22c55e" : isCancelled ? "#ef4444" : "#f59e0b";
+                  const statusText = isPaid ? "Pagada" : isCancelled ? "Cancelada" : "Pendiente";
+                  return (
+                    <div
+                      key={o.id}
+                      className="flex items-center gap-3 px-5 py-3 hover:bg-[rgba(124,58,237,0.04)] transition-colors"
+                      style={{ borderBottom: i < Math.min(filtered.length, 150) - 1 ? "1px solid rgba(124,58,237,0.06)" : "none" }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: dotColor }} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-[#8B5CF6]">#{o.number ?? o.id}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                            style={{ background: `${dotColor}15`, color: dotColor }}>
+                            {statusText}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#64748B] truncate">
+                          {o.customer?.name ?? "Anónimo"}
+                          {o.customer?.email ? ` · ${o.customer.email}` : ""}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-sm font-bold text-[#F1F5F9]">{fmt(parseFloat(o.total || "0"))}</p>
+                        <p className="text-xs text-[#64748B]">
+                          {new Date(o.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {filtered.length > 150 && (
+                  <div className="px-5 py-3 text-center" style={{ borderTop: "1px solid rgba(124,58,237,0.08)" }}>
+                    <p className="text-xs text-[#64748B]">Mostrando 150 de {filtered.length} — achicá el rango de días o filtrá por estado para ver menos</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </>
       )}
     </div>
