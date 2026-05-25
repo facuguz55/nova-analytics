@@ -211,9 +211,15 @@ export default function Sidebar({
             <div className="flex-1 overflow-hidden">
               <p className="text-[13px] font-semibold text-[#F1F5F9] truncate">{workspaceName}</p>
               <p className="text-[11px] truncate capitalize" style={{
-                color: workspacePlan === "active" ? "#22c55e" : workspacePlan === "trial" ? "#f59e0b" : "#64748B"
+                color: workspacePlan === "free" ? "#64748B"
+                  : workspacePlan === "trial" ? "#f59e0b"
+                  : "#22c55e"
               }}>
-                {workspacePlan === "active" ? "Plan activo" : workspacePlan === "trial" ? "Prueba gratuita" : "Sin plan activo"}
+                {workspacePlan === "free" ? "Sin plan activo"
+                  : workspacePlan === "trial" ? "Prueba gratuita"
+                  : workspacePlan === "pro" ? "Plan Pro"
+                  : workspacePlan === "agency" ? "Plan Agency"
+                  : "Plan activo"}
               </p>
             </div>
           )}
