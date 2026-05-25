@@ -1,59 +1,69 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+﻿import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-/**
- * Middleware de Nova Analytics
- * - Auth guard: protege /app/* y /admin/*
- * - Rate limiting básico (se expande en Fase Seguridad)
- *
- * TODO: Integrar con Supabase Auth cuando se configure la DB.
- */
+export async function middleware(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({ request });
 
-// Rutas que requieren autenticación
-const PROTECTED_PREFIXES = ["/app", "/admin"];
-
-// Rutas públicas (siempre accesibles)
-const PUBLIC_PATHS = [
-  "/",
-  "/auth/login",
-  "/auth/register",
-  "/api/health",
-];
-
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Verificar si la ruta requiere autenticación
-  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
   );
 
-  if (!isProtected) {
-    return NextResponse.next();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const path = request.nextUrl.pathname;
+
+  // Rutas del dashboard — requieren auth
+  if (path.startsWith("/app")) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("next", path);
+      return NextResponse.redirect(url);
+    }
   }
 
-  // TODO: Verificar sesión con Supabase Auth
-  // Por ahora, permitir acceso (se bloquea cuando se implemente Auth)
-  // const session = await getSession(request);
-  // if (!session) {
-  //   return NextResponse.redirect(new URL("/auth/login", request.url));
-  // }
+  // Rutas admin — requieren rol super_admin en Supabase
+  if (path.startsWith("/admin")) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (profile?.role !== "super_admin") {
+      return NextResponse.redirect(new URL("/app/dashboard", request.url));
+    }
+  }
 
-  // Agregar headers de seguridad adicionales
-  const response = NextResponse.next();
-  response.headers.set("X-Workspace-Protected", "true");
+  // Si ya está logueado, redirigir lejos de /login y /register
+  if ((path === "/login" || path === "/register") && user) {
+    return NextResponse.redirect(new URL("/app/dashboard", request.url));
+  }
 
-  return response;
+  return supabaseResponse;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Aplica a todas las rutas excepto:
-     * - _next/static (archivos estáticos)
-     * - _next/image (optimización de imágenes)
-     * - favicon.ico
-     */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/auth|auth/callback).*)",
   ],
 };
