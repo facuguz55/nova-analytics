@@ -1,9 +1,10 @@
 "use client";
 
-import { Bell, Search, ChevronDown, DollarSign, LayoutGrid, X, Sparkles, GraduationCap } from "lucide-react";
+import { Bell, Search, ChevronDown, DollarSign, LayoutGrid, X, Sparkles, GraduationCap, Megaphone } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { CURRENT_VERSION } from "@/lib/changelog";
 
 interface NavbarProps {
   userName: string;
@@ -11,24 +12,30 @@ interface NavbarProps {
   alertCount?: number;
 }
 
-// ── Índice de búsqueda ────────────────────────────────────────────────────────
+// ── Índice de búsqueda global ────────────────────────────────────────────────
+// keywords: términos extra que disparan este ítem aunque no estén en el label
 const SEARCH_ITEMS = [
-  { label: "Dashboard",           href: "/app/dashboard",                      category: "General" },
-  { label: "IA Assistant",        href: "/app/ia",                             category: "General" },
-  { label: "Alertas",             href: "/app/alertas",                        category: "General" },
-  { label: "Planes",              href: "/app/planes",                         category: "General" },
-  { label: "Tienda Web",          href: "/app/tienda",                         category: "Tienda"  },
-  { label: "Análisis",            href: "/app/analisis",                       category: "Tienda"  },
-  { label: "Órdenes",             href: "/app/ordenes",                        category: "Tienda"  },
-  { label: "Productos / Stock",   href: "/app/productos",                      category: "Tienda"  },
-  { label: "Clientes",            href: "/app/clientes",                       category: "Tienda"  },
-  { label: "Rentabilidad",        href: "/app/rentabilidad",                   category: "Tienda"  },
-  { label: "Meta Ads",            href: "/app/meta-ads",                       category: "Marketing" },
-  { label: "Campañas",            href: "/app/campanas",                       category: "Marketing" },
-  { label: "Mails",               href: "/app/mails",                          category: "Comunicación" },
-  { label: "Integraciones",       href: "/app/configuracion/integraciones",    category: "Config"  },
-  { label: "Finanzas",            href: "/app/configuracion/financiera",       category: "Config"  },
-  { label: "Mi Cuenta",           href: "/app/configuracion/cuenta",           category: "Config"  },
+  { label: "Dashboard",           href: "/app/dashboard",                      category: "General",       keywords: ["inicio", "home", "métricas", "ventas", "revenue", "profit"] },
+  { label: "IA Assistant",        href: "/app/ia",                             category: "General",       keywords: ["ia", "inteligencia", "chat", "claude", "ai", "consulta"] },
+  { label: "Alertas",             href: "/app/alertas",                        category: "General",       keywords: ["avisos", "stock", "notificaciones", "warning", "peligro"] },
+  { label: "Planes",              href: "/app/planes",                         category: "General",       keywords: ["suscripcion", "billing", "precio", "upgrade", "trial", "pro"] },
+  { label: "Novedades",           href: "/app/changelog",                      category: "General",       keywords: ["changelog", "versiones", "updates", "actualizaciones", "nuevo"] },
+  { label: "Tienda Web",          href: "/app/tienda",                         category: "Tienda",        keywords: ["tiendanube", "tienda", "store", "ecommerce"] },
+  { label: "Análisis",            href: "/app/analisis",                       category: "Tienda",        keywords: ["analisis", "estadisticas", "stats", "datos", "reporte"] },
+  { label: "Órdenes",             href: "/app/ordenes",                        category: "Tienda",        keywords: ["pedidos", "compras", "orders", "ventas", "pagadas", "canceladas"] },
+  { label: "Productos / Stock",   href: "/app/productos",                      category: "Tienda",        keywords: ["inventario", "stock", "productos", "sku", "variantes", "precio"] },
+  { label: "Clientes",            href: "/app/clientes",                       category: "Tienda",        keywords: ["clientes", "buyers", "vip", "recurrentes", "email", "contactos"] },
+  { label: "Rentabilidad",        href: "/app/rentabilidad",                   category: "Tienda",        keywords: ["margen", "ganancia", "costos", "utilidad", "profit", "neto"] },
+  { label: "Meta Ads",            href: "/app/meta-ads",                       category: "Marketing",     keywords: ["facebook", "instagram", "roas", "cpc", "campañas", "ads", "publicidad"] },
+  { label: "Campañas",            href: "/app/campanas",                       category: "Marketing",     keywords: ["campañas", "marketing", "promociones", "email marketing"] },
+  { label: "Mails",               href: "/app/mails",                          category: "Comunicación",  keywords: ["emails", "gmail", "correos", "inbox", "mensajes", "responder"] },
+  { label: "Integraciones",       href: "/app/configuracion/integraciones",    category: "Configuración", keywords: ["conectar", "tiendanube", "gmail", "meta", "api", "oauth"] },
+  { label: "Configuración Financiera", href: "/app/configuracion/financiera",  category: "Configuración", keywords: ["finanzas", "iva", "impuestos", "comision", "dolar", "tipo de cambio"] },
+  { label: "Cotizaciones USD",    href: "/app/configuracion/cotizaciones",     category: "Configuración", keywords: ["dolar", "blue", "oficial", "cotizacion", "ccl", "mep"] },
+  { label: "Costos Adicionales",  href: "/app/configuracion/costos-adicionales", category: "Configuración", keywords: ["costos fijos", "gastos", "logistica", "envio", "extra"] },
+  { label: "Comisiones",          href: "/app/configuracion/comisiones",       category: "Configuración", keywords: ["mercadopago", "plataforma", "tarjeta", "comision"] },
+  { label: "Mi Cuenta",           href: "/app/configuracion/cuenta",           category: "Configuración", keywords: ["perfil", "usuario", "contraseña", "nombre", "avatar"] },
+  { label: "Notificaciones",      href: "/app/configuracion/notificaciones",   category: "Configuración", keywords: ["telegram", "whatsapp", "alertas", "email", "resumen diario"] },
 ];
 
 export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarProps) {
@@ -45,10 +52,14 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
   const initials = userName.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "U";
 
   const filtered = searchQ.trim()
-    ? SEARCH_ITEMS.filter((i) =>
-        i.label.toLowerCase().includes(searchQ.toLowerCase()) ||
-        i.category.toLowerCase().includes(searchQ.toLowerCase())
-      )
+    ? SEARCH_ITEMS.filter((i) => {
+        const q = searchQ.toLowerCase();
+        return (
+          i.label.toLowerCase().includes(q) ||
+          i.category.toLowerCase().includes(q) ||
+          i.keywords.some((k) => k.toLowerCase().includes(q))
+        );
+      })
     : SEARCH_ITEMS.slice(0, 8);
 
   // Persistir preferencias
@@ -225,6 +236,17 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
               </div>
             )}
           </div>
+
+          {/* Badge Novedades */}
+          <Link
+            href="/app/changelog"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition-all hover:opacity-85"
+            style={{ height: "36px", background: "rgba(225,105,30,0.15)", border: "1px solid rgba(225,105,30,0.35)", color: "#e1691e" }}
+            title="Ver novedades de la versión"
+          >
+            <Megaphone size={12} strokeWidth={2.5} />
+            v{CURRENT_VERSION}
+          </Link>
 
           {/* Notificaciones */}
           <div className="relative">

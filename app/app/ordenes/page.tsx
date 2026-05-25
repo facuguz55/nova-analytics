@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import DateRangeSelector from "./DateRangeSelector";
 import { presetToDates, type Preset } from "./date-utils";
+import ExportCSVButton from "./ExportCSVButton";
 
 export const metadata: Metadata = { title: "Órdenes" };
 
@@ -239,6 +240,7 @@ export default async function OrdenesPage({
               </button>
             </form>
 
+            <ExportCSVButton orders={filtered as any} />
             <span className="text-xs text-[#64748B] ml-auto">{filtered.length} resultado{filtered.length !== 1 ? "s" : ""}</span>
           </div>
 

@@ -73,3 +73,34 @@ export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength).trimEnd() + "…";
 }
+
+/**
+ * Exporta un array de objetos a CSV y descarga el archivo en el browser.
+ * Llama desde un componente "use client".
+ */
+export function downloadCSV(rows: Record<string, string | number | null | undefined>[], filename: string): void {
+  if (rows.length === 0) return;
+  const headers = Object.keys(rows[0]);
+  const escape  = (v: string | number | null | undefined) => {
+    const s = v == null ? "" : String(v);
+    // Si el valor tiene comas, comillas o saltos, lo envolvemos en comillas
+    if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+      return `"${s.replace(/"/g, '""')}"`;
+    }
+    return s;
+  };
+  const csv = [
+    headers.join(","),
+    ...rows.map((row) => headers.map((h) => escape(row[h])).join(",")),
+  ].join("\n");
+
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" }); // BOM para Excel
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}

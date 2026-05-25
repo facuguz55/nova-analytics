@@ -355,3 +355,74 @@ export async function markAlertRead(alertId: string) {
 
   revalidatePath("/app/alertas");
 }
+
+// ── Configuración de notificaciones ───────────────────────────────────────────
+const NotifConfigSchema = z.object({
+  telegram_chat_id:         z.string().max(30).optional(),
+  telegram_enabled:         z.coerce.boolean(),
+  daily_summary_enabled:    z.coerce.boolean(),
+  daily_summary_time:       z.string().regex(/^\d{2}:\d{2}$/).default("20:00"),
+  alert_vip_inactive_days:  z.coerce.number().min(1).max(365).default(30),
+  alert_big_sale_threshold: z.coerce.number().min(0).max(99999999).default(50000),
+});
+
+export async function saveNotificationConfig(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const parsed = NotifConfigSchema.safeParse({
+    telegram_chat_id:         formData.get("telegram_chat_id") || undefined,
+    telegram_enabled:         formData.get("telegram_enabled"),
+    daily_summary_enabled:    formData.get("daily_summary_enabled"),
+    daily_summary_time:       formData.get("daily_summary_time"),
+    alert_vip_inactive_days:  formData.get("alert_vip_inactive_days"),
+    alert_big_sale_threshold: formData.get("alert_big_sale_threshold"),
+  });
+  if (!parsed.success) throw new Error("Datos inválidos");
+
+  const { data: userRow } = await supabase
+    .from("users")
+    .select("workspace_id")
+    .eq("id", user.id)
+    .single();
+  if (!userRow) throw new Error("Sin workspace");
+
+  const workspaceId = (userRow as any).workspace_id;
+
+  // Upsert usando workspace_id como PK de la config
+  await (supabase as any).from("notification_config")
+    .upsert({ workspace_id: workspaceId, ...parsed.data }, { onConflict: "workspace_id" });
+
+  revalidatePath("/app/configuracion/notificaciones");
+}
+
+export async function testTelegramNotification(chatId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  // Validar que el chatId sea numérico
+  if (!/^-?\d+$/.test(chatId.trim())) throw new Error("Chat ID inválido");
+
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) throw new Error("TELEGRAM_BOT_TOKEN no configurado");
+
+  const res = await fetch(
+    `https://api.telegram.org/bot${token}/sendMessage`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId.trim(),
+        text: "✅ *Nova Analytics* — Conexión exitosa\\! Vas a recibir alertas de ventas, stock y clientes VIP acá.",
+        parse_mode: "MarkdownV2",
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as any)?.description ?? "Error al enviar mensaje");
+  }
+}

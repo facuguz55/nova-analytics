@@ -9,6 +9,7 @@ import {
   ShoppingCart, Package, Users, TrendingUp, Target,
   Megaphone, Mail, Plug, DollarSign, User,
   ChevronLeft, ChevronRight, LogOut, Sparkles,
+  Megaphone as MegaphoneIcon, BellRing, Activity,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -49,9 +50,17 @@ const NAV_SECTIONS = [
   {
     label: "CONFIGURACIÓN",
     items: [
-      { href: "/app/configuracion/integraciones", label: "Integraciones",     icon: Plug },
-      { href: "/app/configuracion/financiera",    label: "Finanzas",          icon: DollarSign },
-      { href: "/app/configuracion/cuenta",        label: "Mi Cuenta",         icon: User },
+      { href: "/app/configuracion/integraciones",    label: "Integraciones",    icon: Plug },
+      { href: "/app/configuracion/financiera",       label: "Finanzas",         icon: DollarSign },
+      { href: "/app/configuracion/notificaciones",   label: "Notificaciones",   icon: BellRing },
+      { href: "/app/configuracion/actividad",        label: "Actividad",        icon: Activity },
+      { href: "/app/configuracion/cuenta",           label: "Mi Cuenta",        icon: User },
+    ],
+  },
+  {
+    label: "NOVA",
+    items: [
+      { href: "/app/changelog", label: "Novedades", icon: MegaphoneIcon, accent: "#e1691e" },
     ],
   },
 ];

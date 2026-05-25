@@ -69,6 +69,16 @@ async function getDashboardData() {
 
   const cambioMes = calcPercentChange(revenue, prevRevenue);
 
+  // Comparativa año anterior
+  const sameMonthLastYearStart = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+  const sameMonthLastYearEnd   = new Date(now.getFullYear() - 1, now.getMonth() + 1, 1);
+  const sameMonthLastYearPaid  = paidOrders.filter((o) => {
+    const d = new Date(o.created_at);
+    return d >= sameMonthLastYearStart && d < sameMonthLastYearEnd;
+  });
+  const revenueLastYear  = sameMonthLastYearPaid.reduce((a, o) => a + parseFloat(o.total), 0);
+  const cambioAnio       = calcPercentChange(revenue, revenueLastYear);
+
   // Chart data últimos 30 días
   const chartData: { date: string; revenue: number; orders: number; profit: number }[] = [];
   for (let i = 29; i >= 0; i--) {
@@ -106,6 +116,7 @@ async function getDashboardData() {
     usdRate,
     // Tienda metrics
     revenue, orders, aov, netRevenue, netProfit, profitPct, cambioMes,
+    prevRevenue, revenueLastYear, cambioAnio,
     // Clientes
     recurrentes: recurrenteCount, nuevos: customerCount - recurrenteCount,
     // Chart

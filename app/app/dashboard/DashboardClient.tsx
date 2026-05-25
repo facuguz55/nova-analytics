@@ -24,6 +24,7 @@ interface DashboardData {
   usdRate: number;
   revenue: number; orders: number; aov: number; netRevenue: number; netProfit: number;
   profitPct: number; cambioMes: number;
+  prevRevenue: number; revenueLastYear: number; cambioAnio: number;
   recurrentes: number; nuevos: number;
   chartData: ChartPoint[]; recentOrders: Order[];
 }
@@ -210,15 +211,23 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
       {/* TIENDA */}
       <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
-        <div className="flex items-center gap-2 px-5 py-3" style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}>
+        <div className="flex items-center gap-2 px-5 py-3 flex-wrap" style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}>
           <Store size={14} color="#7C3AED" strokeWidth={2.5} />
           <p className="text-xs font-bold tracking-widest text-[#94A3B8] uppercase">Tienda</p>
-          {data.cambioMes !== 0 && (
-            <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{ background: data.cambioMes > 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: data.cambioMes > 0 ? "#22c55e" : "#ef4444" }}>
-              {data.cambioMes > 0 ? "+" : ""}{data.cambioMes.toFixed(1)}% vs mes anterior
-            </span>
-          )}
+          <div className="ml-auto flex items-center gap-2 flex-wrap">
+            {data.cambioMes !== 0 && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: data.cambioMes > 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: data.cambioMes > 0 ? "#22c55e" : "#ef4444" }}>
+                {data.cambioMes > 0 ? "↑" : "↓"} {Math.abs(data.cambioMes).toFixed(1)}% vs mes anterior
+              </span>
+            )}
+            {data.cambioAnio !== 0 && data.revenueLastYear > 0 && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: data.cambioAnio > 0 ? "rgba(37,99,235,0.1)" : "rgba(239,68,68,0.08)", color: data.cambioAnio > 0 ? "#2563EB" : "#f87171", border: "1px solid rgba(37,99,235,0.2)" }}>
+                {data.cambioAnio > 0 ? "↑" : "↓"} {Math.abs(data.cambioAnio).toFixed(1)}% vs mismo mes año pasado
+              </span>
+            )}
+          </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
           {TIENDA_METRICS.map((m, i) => {
