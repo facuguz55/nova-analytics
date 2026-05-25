@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
 import { revalidatePath } from "next/cache";
@@ -45,15 +45,17 @@ export async function changeUserRole(userId: string, role: string) {
   revalidateAdmin();
 }
 
-export async function addManualOrder(workspaceId: string, total: number, customerName: string) {
+/** Agregar un credito de pago manual al workspace en la tabla billing */
+export async function addManualPayment(workspaceId: string, amount: number, note: string) {
   const service = createServiceClient();
-  const { error } = await service.from("tn_orders").insert({
+  const { error } = await service.from("billing").insert({
     workspace_id: workspaceId,
-    total,
+    amount,
+    currency: "ARS",
     status: "paid",
-    customer_name: customerName || "Manual",
-    external_id: `MANUAL-${Date.now()}`,
-    created_at: new Date().toISOString(),
+    provider: "manual",
+    metadata: { note: note || "Pago manual registrado desde HQ" },
+    paid_at: new Date().toISOString(),
   });
   if (error) throw new Error(error.message);
   revalidateAdmin();

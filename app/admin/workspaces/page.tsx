@@ -20,31 +20,30 @@ export default async function WorkspacesPage() {
   type WsRow = { id: string; name: string; slug: string; plan: string; status: string; created_at: string };
   type UserRow = { id: string; email: string; name: string | null; role: string; workspace_id: string | null; created_at: string };
   type IntRow = { workspace_id: string; provider: string; status: string };
-  type RawOrder = { total: number; status: string | null; workspace_id: string };
+  type BillingRow = { workspace_id: string; amount: number; status: string };
 
-  const [wsRes, userRes, intRes, ordRes] = await Promise.allSettled([
+  const [wsRes, userRes, intRes, billingRes] = await Promise.allSettled([
     service.from("workspaces").select("*").order("created_at", { ascending: false }),
     service.from("users").select("id, email, name, role, workspace_id, created_at").order("created_at", { ascending: false }),
     service.from("integrations").select("workspace_id, provider, status"),
-    service.from("tn_orders").select("total, status, workspace_id"),
+    service.from("billing").select("workspace_id, amount, status").eq("status", "paid"),
   ]);
 
   const allWorkspaces = (wsRes.status === "fulfilled" ? wsRes.value.data ?? [] : []) as WsRow[];
   const allUsers = (userRes.status === "fulfilled" ? userRes.value.data ?? [] : []) as UserRow[];
   const allIntegrations = (intRes.status === "fulfilled" ? intRes.value.data ?? [] : []) as IntRow[];
-  const rawOrders = (ordRes.status === "fulfilled" ? ordRes.value.data ?? [] : []) as RawOrder[];
-  const paidOrders = rawOrders.filter((o) => o.status === "paid" || o.status === "closed");
+  const billingRows = (billingRes.status === "fulfilled" ? billingRes.value.data ?? [] : []) as BillingRow[];
 
   const workspaceStats = allWorkspaces.map((ws) => {
     const wsUsers = allUsers.filter((u) => u.workspace_id === ws.id);
     const wsIntegrations = allIntegrations.filter((i) => i.workspace_id === ws.id && i.status === "active");
-    const wsOrders = paidOrders.filter((o) => o.workspace_id === ws.id);
+    const wsBilling = billingRows.filter((b) => b.workspace_id === ws.id);
     return {
       ...ws,
       userCount: wsUsers.length,
       integrationCount: wsIntegrations.length,
-      orderCount: wsOrders.length,
-      revenue: wsOrders.reduce((acc, o) => acc + o.total, 0),
+      orderCount: wsBilling.length,
+      revenue: wsBilling.reduce((acc, b) => acc + b.amount, 0),
       providers: wsIntegrations.map((i) => i.provider),
       users: wsUsers,
     };

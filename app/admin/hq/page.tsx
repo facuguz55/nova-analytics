@@ -23,17 +23,17 @@ export default async function HQPage() {
   type WsRow = { id: string; name: string; slug: string; plan: string; status: string; created_at: string };
   type UserRow = { id: string; email: string; name: string | null; role: string; workspace_id: string | null; created_at: string };
   type IntRow = { workspace_id: string; provider: string; status: string };
-  type RawOrder = { id: string; total: number; status: string | null; workspace_id: string };
   type AuditRow = { action: string; workspace_id: string | null; created_at: string };
   type TokenRow = { workspace_id: string | null; input_tokens: number; output_tokens: number };
+  type BillingRow = { workspace_id: string; amount: number; status: string };
 
-  const [wsRes, userRes, intRes, ordRes, auditRes, tokenRes] = await Promise.all([
+  const [wsRes, userRes, intRes, auditRes, tokenRes, billingRes] = await Promise.all([
     service.from("workspaces").select("*", { count: "exact" }).order("created_at", { ascending: false }),
     service.from("users").select("*", { count: "exact" }).order("created_at", { ascending: false }),
     service.from("integrations").select("workspace_id, provider, status").eq("status", "active"),
-    service.from("tn_orders").select("id, total, status, workspace_id"),
     service.from("audit_logs").select("action, workspace_id, created_at").order("created_at", { ascending: false }).limit(20),
     service.from("token_usage").select("workspace_id, input_tokens, output_tokens"),
+    service.from("billing").select("workspace_id, amount, status").eq("status", "paid"),
   ]);
 
   const workspaceCount = wsRes.count ?? 0;
@@ -41,9 +41,9 @@ export default async function HQPage() {
   const allWorkspaces = (wsRes.data ?? []) as unknown as WsRow[];
   const allUsers = (userRes.data ?? []) as unknown as UserRow[];
   const allIntegrations = (intRes.data ?? []) as unknown as IntRow[];
-  const rawOrders = (ordRes.data ?? []) as unknown as RawOrder[];
   const audits = (auditRes.data ?? []) as unknown as AuditRow[];
   const tokenRows = (tokenRes.data ?? []) as unknown as TokenRow[];
+  const billingRows = (billingRes.data ?? []) as unknown as BillingRow[];
 
   // Agregar tokens por workspace
   const HAIKU_INPUT_COST_PER_M  = 0.80;
@@ -71,22 +71,20 @@ export default async function HQPage() {
     })
     .filter((ws) => ws.inputTokens + ws.outputTokens > 0)
     .sort((a, b) => b.inputTokens + b.outputTokens - a.inputTokens - a.outputTokens);
-  const allOrders = rawOrders.filter(
-    (o) => o.status === "paid" || o.status === "closed"
-  );
-  const totalRevenue = allOrders.reduce((acc, o) => acc + o.total, 0);
+  // Revenue desde tabla billing (pagos de suscripcion)
+  const totalRevenue = billingRows.reduce((acc, b) => acc + b.amount, 0);
 
   // Por workspace
   const workspaceStats = allWorkspaces.map((ws) => {
     const wsUsers = allUsers.filter((u) => u.workspace_id === ws.id);
     const wsIntegrations = allIntegrations.filter((i) => i.workspace_id === ws.id);
-    const wsOrders = allOrders.filter((o) => o.workspace_id === ws.id);
-    const wsRevenue = wsOrders.reduce((acc, o) => acc + o.total, 0);
+    const wsBilling = billingRows.filter((b) => b.workspace_id === ws.id);
+    const wsRevenue = wsBilling.reduce((acc, b) => acc + b.amount, 0);
     return {
       ...ws,
       userCount: wsUsers.length,
       integrationCount: wsIntegrations.length,
-      orderCount: wsOrders.length,
+      orderCount: wsBilling.length, // pagos de suscripcion
       revenue: wsRevenue,
       providers: wsIntegrations.map((i) => i.provider),
     };
@@ -101,7 +99,7 @@ export default async function HQPage() {
     { label: "Workspaces", value: String(workspaceCount ?? 0), icon: Store, color: "#7C3AED" },
     { label: "Usuarios", value: String(userCount ?? 0), icon: Users, color: "#2563EB" },
     { label: "Integraciones activas", value: String(allIntegrations.length), icon: Plug, color: "#22c55e" },
-    { label: "Revenue total (todos)", value: formatCurrency(totalRevenue), icon: DollarSign, color: "#e1691e" },
+    { label: "MRR (billing pagado)", value: formatCurrency(totalRevenue), icon: DollarSign, color: "#e1691e" },
   ];
 
   const PLAN_COLORS: Record<string, string> = {
@@ -211,7 +209,7 @@ export default async function HQPage() {
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
-                {["WORKSPACE", "PLAN", "USUARIOS", "INTEGRACIONES", "ÓRDENES", "REVENUE", "CREADO"].map((col) => (
+                {["WORKSPACE", "PLAN", "USUARIOS", "INTEGRACIONES", "PAGOS", "BILLING", "CREADO"].map((col) => (
                   <th key={col} className="text-left px-5 py-3 text-[10px] font-semibold tracking-widest text-[#94A3B8] uppercase whitespace-nowrap">
                     {col}
                   </th>

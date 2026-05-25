@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
-import { Package, AlertTriangle, DollarSign, TrendingUp } from "lucide-react";
+﻿import type { Metadata } from "next";
+import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
+import { getProducts, getProductName, type TNProduct } from "@/lib/tiendanube/client";
 import { formatCurrency } from "@/lib/utils";
+import Link from "next/link";
+import { Package, AlertTriangle, DollarSign, TrendingUp, Store, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = { title: "Productos / Stock" };
 
@@ -11,166 +13,151 @@ export default async function ProductosPage({
   searchParams: Promise<{ q?: string; stock?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
+  const q = (params.q ?? "").toLowerCase();
+  const stockFilter = params.stock ?? "all";
 
-  let query = supabase
-    .from("tn_products")
-    .select("id, external_id, name, stock, price, cost")
-    .order("stock", { ascending: true });
+  const connection = await getTiendaNubeConnection();
+  let products: TNProduct[] = [];
+  let error: string | null = null;
 
-  if (params.q) {
-    query = query.ilike("name", `%${params.q}%`);
+  if (connection) {
+    const [p1, p2] = await Promise.allSettled([
+      getProducts(connection.opts, 1, 100),
+      getProducts(connection.opts, 2, 100),
+    ]);
+    if (p1.status === "fulfilled") products = [...products, ...p1.value];
+    if (p2.status === "fulfilled") products = [...products, ...p2.value];
+    if (p1.status === "rejected") error = "Error al cargar productos desde TiendaNube";
   }
-  if (params.stock === "low") {
-    query = query.lte("stock", 5);
-  }
 
-  type ProductRow = { id: string; external_id: string; name: string; stock: number; price: number; cost: number };
-  const { data: rawProducts } = await query.limit(200);
-  const all = (rawProducts ?? []) as unknown as ProductRow[];
+  let filtered = products;
+  if (q) filtered = filtered.filter((p) => getProductName(p).toLowerCase().includes(q));
+  if (stockFilter === "low") filtered = filtered.filter((p) => p.variants.some((v) => (v.stock ?? 0) > 0 && (v.stock ?? 0) <= 5));
+  if (stockFilter === "out") filtered = filtered.filter((p) => p.variants.every((v) => (v.stock ?? 0) <= 0));
 
-  const lowStock = all.filter((p) => p.stock <= 5 && p.stock >= 0);
-  const outOfStock = all.filter((p) => p.stock <= 0);
-  const totalValue = all.reduce((acc, p) => acc + p.price * Math.max(p.stock, 0), 0);
-  const avgMargin = all.length > 0
-    ? all.filter((p) => p.price > 0).reduce((acc, p) => acc + ((p.price - p.cost) / p.price) * 100, 0) / Math.max(all.filter((p) => p.price > 0).length, 1)
-    : 0;
+  const lowStock = products.filter((p) => p.variants.some((v) => (v.stock ?? 0) > 0 && (v.stock ?? 0) <= 5));
+  const outOfStock = products.filter((p) => p.variants.every((v) => (v.stock ?? 0) <= 0));
+  const totalValue = products.reduce((acc, p) => {
+    const price = parseFloat(p.variants[0]?.price ?? "0");
+    const stock = p.variants.reduce((s, v) => s + (v.stock ?? 0), 0);
+    return acc + price * Math.max(stock, 0);
+  }, 0);
+  const avgMargin = (() => {
+    const withCost = products.filter((p) => p.variants[0]?.cost_price);
+    if (withCost.length === 0) return 0;
+    const sum = withCost.reduce((acc, p) => {
+      const price = parseFloat(p.variants[0]?.price ?? "0");
+      const cost = parseFloat(p.variants[0]?.cost_price ?? "0");
+      return acc + (price > 0 ? ((price - cost) / price) * 100 : 0);
+    }, 0);
+    return sum / withCost.length;
+  })();
 
   return (
     <div className="p-6 space-y-5">
-      {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
-          Productos / Stock
-        </h1>
-        <p className="text-sm text-[#94A3B8] mt-0.5">{all.length} productos sincronizados</p>
+        <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Productos / Stock</h1>
+        <p className="text-sm text-[#94A3B8] mt-0.5">
+          {connection ? `${products.length} productos en tiempo real desde TiendaNube` : "Conecta tu TiendaNube"}
+        </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {[
-          { label: "Total productos", value: String(all.length), icon: Package, color: "#7C3AED" },
-          { label: "Stock bajo (≤5)", value: String(lowStock.length), icon: AlertTriangle, color: "#f59e0b", alert: lowStock.length > 0 },
-          { label: "Sin stock", value: String(outOfStock.length), icon: AlertTriangle, color: "#ef4444", alert: outOfStock.length > 0 },
-          { label: "Valor del inventario", value: formatCurrency(totalValue), icon: DollarSign, color: "#22c55e" },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="rounded-2xl p-4 flex items-center gap-3"
-            style={{
-              background: "#111118",
-              border: `1px solid ${s.alert ? `${s.color}40` : "rgba(124,58,237,0.2)"}`,
-            }}
-          >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${s.color}18` }}>
-              <s.icon size={18} color={s.color} strokeWidth={2} />
-            </div>
-            <div>
-              <p className="text-xl font-black text-[#F1F5F9]">{s.value}</p>
-              <p className="text-xs text-[#94A3B8]">{s.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Avg margin */}
-      {avgMargin > 0 && (
-        <div
-          className="rounded-2xl p-4 flex items-center gap-3"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
-        >
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(225,105,30,0.12)" }}>
-            <TrendingUp size={16} color="#e1691e" strokeWidth={2} />
-          </div>
-          <div>
-            <span className="text-sm text-[#94A3B8]">Margen bruto promedio: </span>
-            <span className="text-sm font-bold text-[#e1691e]">{avgMargin.toFixed(1)}%</span>
-          </div>
+      {!connection && (
+        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(124,58,237,0.3)" }}>
+          <Store size={40} color="#7C3AED" className="mx-auto mb-3" />
+          <p className="text-[#F1F5F9] font-semibold mb-1">Conecta tu TiendaNube</p>
+          <Link href="/app/configuracion/integraciones"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white mt-2"
+            style={{ background: "#7C3AED" }}
+          >Ir a Integraciones <ArrowRight size={14} /></Link>
         </div>
       )}
 
-      {/* Table */}
-      <div
-        className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
-                {["PRODUCTO", "STOCK", "PRECIO VENTA", "COSTO", "MARGEN", "ESTADO"].map((col) => (
-                  <th key={col} className="text-left px-5 py-3 text-[10px] font-semibold tracking-widest text-[#94A3B8] uppercase whitespace-nowrap">
-                    {col}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {all.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-sm text-[#64748B]">
-                    Sin productos — conectá TiendaNube para sincronizar
-                  </td>
-                </tr>
-              ) : all.map((product, i) => {
-                const margin = product.price > 0 ? ((product.price - product.cost) / product.price * 100) : 0;
-                const isLow = product.stock > 0 && product.stock <= 5;
-                const isOut = product.stock <= 0;
-                const stockColor = isOut ? "#ef4444" : isLow ? "#f59e0b" : "#22c55e";
-
-                return (
-                  <tr
-                    key={product.id}
-                    className="hover:bg-[rgba(124,58,237,0.04)] transition-colors"
-                    style={{ borderBottom: i < all.length - 1 ? "1px solid rgba(124,58,237,0.08)" : "none" }}
-                  >
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#475569] font-mono">#{product.external_id}</span>
-                        <span className="text-sm font-medium text-[#F1F5F9] truncate max-w-[240px]">{product.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <span className="text-sm font-bold" style={{ color: stockColor }}>
-                        {product.stock <= 0 ? "Sin stock" : product.stock}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <span className="text-sm font-semibold text-[#F1F5F9]">{formatCurrency(product.price)}</span>
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <span className="text-sm text-[#94A3B8]">{product.cost > 0 ? formatCurrency(product.cost) : "—"}</span>
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <span
-                        className="text-sm font-semibold"
-                        style={{ color: margin >= 30 ? "#22c55e" : margin >= 10 ? "#f59e0b" : "#ef4444" }}
-                      >
-                        {product.cost > 0 ? `${margin.toFixed(1)}%` : "—"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      {isOut ? (
-                        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444", borderColor: "rgba(239,68,68,0.3)" }}>
-                          <AlertTriangle size={10} strokeWidth={2.5} /> Sin stock
-                        </span>
-                      ) : isLow ? (
-                        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border" style={{ background: "rgba(245,158,11,0.1)", color: "#f59e0b", borderColor: "rgba(245,158,11,0.3)" }}>
-                          <AlertTriangle size={10} strokeWidth={2.5} /> Stock bajo
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border" style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e", borderColor: "rgba(34,197,94,0.3)" }}>
-                          OK
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {connection && error && (
+        <div className="rounded-xl p-4 flex items-center gap-3" style={{ background: "#1a0a0a", border: "1px solid rgba(239,68,68,0.3)" }}>
+          <AlertTriangle size={18} color="#ef4444" />
+          <p className="text-sm text-[#fca5a5]">{error}</p>
         </div>
-      </div>
+      )}
+
+      {connection && !error && (
+        <>
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+            {[
+              { label: "Total productos", value: String(products.length), icon: Package, color: "#7C3AED" },
+              { label: "Stock bajo (<=5)", value: String(lowStock.length), icon: AlertTriangle, color: "#f59e0b" },
+              { label: "Sin stock", value: String(outOfStock.length), icon: AlertTriangle, color: "#ef4444" },
+              { label: "Valor inventario", value: formatCurrency(totalValue), icon: DollarSign, color: "#22c55e" },
+            ].map((s) => (
+              <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${s.color}18` }}>
+                  <s.icon size={18} color={s.color} strokeWidth={2} />
+                </div>
+                <div>
+                  <p className="text-xs text-[#64748B]">{s.label}</p>
+                  <p className="text-lg font-bold text-[#F1F5F9]">{s.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { label: "Todos", value: "all" },
+              { label: "Stock bajo", value: "low" },
+              { label: "Sin stock", value: "out" },
+            ].map((f) => (
+              <Link key={f.value} href={`?stock=${f.value}${q ? `&q=${q}` : ""}`}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+                style={{
+                  background: stockFilter === f.value ? "#7C3AED" : "rgba(124,58,237,0.1)",
+                  color: stockFilter === f.value ? "#fff" : "#94A3B8",
+                  border: "1px solid rgba(124,58,237,0.2)",
+                }}
+              >{f.label}</Link>
+            ))}
+          </div>
+
+          <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(124,58,237,0.15)" }}>
+              <span className="text-sm text-[#94A3B8]">{filtered.length} producto{filtered.length !== 1 ? "s" : ""}</span>
+              {avgMargin > 0 && <span className="text-xs text-[#64748B]">Margen prom: {avgMargin.toFixed(1)}%</span>}
+            </div>
+            <div className="divide-y" style={{ borderColor: "rgba(124,58,237,0.08)" }}>
+              {filtered.length === 0 ? (
+                <div className="p-8 text-center text-sm text-[#64748B]">Sin productos que coincidan</div>
+              ) : (
+                filtered.slice(0, 150).map((p) => {
+                  const name = getProductName(p);
+                  const totalStock = p.variants.reduce((s, v) => s + (v.stock ?? 0), 0);
+                  const price = parseFloat(p.variants[0]?.price ?? "0");
+                  const cost = parseFloat(p.variants[0]?.cost_price ?? "0");
+                  const margin = price > 0 && cost > 0 ? ((price - cost) / price * 100).toFixed(1) : null;
+                  const stockColor = totalStock <= 0 ? "#ef4444" : totalStock <= 5 ? "#f59e0b" : "#22c55e";
+                  return (
+                    <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[rgba(124,58,237,0.04)] transition-colors">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(124,58,237,0.1)" }}>
+                        <Package size={14} color="#7C3AED" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-[#F1F5F9] truncate">{name}</p>
+                        <p className="text-xs text-[#64748B]">{p.variants.length} variante{p.variants.length !== 1 ? "s" : ""}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0 space-y-0.5">
+                        <p className="text-sm font-semibold text-[#F1F5F9]">{formatCurrency(price)}</p>
+                        <p className="text-xs font-medium" style={{ color: stockColor }}>
+                          {totalStock <= 0 ? "Sin stock" : `${totalStock} en stock`}
+                        </p>
+                        {margin && <p className="text-xs text-[#64748B]">Margen: {margin}%</p>}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

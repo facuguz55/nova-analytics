@@ -17,7 +17,7 @@ interface GmailMessage {
 async function fetchInbox(accessToken: string): Promise<GmailMessage[]> {
   try {
     const listRes = await fetch(
-      "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=50&labelIds=INBOX",
+      "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=20&labelIds=INBOX",
       { headers: { Authorization: `Bearer ${accessToken}` }, next: { revalidate: 60 } }
     );
     if (!listRes.ok) return [];

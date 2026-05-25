@@ -1,64 +1,58 @@
-import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+﻿import type { Metadata } from "next";
 import AnalisisClient from "./AnalisisClient";
+import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
+import { getOrdersForRange } from "@/lib/tiendanube/client";
 
-export const metadata: Metadata = { title: "Análisis" };
+export const metadata: Metadata = { title: "Analisis" };
 
-export default async function AnalisisPage() {
-  const supabase = await createClient();
+export default async function AnalisisPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ days?: string }>;
+}) {
+  const params = await searchParams;
+  const days = ([30, 60, 90].includes(Number(params.days)) ? Number(params.days) : 90) as 30 | 60 | 90;
 
-  const { data: orders } = await supabase
-    .from("tn_orders")
-    .select("total, status, created_at")
-    .order("created_at", { ascending: true })
-    .limit(1000);
+  const connection = await getTiendaNubeConnection();
 
-  type OrderRow = { total: number; status: string | null; created_at: string | null };
-  const allOrders = (orders ?? []) as unknown as OrderRow[];
-  const paidOrders = allOrders.filter((o) => o.status === "paid" || o.status === "closed");
+  let paidOrders: Array<{ total: string; status: string; payment_status: string; created_at: string }> = [];
 
-  // Agrupar por mes (últimos 6 meses)
+  if (connection) {
+    const result = await Promise.allSettled([getOrdersForRange(connection.opts, { days }, 5)]);
+    if (result[0].status === "fulfilled") {
+      paidOrders = result[0].value.filter((o) => o.payment_status === "paid" || o.status === "closed");
+    }
+  }
+
   const now = new Date();
   const monthlyData = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const nextD = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
     const monthOrders = paidOrders.filter((o) => {
-      if (!o.created_at) return false;
       const date = new Date(o.created_at);
       return date >= d && date < nextD;
     });
     monthlyData.push({
       month: d.toLocaleDateString("es-AR", { month: "short", year: "2-digit" }),
-      ventas: monthOrders.reduce((acc, o) => acc + o.total, 0),
+      ventas: monthOrders.reduce((acc, o) => acc + parseFloat(o.total), 0),
       ordenes: monthOrders.length,
     });
   }
 
-  // Distribución por día de la semana
-  const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  const weekDays = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
   const byWeekday = weekDays.map((day, idx) => {
-    const dayOrders = paidOrders.filter((o) => {
-      if (!o.created_at) return false;
-      return new Date(o.created_at).getDay() === idx;
-    });
+    const dayOrders = paidOrders.filter((o) => new Date(o.created_at).getDay() === idx);
     return {
       day,
-      ventas: dayOrders.reduce((acc, o) => acc + o.total, 0),
+      ventas: dayOrders.reduce((acc, o) => acc + parseFloat(o.total), 0),
       ordenes: dayOrders.length,
     };
   });
 
-  // Distribución por hora
   const byHour = Array.from({ length: 24 }, (_, h) => {
-    const hourOrders = paidOrders.filter((o) => {
-      if (!o.created_at) return false;
-      return new Date(o.created_at).getHours() === h;
-    });
-    return {
-      hora: `${String(h).padStart(2, "0")}:00`,
-      ordenes: hourOrders.length,
-    };
+    const hourOrders = paidOrders.filter((o) => new Date(o.created_at).getHours() === h);
+    return { hora: `${String(h).padStart(2, "0")}:00`, ordenes: hourOrders.length };
   });
 
   return (

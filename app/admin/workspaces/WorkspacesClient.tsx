@@ -12,7 +12,7 @@ import {
   deleteWorkspace,
   deleteUser,
   changeUserRole,
-  addManualOrder,
+  addManualPayment,
 } from "@/app/admin/actions";
 import { formatCurrency } from "@/lib/utils";
 
@@ -122,7 +122,7 @@ export default function WorkspacesClient({
     const { workspaceId } = orderModal;
     setOrderModal(null);
     setOrderForm({ total: "", customerName: "" });
-    run("order-" + workspaceId, () => addManualOrder(workspaceId, total, orderForm.customerName));
+    run("order-" + workspaceId, () => addManualPayment(workspaceId, total, orderForm.customerName));
   }
 
   return (
