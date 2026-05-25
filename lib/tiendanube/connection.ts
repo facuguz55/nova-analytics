@@ -1,4 +1,5 @@
 ﻿import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import { decrypt } from "@/lib/encryption";
 import type { TiendaNubeOptions } from "./client";
 
@@ -9,9 +10,12 @@ export interface TiendaNubeConnection {
 }
 
 export async function getTiendaNubeConnection(): Promise<TiendaNubeConnection | null> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // getUser() usa React cache() — si el layout o la page ya llamaron a getUser(),
+  // esta llamada devuelve el resultado cacheado sin ir a Supabase de nuevo.
+  const user = await getUser();
   if (!user) return null;
+
+  const supabase = await createClient();
 
   type IntRow = {
     access_token_encrypted: string | null;

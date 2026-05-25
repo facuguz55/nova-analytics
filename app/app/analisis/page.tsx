@@ -18,7 +18,7 @@ export default async function AnalisisPage({
   let paidOrders: Array<{ total: string; status: string; payment_status: string; created_at: string }> = [];
 
   if (connection) {
-    const result = await Promise.allSettled([getOrdersForRange(connection.opts, { days }, 5)]);
+    const result = await Promise.allSettled([getOrdersForRange(connection.opts, { days }, 3)]);
     if (result[0].status === "fulfilled") {
       paidOrders = result[0].value.filter((o) => o.payment_status === "paid" || o.status === "closed");
     }

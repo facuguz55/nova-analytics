@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import { TrendingUp, DollarSign, Percent, ArrowUpRight, ArrowDownRight, Store, ArrowRight } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
@@ -16,9 +17,10 @@ export default async function RentabilidadPage({
   const params = await searchParams;
   const days = ([30, 60, 90].includes(Number(params.days)) ? Number(params.days) : 30) as 30 | 60 | 90;
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // getUser() usa React cache() — misma llamada que getTiendaNubeConnection() ya hizo
+  const user = await getUser();
   if (!user) return null;
+  const supabase = await createClient();
 
   type FinConfig = { tax_rate: number; platform_fee: number; agency_fee: number; usd_rate: number };
   const { data: rawUserRow } = await supabase.from("users").select("workspace_id").eq("id", user.id).single();

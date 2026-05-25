@@ -32,7 +32,7 @@ async function getDashboardData() {
 
   if (connection) {
     const [ordersRes, customersRes] = await Promise.allSettled([
-      getOrdersForRange(connection.opts, { days: 60 }, 5),
+      getOrdersForRange(connection.opts, { days: 60 }, 2),
       getCustomers(connection.opts, 1, 100),
     ]);
     if (ordersRes.status === "fulfilled") allOrders60 = ordersRes.value;

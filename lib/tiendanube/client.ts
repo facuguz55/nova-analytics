@@ -99,7 +99,9 @@ async function tnFetch<T>(
       Authentication: `bearer ${opts.accessToken}`,
       "User-Agent": "Nova Analytics (novaagency.info)",
     },
-    cache: "no-store",
+    // Cache 2 minutos — los datos de TiendaNube no cambian cada segundo.
+    // Elimina el re-fetch en cada click de sidebar para la misma ventana de tiempo.
+    next: { revalidate: 120 },
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
