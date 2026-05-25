@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import {
   Store, Mail, Target, CheckCircle2, AlertCircle,
-  Link2Off, RefreshCw, ExternalLink, Shield, Lock, Eye, Server, Zap,
+  Link2Off, RefreshCw, ExternalLink, Shield, Lock, Eye, Server, Zap, RotateCw,
 } from "lucide-react";
 import { disconnectIntegration } from "@/app/app/actions";
 import { toast } from "sonner";
@@ -33,6 +33,7 @@ function IntegrationCard({
   integration,
   connectHref,
   onDisconnect,
+  onSync,
   comingSoon,
 }: {
   icon: React.ElementType;
@@ -43,10 +44,25 @@ function IntegrationCard({
   integration: IntegrationRow | null;
   connectHref: string;
   onDisconnect: () => Promise<void>;
+  onSync?: () => Promise<void>;
   comingSoon?: boolean;
 }) {
   const [disconnecting, setDisconnecting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const isConnected = integration?.status === "active";
+
+  async function handleSync() {
+    if (!onSync) return;
+    setSyncing(true);
+    try {
+      await onSync();
+      toast.success("Sincronización completada");
+    } catch {
+      toast.error("Error al sincronizar. Intentá de nuevo.");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   async function handleDisconnect() {
     if (!confirm(`¿Desconectar ${name}? Se revocarán los tokens de acceso.`)) return;
@@ -160,25 +176,38 @@ function IntegrationCard({
         {!comingSoon && (
           <div className="flex gap-2 mt-auto pt-1">
             {isConnected ? (
-              <>
-                <a
-                  href={connectHref}
-                  className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all hover:opacity-80"
-                  style={{ background: "rgba(124,58,237,0.1)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.25)" }}
-                >
-                  <RefreshCw size={13} strokeWidth={2.5} />
-                  Reconectar
-                </a>
-                <button
-                  onClick={handleDisconnect}
-                  disabled={disconnecting}
-                  className="flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-                  style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}
-                >
-                  <Link2Off size={13} strokeWidth={2.5} />
-                  {disconnecting ? "..." : "Desconectar"}
-                </button>
-              </>
+              <div className="flex flex-col gap-2 w-full">
+                {onSync && (
+                  <button
+                    onClick={handleSync}
+                    disabled={syncing}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
+                    style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)", color: "white" }}
+                  >
+                    <RotateCw size={13} strokeWidth={2.5} className={syncing ? "animate-spin" : ""} />
+                    {syncing ? "Sincronizando..." : "Sincronizar ahora"}
+                  </button>
+                )}
+                <div className="flex gap-2">
+                  <a
+                    href={connectHref}
+                    className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all hover:opacity-80"
+                    style={{ background: "rgba(124,58,237,0.1)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.25)" }}
+                  >
+                    <RefreshCw size={13} strokeWidth={2.5} />
+                    Reconectar
+                  </a>
+                  <button
+                    onClick={handleDisconnect}
+                    disabled={disconnecting}
+                    className="flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+                    style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}
+                  >
+                    <Link2Off size={13} strokeWidth={2.5} />
+                    {disconnecting ? "..." : "Desconectar"}
+                  </button>
+                </div>
+              </div>
             ) : (
               <a
                 href={connectHref}
@@ -252,6 +281,11 @@ function URLParamHandler() {
 }
 
 export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) {
+  async function syncTiendaNube() {
+    const res = await fetch("/api/tiendanube/sync", { method: "POST" });
+    if (!res.ok) throw new Error("Sync failed");
+  }
+
   const cards = [
     {
       icon: Store,
@@ -262,6 +296,7 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
       integration: tiendanube,
       connectHref: "/api/auth/tiendanube",
       onDisconnect: () => disconnectIntegration("tiendanube"),
+      onSync: syncTiendaNube,
       comingSoon: false,
     },
     {
