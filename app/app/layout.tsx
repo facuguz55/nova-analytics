@@ -29,8 +29,8 @@ export default async function DashboardLayout({
 
   const activeProviders = new Set(integrations.map((i) => i.provider));
 
-  const superAdmins = (process.env.SUPER_ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
-  const isSuperAdmin = superAdmins.includes(user.email ?? "");
+  const { data: rawProfile } = await supabase.from("users").select("role").eq("id", user.id).single() as { data: { role: string } | null };
+  const isSuperAdmin = rawProfile?.role === "super_admin";
   const plan = workspace?.plan ?? "free";
   const isLocked = !isSuperAdmin && plan !== "trial" && plan !== "active";
 

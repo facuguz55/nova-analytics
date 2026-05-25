@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DollarSign, Percent, Save, TrendingUp, Info, Calculator } from "lucide-react";
 import { updateFinancialConfig } from "@/app/app/actions";
 import { toast } from "sonner";
@@ -14,8 +14,11 @@ interface Config {
 
 export default function FinancieraClient({ config }: { config: Config }) {
   const [saving, setSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [live, setLive] = useState<Config>({ ...config });
+
+  useEffect(() => { setMounted(true); }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = parseFloat(e.target.value) || 0;
@@ -41,8 +44,10 @@ export default function FinancieraClient({ config }: { config: Config }) {
   const margin = ((netAfterAgency / exampleSale) * 100).toFixed(1);
   const usdValue = (exampleSale / (live.usd_rate || 1)).toFixed(2);
 
-  const fmt = (n: number) =>
-    new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(n);
+  const fmt = (n: number) => {
+    if (!mounted) return `$${Math.round(n).toLocaleString()}`;
+    return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(n);
+  };
 
   const fields = [
     {
