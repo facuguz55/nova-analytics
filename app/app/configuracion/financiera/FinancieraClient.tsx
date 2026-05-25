@@ -188,7 +188,7 @@ export default function FinancieraClient({ config }: { config: Config }) {
                   style={{
                     borderColor: "rgba(124,58,237,0.08)",
                     background: row.highlight ? "rgba(34,197,94,0.03)" : "transparent",
-                    marginLeft: row.highlight ? "-20px",
+                    marginLeft: row.highlight ? "-20px" : undefined,
                     marginRight: row.highlight ? "-20px" : undefined,
                     paddingLeft: row.highlight ? "20px" : undefined,
                     paddingRight: row.highlight ? "20px" : undefined,
