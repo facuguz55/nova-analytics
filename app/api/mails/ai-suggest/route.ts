@@ -1,18 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { rateLimit, getClientIP } from "@/lib/rate-limit";
+import { checkUserRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { sanitizeEmailForAI, stripHtml, sanitizePlainText } from "@/lib/security/sanitize";
 
 export async function POST(request: Request) {
-  // Rate limiting
-  const ip = getClientIP(request);
-  const rl = rateLimit(ip);
-  if (!rl.ok) return NextResponse.json({ error: rl.error }, { status: 429 });
-
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Rate limit por usuario — 15 sugerencias/hora
+  const rl = await checkUserRateLimit(user.id, "ai_suggest", RATE_LIMITS.ai_suggest.max, RATE_LIMITS.ai_suggest.windowSeconds);
+  if (!rl.ok) return NextResponse.json({ error: rl.error }, { status: 429 });
 
   const { from, subject, body } = await request.json() as {
     from: string; subject: string; body: string;

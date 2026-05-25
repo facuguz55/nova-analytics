@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { checkUserRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 const BodySchema = z.object({
   messages: z.array(z.object({
@@ -16,6 +17,10 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Rate limit por usuario — 20 mensajes/hora
+  const rl = await checkUserRateLimit(user.id, "ia_chat", RATE_LIMITS.ia_chat.max, RATE_LIMITS.ia_chat.windowSeconds);
+  if (!rl.ok) return NextResponse.json({ error: rl.error }, { status: 429 });
 
   let body: unknown;
   try {

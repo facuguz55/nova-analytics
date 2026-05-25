@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/encryption";
-import { rateLimit, getClientIP } from "@/lib/rate-limit";
+import { checkUserRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { z } from "zod";
 
 // Detecta CRLF — base del email header injection
@@ -33,13 +33,13 @@ const ReplySchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const ip = getClientIP(request);
-  const rl = rateLimit(ip);
-  if (!rl.ok) return NextResponse.json({ error: rl.error }, { status: 429 });
-
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Rate limit por usuario — 30 respuestas/hora
+  const rl = await checkUserRateLimit(user.id, "mail_reply", RATE_LIMITS.mail_reply.max, RATE_LIMITS.mail_reply.windowSeconds);
+  if (!rl.ok) return NextResponse.json({ error: rl.error }, { status: 429 });
 
   let rawBody: unknown;
   try {
