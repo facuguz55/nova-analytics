@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { decrypt } from "@/lib/encryption";
 
 export async function POST(request: Request) {
@@ -7,14 +8,24 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { to, subject, body, threadId, inReplyTo } = await request.json() as {
-    to: string; subject: string; body: string; threadId: string; inReplyTo?: string;
+  const { to, subject, body, threadId, mailId } = await request.json() as {
+    to: string; subject: string; body: string; threadId: string; mailId?: string;
   };
 
-  const { data: raw } = await supabase
+  const service = createServiceClient();
+
+  const { data: userRow } = await service
+    .from("users")
+    .select("workspace_id")
+    .eq("id", user.id)
+    .single();
+  const workspaceId = (userRow as { workspace_id: string } | null)?.workspace_id;
+
+  const { data: raw } = await service
     .from("integrations")
     .select("access_token_encrypted, status, metadata")
     .eq("provider", "gmail")
+    .eq("workspace_id", workspaceId!)
     .maybeSingle();
 
   const integration = raw as {
@@ -34,7 +45,6 @@ export async function POST(request: Request) {
     `To: ${to}`,
     `Subject: ${subject.startsWith("Re:") ? subject : `Re: ${subject}`}`,
     `Content-Type: text/plain; charset=utf-8`,
-    ...(inReplyTo ? [`In-Reply-To: ${inReplyTo}`, `References: ${inReplyTo}`] : []),
     ``,
     body,
   ];
@@ -54,6 +64,15 @@ export async function POST(request: Request) {
     const err = await res.text();
     console.error("Gmail send error:", err);
     return NextResponse.json({ error: "Send failed" }, { status: res.status });
+  }
+
+  // Marcar como respondido en la DB
+  if (mailId && workspaceId) {
+    await service
+      .from("mails")
+      .update({ respondido: true })
+      .eq("id", mailId)
+      .eq("workspace_id", workspaceId);
   }
 
   return NextResponse.json({ success: true });
