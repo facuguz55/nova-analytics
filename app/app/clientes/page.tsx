@@ -110,9 +110,8 @@ export default async function ClientesPage({
                 return (
                   <tr
                     key={c.id}
+                    className="hover:bg-[rgba(124,58,237,0.04)] transition-colors"
                     style={{ borderBottom: i < all.length - 1 ? "1px solid rgba(124,58,237,0.08)" : "none" }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "rgba(124,58,237,0.04)"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "transparent"; }}
                   >
                     <td className="px-5 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-2">
