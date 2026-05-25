@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Bot, Bell, Store, BarChart2,
   ShoppingCart, Package, Users, TrendingUp, Target,
   Megaphone, Mail, Plug, DollarSign, User,
-  ChevronLeft, ChevronRight, LogOut, Percent, PlusCircle, Truck,
+  ChevronLeft, ChevronRight, LogOut, Percent, PlusCircle, Truck, Sparkles,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -16,9 +16,10 @@ const NAV_SECTIONS = [
   {
     label: "GENERAL",
     items: [
-      { href: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/app/ia", label: "IA Assistant", icon: Bot, accent: "#8B5CF6" },
-      { href: "/app/alertas", label: "Alertas", icon: Bell },
+      { href: "/app/dashboard", label: "Dashboard",    icon: LayoutDashboard },
+      { href: "/app/ia",        label: "IA Assistant", icon: Bot, accent: "#8B5CF6" },
+      { href: "/app/alertas",   label: "Alertas",      icon: Bell },
+      { href: "/app/planes",    label: "Planes",        icon: Sparkles, accent: "#22c55e" },
     ],
   },
   {
