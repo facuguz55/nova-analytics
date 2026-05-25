@@ -1,18 +1,9 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import CostosAdicionalesClient from "./CostosAdicionalesClient";
+import CostosAdicionalesClient, { type AdditionalCost } from "./CostosAdicionalesClient";
+export type { AdditionalCost };
 
 export const metadata: Metadata = { title: "Costos Adicionales" };
-
-export interface AdditionalCost {
-  id: string;
-  workspace_id: string;
-  name: string;
-  type: "fixed" | "variable";
-  amount: number;       // para fixed: monto en ARS; para variable: % sobre facturación
-  currency: string;
-  created_at: string;
-}
 
 export default async function CostosAdicionalesPage() {
   const supabase = await createClient();

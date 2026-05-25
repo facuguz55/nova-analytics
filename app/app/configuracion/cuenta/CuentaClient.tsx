@@ -3,8 +3,8 @@
 import { useState, useRef, useTransition } from "react";
 import {
   User, Mail, Shield, Calendar, Building2, Save,
-  Lock, Eye, EyeOff, Smartphone, Monitor, Trash2,
-  AlertTriangle, Camera, CheckCircle, X, LogOut,
+  Lock, Eye, EyeOff, Trash2,
+  AlertTriangle, Camera, CheckCircle, X,
 } from "lucide-react";
 import { updateProfile, changePassword, deleteAccount } from "@/app/app/actions";
 import { toast } from "sonner";
@@ -40,12 +40,6 @@ function getPlanBadge(plan: string) {
   return PLAN_COLORS[plan.toLowerCase()] ?? PLAN_COLORS["free"];
 }
 
-// Datos de sesión fake (en producción vendrían de supabase.auth.admin.listUserSessions)
-const MOCK_SESSIONS = [
-  { id: "s1", device: "Chrome — Windows",  location: "Buenos Aires, AR", lastSeen: "Ahora",     current: true },
-  { id: "s2", device: "Safari — iPhone 15", location: "Buenos Aires, AR", lastSeen: "hace 2 días", current: false },
-  { id: "s3", device: "Firefox — macOS",    location: "Rosario, AR",      lastSeen: "hace 5 días", current: false },
-];
 
 export default function CuentaClient({ user, workspace }: Props) {
   const [saving, setSaving] = useState(false);
@@ -252,41 +246,20 @@ export default function CuentaClient({ user, workspace }: Props) {
         )}
       </div>
 
-      {/* Dispositivos activos */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
-        <div className="px-6 py-4 flex items-center justify-between"
-          style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}>
-          <div className="flex items-center gap-2">
-            <Shield size={15} color="#7C3AED" strokeWidth={2.5} />
-            <p className="text-sm font-semibold text-[#F1F5F9]">Dispositivos activos</p>
-          </div>
-          <span className="text-xs text-[#64748B]">{MOCK_SESSIONS.length} sesiones</span>
+      {/* Sesión actual */}
+      <div className="rounded-2xl p-5 flex items-center gap-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(34,197,94,0.1)" }}>
+          <Shield size={18} color="#22c55e" strokeWidth={2} />
         </div>
-        <div className="divide-y" style={{ borderColor: "rgba(124,58,237,0.08)" }}>
-          {MOCK_SESSIONS.map((s) => (
-            <div key={s.id} className="px-6 py-3.5 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: s.current ? "rgba(34,197,94,0.1)" : "rgba(124,58,237,0.06)" }}>
-                {s.device.includes("iPhone") || s.device.includes("Android")
-                  ? <Smartphone size={15} color={s.current ? "#22c55e" : "#64748B"} strokeWidth={2} />
-                  : <Monitor size={15} color={s.current ? "#22c55e" : "#64748B"} strokeWidth={2} />
-                }
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-[#F1F5F9]">{s.device}</p>
-                <p className="text-xs text-[#64748B]">{s.location} · {s.lastSeen}</p>
-              </div>
-              {s.current
-                ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>Actual</span>
-                : (
-                  <button className="flex items-center gap-1 text-xs text-[#64748B] hover:text-[#ef4444] transition-colors">
-                    <LogOut size={12} strokeWidth={2} /> Cerrar
-                  </button>
-                )
-              }
-            </div>
-          ))}
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-[#F1F5F9]">Sesión activa</p>
+          <p className="text-xs text-[#64748B] mt-0.5">
+            Conectado como <span className="text-[#94A3B8] font-medium">{user.email}</span>
+          </p>
         </div>
+        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>
+          Sesión actual
+        </span>
       </div>
 
       {/* Info del workspace */}

@@ -21,12 +21,16 @@ export default async function ProductosPage({
   let error: string | null = null;
 
   if (connection) {
-    const [p1, p2] = await Promise.allSettled([
+    const [p1, p2, p3, p4] = await Promise.allSettled([
       getProducts(connection.opts, 1, 100),
       getProducts(connection.opts, 2, 100),
+      getProducts(connection.opts, 3, 100),
+      getProducts(connection.opts, 4, 100),
     ]);
     if (p1.status === "fulfilled") products = [...products, ...p1.value];
     if (p2.status === "fulfilled") products = [...products, ...p2.value];
+    if (p3.status === "fulfilled") products = [...products, ...p3.value];
+    if (p4.status === "fulfilled") products = [...products, ...p4.value];
     if (p1.status === "rejected") error = "Error al cargar productos desde TiendaNube";
   }
 

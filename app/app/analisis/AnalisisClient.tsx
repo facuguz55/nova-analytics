@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, AreaChart, Area,
 } from "recharts";
-import { Loader2, Store, ArrowRight } from "lucide-react";
+import { Loader2, Store, ArrowRight, Calendar, ChevronDown } from "lucide-react";
 import type { TNOrder } from "@/lib/tiendanube/client";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -15,9 +15,23 @@ type StatusFilter = "paid" | "pending" | "cancelled" | "all";
 
 interface Props {
   initialOrders: TNOrder[];
-  days: 30 | 60 | 90;
+  since: string;
+  until: string;
+  activePreset: string;
   isConnected: boolean;
 }
+
+// ── Presets ──────────────────────────────────────────────────────────────────
+
+const PRESETS = [
+  { key: "hoy",  label: "Hoy" },
+  { key: "ayer", label: "Ayer" },
+  { key: "7d",   label: "7 días" },
+  { key: "15d",  label: "15 días" },
+  { key: "30d",  label: "30 días" },
+  { key: "60d",  label: "60 días" },
+  { key: "90d",  label: "90 días" },
+];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,6 +52,15 @@ function filterByStatus(orders: TNOrder[], filter: StatusFilter): TNOrder[] {
       (o) => o.status === "cancelled" || o.payment_status === "voided" || o.payment_status === "refunded"
     );
   return orders;
+}
+
+function filterByDateRange(orders: TNOrder[], since: string, until: string): TNOrder[] {
+  const sinceDate = new Date(since + "T00:00:00");
+  const untilDate = new Date(until + "T23:59:59");
+  return orders.filter((o) => {
+    const d = new Date(o.created_at);
+    return d >= sinceDate && d <= untilDate;
+  });
 }
 
 function computeMonthlyData(orders: TNOrder[]) {
@@ -90,52 +113,144 @@ function ChartCard({ title, subtitle, children }: { title: string; subtitle?: st
   );
 }
 
+// ── DateRangeSelector ────────────────────────────────────────────────────────
+
+function DateRangeSelector({
+  activePreset,
+  since,
+  until,
+  onChange,
+}: {
+  activePreset: string;
+  since: string;
+  until: string;
+  onChange: (preset: string, since?: string, until?: string) => void;
+}) {
+  const [showCustom, setShowCustom] = useState(false);
+  const [customSince, setCustomSince] = useState(since);
+  const [customUntil, setCustomUntil] = useState(until);
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      {/* Preset buttons */}
+      <div className="flex gap-0.5 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}>
+        {PRESETS.map((p) => (
+          <button
+            key={p.key}
+            onClick={() => { onChange(p.key); setShowCustom(false); }}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap"
+            style={{
+              background: activePreset === p.key && !showCustom ? "#7C3AED" : "transparent",
+              color: activePreset === p.key && !showCustom ? "#fff" : "#64748B",
+            }}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Custom date range */}
+      <div className="relative">
+        <button
+          onClick={() => setShowCustom(!showCustom)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
+          style={{
+            background: showCustom || activePreset === "custom" ? "rgba(124,58,237,0.15)" : "rgba(124,58,237,0.06)",
+            border: `1px solid ${showCustom || activePreset === "custom" ? "rgba(124,58,237,0.4)" : "rgba(124,58,237,0.2)"}`,
+            color: showCustom || activePreset === "custom" ? "#8B5CF6" : "#64748B",
+          }}
+        >
+          <Calendar size={12} strokeWidth={2} />
+          {activePreset === "custom" ? `${since} → ${until}` : "Personalizado"}
+          <ChevronDown size={11} strokeWidth={2} className={`transition-transform ${showCustom ? "rotate-180" : ""}`} />
+        </button>
+
+        {showCustom && (
+          <div
+            className="absolute right-0 top-full mt-1.5 rounded-xl p-4 z-20 space-y-3"
+            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)", minWidth: "240px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
+          >
+            <p className="text-xs font-bold text-[#F1F5F9]">Rango personalizado</p>
+            <div className="space-y-2">
+              <div>
+                <label className="block text-[10px] font-semibold text-[#64748B] uppercase tracking-widest mb-1">Desde</label>
+                <input
+                  type="date"
+                  value={customSince}
+                  onChange={(e) => setCustomSince(e.target.value)}
+                  className="w-full rounded-lg px-3 py-2 text-sm text-[#F1F5F9] outline-none"
+                  style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-[#64748B] uppercase tracking-widest mb-1">Hasta</label>
+                <input
+                  type="date"
+                  value={customUntil}
+                  onChange={(e) => setCustomUntil(e.target.value)}
+                  className="w-full rounded-lg px-3 py-2 text-sm text-[#F1F5F9] outline-none"
+                  style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+                />
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (customSince && customUntil) {
+                  onChange("custom", customSince, customUntil);
+                  setShowCustom(false);
+                }
+              }}
+              className="w-full rounded-lg py-2 text-sm font-bold text-white transition-all hover:opacity-80"
+              style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+            >
+              Aplicar
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function AnalisisClient({ initialOrders, days, isConnected }: Props) {
-  const router = useRouter();
+export default function AnalisisClient({ initialOrders, since, until, activePreset, isConnected }: Props) {
+  const router   = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  const [allOrders, setAllOrders] = useState<TNOrder[]>(initialOrders);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [loadedPages, setLoadedPages] = useState(initialOrders.length > 0 ? 1 : 0);
-  const [fullyLoaded, setFullyLoaded] = useState(initialOrders.length < 100);
+  const [allOrders,    setAllOrders]    = useState<TNOrder[]>(initialOrders);
+  const [loadingMore,  setLoadingMore]  = useState(false);
+  const [loadedPages,  setLoadedPages]  = useState(initialOrders.length > 0 ? 1 : 0);
+  const [fullyLoaded,  setFullyLoaded]  = useState(initialOrders.length < 100);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("paid");
-  const [fetchError, setFetchError] = useState(false);
+  const [fetchError,   setFetchError]   = useState(false);
 
-  // Carga progresiva — auto-fetch siguiente página si la anterior devolvió 100
+  // Carga progresiva
   const loadNextPage = useCallback(async (page: number) => {
     if (loadingMore || fullyLoaded || !isConnected) return;
     setLoadingMore(true);
     try {
-      const res = await fetch(`/api/tiendanube/orders?page=${page}&days=${days}`);
+      const res = await fetch(`/api/tiendanube/orders?page=${page}&since=${since}`);
       if (!res.ok) { setFetchError(true); return; }
       const data = await res.json() as { orders: TNOrder[]; hasMore: boolean };
       setAllOrders((prev) => {
-        // Deduplicar por id (por si hay overlap entre páginas)
         const existingIds = new Set(prev.map((o) => o.id));
-        const newOrders = data.orders.filter((o) => !existingIds.has(o.id));
-        return [...prev, ...newOrders];
+        return [...prev, ...data.orders.filter((o) => !existingIds.has(o.id))];
       });
       setLoadedPages(page);
-      if (!data.hasMore || page >= 20) setFullyLoaded(true); // máx 20 páginas
+      if (!data.hasMore || page >= 20) setFullyLoaded(true);
     } catch {
       setFetchError(true);
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, fullyLoaded, isConnected, days]);
+  }, [loadingMore, fullyLoaded, isConnected, since]);
 
-  // Arrancar carga progresiva cuando el componente monta (si hay más datos)
   useEffect(() => {
-    if (initialOrders.length === 100 && !fullyLoaded) {
-      loadNextPage(2);
-    }
+    if (initialOrders.length === 100 && !fullyLoaded) loadNextPage(2);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Cargar siguiente página automáticamente cuando termina la anterior
   useEffect(() => {
     if (!loadingMore && !fullyLoaded && loadedPages >= 1 && allOrders.length === loadedPages * 100) {
       loadNextPage(loadedPages + 1);
@@ -143,35 +258,34 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingMore, fullyLoaded, loadedPages]);
 
-  // Cambio de período
-  function handleDaysChange(d: 30 | 60 | 90) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("days", String(d));
-    router.push(`${pathname}?${params.toString()}`);
+  function handleRangeChange(preset: string, customSince?: string, customUntil?: string) {
+    if (preset === "custom" && customSince && customUntil) {
+      router.push(`${pathname}?preset=custom&since=${customSince}&until=${customUntil}`);
+    } else {
+      router.push(`${pathname}?preset=${preset}`);
+    }
   }
 
-  // Datos filtrados para los gráficos
-  const filtered = useMemo(() => filterByStatus(allOrders, statusFilter), [allOrders, statusFilter]);
-  const monthlyData = useMemo(() => computeMonthlyData(filtered), [filtered]);
-  const byWeekday = useMemo(() => computeByWeekday(filtered), [filtered]);
-  const byHour = useMemo(() => computeByHour(filtered), [filtered]);
+  // Filtrar por rango de fechas Y estado
+  const ordersInRange = useMemo(() => filterByDateRange(allOrders, since, until), [allOrders, since, until]);
+  const filtered      = useMemo(() => filterByStatus(ordersInRange, statusFilter), [ordersInRange, statusFilter]);
+  const monthlyData   = useMemo(() => computeMonthlyData(filtered), [filtered]);
+  const byWeekday     = useMemo(() => computeByWeekday(filtered), [filtered]);
+  const byHour        = useMemo(() => computeByHour(filtered), [filtered]);
 
-  // Contadores por estado (para los badges del tab)
   const counts = useMemo(() => ({
-    paid: allOrders.filter((o) => o.payment_status === "paid" || o.status === "closed").length,
-    pending: allOrders.filter((o) => o.payment_status === "pending" && o.status !== "cancelled").length,
-    cancelled: allOrders.filter(
-      (o) => o.status === "cancelled" || o.payment_status === "voided" || o.payment_status === "refunded"
-    ).length,
-    all: allOrders.length,
-  }), [allOrders]);
+    paid:      ordersInRange.filter((o) => o.payment_status === "paid" || o.status === "closed").length,
+    pending:   ordersInRange.filter((o) => o.payment_status === "pending" && o.status !== "cancelled").length,
+    cancelled: ordersInRange.filter((o) => o.status === "cancelled" || o.payment_status === "voided" || o.payment_status === "refunded").length,
+    all:       ordersInRange.length,
+  }), [ordersInRange]);
 
   const totalRevenue = useMemo(
     () => filtered.reduce((acc, o) => acc + parseFloat(o.total || "0"), 0),
     [filtered]
   );
 
-  // ── Pantalla: TiendaNube no conectado ──────────────────────────────────────
+  // ── Sin conexión ──────────────────────────────────────────────────────────
   if (!isConnected) {
     return (
       <div className="p-6">
@@ -192,7 +306,6 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
     );
   }
 
-  // ── Layout principal ───────────────────────────────────────────────────────
   const STATUS_TABS: { key: StatusFilter; label: string; color: string }[] = [
     { key: "paid",      label: "Pagadas",    color: "#22c55e" },
     { key: "pending",   label: "Pendientes", color: "#f59e0b" },
@@ -210,25 +323,15 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
           <p className="text-sm text-[#94A3B8] mt-0.5">Evolución histórica y patrones de ventas</p>
         </div>
 
-        {/* Selector de período */}
-        <div className="flex gap-1 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}>
-          {([30, 60, 90] as const).map((d) => (
-            <button
-              key={d}
-              onClick={() => handleDaysChange(d)}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-              style={{
-                background: days === d ? "#7C3AED" : "transparent",
-                color: days === d ? "#fff" : "#64748B",
-              }}
-            >
-              {d}d
-            </button>
-          ))}
-        </div>
+        <DateRangeSelector
+          activePreset={activePreset}
+          since={since}
+          until={until}
+          onChange={handleRangeChange}
+        />
       </div>
 
-      {/* Tabs de estado de órdenes */}
+      {/* Tabs de estado */}
       <div className="flex gap-1.5 flex-wrap">
         {STATUS_TABS.map((tab) => {
           const active = statusFilter === tab.key;
@@ -257,7 +360,6 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
           );
         })}
 
-        {/* Indicador de carga progresiva */}
         {loadingMore && (
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs"
@@ -285,7 +387,7 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
         )}
       </div>
 
-      {/* Sin datos para este filtro */}
+      {/* Sin datos */}
       {filtered.length === 0 && !loadingMore && (
         <div
           className="rounded-2xl p-8 text-center"
@@ -294,23 +396,19 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
           <p className="text-[#64748B] text-sm">
             {allOrders.length === 0
               ? "No se encontraron órdenes en este período."
-              : `No hay órdenes con estado "${STATUS_TABS.find(t => t.key === statusFilter)?.label?.toLowerCase()}" en este período.`}
+              : `No hay órdenes con estado "${STATUS_TABS.find((t) => t.key === statusFilter)?.label?.toLowerCase()}" en este período.`}
           </p>
         </div>
       )}
 
       {filtered.length > 0 && (
         <>
-          {/* Resumen rápido */}
+          {/* Resumen */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[
-              { label: "Órdenes", value: String(filtered.length), color: "#8B5CF6" },
-              { label: "Ingresos", value: fmt(totalRevenue), color: "#22c55e" },
-              {
-                label: "Ticket promedio",
-                value: filtered.length > 0 ? fmt(totalRevenue / filtered.length) : "$0",
-                color: "#e1691e",
-              },
+              { label: "Órdenes",        value: String(filtered.length),                                    color: "#8B5CF6" },
+              { label: "Ingresos",       value: fmt(totalRevenue),                                          color: "#22c55e" },
+              { label: "Ticket prom.",   value: filtered.length > 0 ? fmt(totalRevenue / filtered.length) : "$0", color: "#e1691e" },
             ].map((s) => (
               <div key={s.label} className="rounded-2xl p-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
                 <p className="text-xs text-[#94A3B8] mb-1">{s.label}</p>
@@ -322,7 +420,7 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
           {/* Ventas por mes */}
           <ChartCard
             title="Ventas por mes"
-            subtitle={`Últimos 6 meses · ${STATUS_TABS.find(t => t.key === statusFilter)?.label?.toLowerCase() ?? "todas"}`}
+            subtitle={`Últimos 6 meses · ${STATUS_TABS.find((t) => t.key === statusFilter)?.label?.toLowerCase() ?? "todas"}`}
           >
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={monthlyData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
@@ -346,7 +444,6 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
           </ChartCard>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Por día de la semana */}
             <ChartCard title="Ventas por día de la semana" subtitle="Distribución semanal">
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={byWeekday} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
@@ -362,7 +459,6 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
               </ResponsiveContainer>
             </ChartCard>
 
-            {/* Por hora */}
             <ChartCard title="Órdenes por hora del día" subtitle="Distribución horaria">
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={byHour} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
@@ -386,8 +482,8 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
               style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(37,99,235,0.05))", border: "1px solid rgba(124,58,237,0.2)" }}
             >
               {(() => {
-                const bestDay = byWeekday.reduce((best, d) => d.ventas > best.ventas ? d : best, byWeekday[0]);
-                const bestHour = byHour.reduce((best, h) => h.ordenes > best.ordenes ? h : best, byHour[0]);
+                const bestDay  = byWeekday.reduce((best, d) => d.ventas  > best.ventas  ? d : best, byWeekday[0]);
+                const bestHour = byHour.reduce((best, h)   => h.ordenes  > best.ordenes ? h : best, byHour[0]);
                 return (
                   <p className="text-sm text-[#94A3B8]">
                     🔥 Tu mejor día de la semana es{" "}
@@ -400,67 +496,70 @@ export default function AnalisisClient({ initialOrders, days, isConnected }: Pro
             </div>
           )}
 
-          {/* Lista de órdenes filtradas */}
-          {(() => {
-            const tab = STATUS_TABS.find(t => t.key === statusFilter);
-            return (
-              <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
-                <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
-                  <p className="text-sm font-semibold text-[#F1F5F9]">
-                    Lista de órdenes
-                    {tab && statusFilter !== "all" && (
-                      <span className="ml-2 text-xs font-normal px-2 py-0.5 rounded-full"
-                        style={{ background: `${tab.color}15`, color: tab.color }}>
-                        {tab.label}
-                      </span>
-                    )}
-                  </p>
-                  <span className="text-xs text-[#64748B]">{filtered.length} órdenes</span>
-                </div>
-
-                {filtered.slice(0, 150).map((o, i) => {
-                  const isPaid = o.payment_status === "paid" || o.status === "closed";
-                  const isCancelled = o.status === "cancelled" || o.payment_status === "voided" || o.payment_status === "refunded";
-                  const dotColor = isPaid ? "#22c55e" : isCancelled ? "#ef4444" : "#f59e0b";
-                  const statusText = isPaid ? "Pagada" : isCancelled ? "Cancelada" : "Pendiente";
-                  return (
-                    <div
-                      key={o.id}
-                      className="flex items-center gap-3 px-5 py-3 hover:bg-[rgba(124,58,237,0.04)] transition-colors"
-                      style={{ borderBottom: i < Math.min(filtered.length, 150) - 1 ? "1px solid rgba(124,58,237,0.06)" : "none" }}
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: dotColor }} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-[#8B5CF6]">#{o.number ?? o.id}</span>
-                          <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                            style={{ background: `${dotColor}15`, color: dotColor }}>
-                            {statusText}
-                          </span>
-                        </div>
-                        <p className="text-xs text-[#64748B] truncate">
-                          {o.customer?.name ?? "Anónimo"}
-                          {o.customer?.email ? ` · ${o.customer.email}` : ""}
-                        </p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-sm font-bold text-[#F1F5F9]">{fmt(parseFloat(o.total || "0"))}</p>
-                        <p className="text-xs text-[#64748B]">
-                          {new Date(o.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {filtered.length > 150 && (
-                  <div className="px-5 py-3 text-center" style={{ borderTop: "1px solid rgba(124,58,237,0.08)" }}>
-                    <p className="text-xs text-[#64748B]">Mostrando 150 de {filtered.length} — achicá el rango de días o filtrá por estado para ver menos</p>
-                  </div>
+          {/* Lista de órdenes */}
+          <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+            <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+              <p className="text-sm font-semibold text-[#F1F5F9]">
+                Lista de órdenes
+                {statusFilter !== "all" && (
+                  <span
+                    className="ml-2 text-xs font-normal px-2 py-0.5 rounded-full"
+                    style={{
+                      background: `${STATUS_TABS.find((t) => t.key === statusFilter)?.color ?? "#8B5CF6"}15`,
+                      color: STATUS_TABS.find((t) => t.key === statusFilter)?.color ?? "#8B5CF6",
+                    }}
+                  >
+                    {STATUS_TABS.find((t) => t.key === statusFilter)?.label}
+                  </span>
                 )}
+              </p>
+              <span className="text-xs text-[#64748B]">{filtered.length} órdenes</span>
+            </div>
+
+            {filtered.slice(0, 150).map((o, i) => {
+              const isPaid      = o.payment_status === "paid" || o.status === "closed";
+              const isCancelled = o.status === "cancelled" || o.payment_status === "voided" || o.payment_status === "refunded";
+              const dotColor    = isPaid ? "#22c55e" : isCancelled ? "#ef4444" : "#f59e0b";
+              const statusText  = isPaid ? "Pagada" : isCancelled ? "Cancelada" : "Pendiente";
+              return (
+                <div
+                  key={o.id}
+                  className="flex items-center gap-3 px-5 py-3 hover:bg-[rgba(124,58,237,0.04)] transition-colors"
+                  style={{ borderBottom: i < Math.min(filtered.length, 150) - 1 ? "1px solid rgba(124,58,237,0.06)" : "none" }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: dotColor }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-[#8B5CF6]">#{o.number ?? o.id}</span>
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full font-medium"
+                        style={{ background: `${dotColor}15`, color: dotColor }}
+                      >
+                        {statusText}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#64748B] truncate">
+                      {o.customer?.name ?? "Anónimo"}{o.customer?.email ? ` · ${o.customer.email}` : ""}
+                    </p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-bold text-[#F1F5F9]">{fmt(parseFloat(o.total || "0"))}</p>
+                    <p className="text-xs text-[#64748B]">
+                      {new Date(o.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+
+            {filtered.length > 150 && (
+              <div className="px-5 py-3 text-center" style={{ borderTop: "1px solid rgba(124,58,237,0.08)" }}>
+                <p className="text-xs text-[#64748B]">
+                  Mostrando 150 de {filtered.length} — achicá el rango o filtrá por estado
+                </p>
               </div>
-            );
-          })()}
+            )}
+          </div>
         </>
       )}
     </div>

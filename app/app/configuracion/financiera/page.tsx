@@ -1,32 +1,80 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import FinancieraClient from "./FinancieraClient";
+import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
+import FinancieraHub from "./FinancieraHub";
 
-export const metadata: Metadata = { title: "Configuración financiera" };
+export const metadata: Metadata = { title: "Configuración Financiera" };
 
-export default async function FinancieraPage() {
+export default async function FinancieraPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab = "general" } = await searchParams;
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: rawUserRow } = await supabase
+  const { data: rawRow } = await supabase
     .from("users")
     .select("workspace_id")
     .eq("id", user.id)
     .single();
-  const userRow = rawUserRow as unknown as { workspace_id: string | null } | null;
+  const workspaceId = (rawRow as unknown as { workspace_id: string | null } | null)?.workspace_id ?? "";
 
-  const { data: rawConfig } = await supabase
-    .from("financial_config")
-    .select("*")
-    .eq("workspace_id", userRow?.workspace_id ?? "")
-    .single();
-  type FinConfig = { usd_rate: number; tax_rate: number; platform_fee: number };
-  const config = rawConfig as unknown as FinConfig | null;
+  // Fetch all financial data in parallel
+  const db = supabase as unknown as { from: (t: string) => any };
+
+  const [cfgRes, costsRes, ratesRes] = await Promise.allSettled([
+    db.from("financial_config")
+      .select("usd_rate, tax_rate, platform_fee, usd_type, usd_adjustment, custom_commission, custom_tax")
+      .eq("workspace_id", workspaceId)
+      .single(),
+    workspaceId
+      ? db.from("additional_costs")
+          .select("*")
+          .eq("workspace_id", workspaceId)
+          .order("created_at", { ascending: false })
+      : Promise.resolve({ data: [] }),
+    fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/cotizaciones`,
+      { next: { revalidate: 3600 } }
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null),
+  ]);
+
+  const cfg = cfgRes.status === "fulfilled" ? (cfgRes.value as any)?.data : null;
+  const costs = costsRes.status === "fulfilled" ? ((costsRes.value as any)?.data ?? []) : [];
+  const ratesData = ratesRes.status === "fulfilled" ? ratesRes.value : null;
+
+  const connection = await getTiendaNubeConnection();
 
   return (
-    <FinancieraClient
-      config={config ?? { usd_rate: 1200, tax_rate: 21, platform_fee: 2 }}
+    <FinancieraHub
+      activeTab={tab}
+      workspaceId={workspaceId}
+      generalConfig={{
+        usd_rate:     cfg?.usd_rate     ?? 1200,
+        tax_rate:     cfg?.tax_rate     ?? 21,
+        platform_fee: cfg?.platform_fee ?? 2,
+      }}
+      cotizacionesConfig={{
+        usdRate:       cfg?.usd_rate       ?? 1100,
+        usdType:       cfg?.usd_type       ?? "oficial",
+        usdAdjustment: cfg?.usd_adjustment ?? 0,
+        ratesData,
+      }}
+      comisionesConfig={{
+        tax_rate:          cfg?.tax_rate          ?? 10,
+        platform_fee:      cfg?.platform_fee      ?? 2,
+        custom_commission: cfg?.custom_commission ?? 0,
+        custom_tax:        cfg?.custom_tax        ?? 0,
+      }}
+      additionalCosts={costs}
+      storeName={connection?.storeName ?? null}
+      isConnected={!!connection}
     />
   );
 }

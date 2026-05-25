@@ -6,38 +6,91 @@ import type { TNOrder } from "@/lib/tiendanube/client";
 
 export const metadata: Metadata = { title: "Análisis" };
 
+// Mapea presets a rango de fechas
+function presetToDates(preset: string): { since: string; until: string } {
+  const now = new Date();
+  const today = now.toISOString().split("T")[0];
+
+  if (preset === "hoy") {
+    return { since: today, until: today };
+  }
+  if (preset === "ayer") {
+    const d = new Date(now); d.setDate(d.getDate() - 1);
+    const s = d.toISOString().split("T")[0];
+    return { since: s, until: s };
+  }
+  const daysMap: Record<string, number> = {
+    "7d": 7, "15d": 15, "30d": 30, "60d": 60, "90d": 90,
+  };
+  const days = daysMap[preset];
+  if (days) {
+    const d = new Date(now); d.setDate(d.getDate() - days);
+    return { since: d.toISOString().split("T")[0], until: today };
+  }
+  // default 30d
+  const d = new Date(now); d.setDate(d.getDate() - 30);
+  return { since: d.toISOString().split("T")[0], until: today };
+}
+
 export default async function AnalisisPage({
   searchParams,
 }: {
-  searchParams: Promise<{ days?: string }>;
+  searchParams: Promise<{ preset?: string; since?: string; until?: string }>;
 }) {
   const params = await searchParams;
-  const days = ([30, 60, 90].includes(Number(params.days)) ? Number(params.days) : 90) as 30 | 60 | 90;
+
+  // Determinar rango
+  let since: string;
+  let until: string;
+  let activePreset: string;
+
+  const VALID_PRESETS = ["hoy", "ayer", "7d", "15d", "30d", "60d", "90d"];
+
+  if (params.since && params.until) {
+    // Rango custom
+    since = params.since;
+    until = params.until;
+    activePreset = "custom";
+  } else if (params.preset && VALID_PRESETS.includes(params.preset)) {
+    activePreset = params.preset;
+    const range = presetToDates(params.preset);
+    since = range.since;
+    until = range.until;
+  } else {
+    // Default: 30d
+    activePreset = "30d";
+    const range = presetToDates("30d");
+    since = range.since;
+    until = range.until;
+  }
 
   const connection = await getTiendaNubeConnection();
 
   if (!connection) {
-    return <AnalisisClient initialOrders={[]} days={days} isConnected={false} />;
+    return (
+      <AnalisisClient
+        initialOrders={[]}
+        since={since}
+        until={until}
+        activePreset={activePreset}
+        isConnected={false}
+      />
+    );
   }
-
-  // Cargar solo la primera página (100 órdenes) en el servidor — rápido.
-  // El cliente carga el resto de manera progresiva via /api/tiendanube/orders.
-  const since = new Date();
-  since.setDate(since.getDate() - days);
 
   let initialOrders: TNOrder[] = [];
   try {
-    initialOrders = await getOrders(connection.opts, 1, 100, {
-      since: since.toISOString().split("T")[0],
-    });
+    initialOrders = await getOrders(connection.opts, 1, 100, { since });
   } catch {
-    // Si falla la primera carga, el cliente mostrará su propia pantalla de error
+    // El cliente mostrará error
   }
 
   return (
     <AnalisisClient
       initialOrders={initialOrders}
-      days={days}
+      since={since}
+      until={until}
+      activePreset={activePreset}
       isConnected={true}
     />
   );

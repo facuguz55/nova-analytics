@@ -4,7 +4,15 @@ import { useState, useTransition } from "react";
 import { Plus, Trash2, X, DollarSign, Percent, Package, AlertTriangle } from "lucide-react";
 import { addAdditionalCost, deleteAdditionalCost } from "@/app/app/actions";
 import { toast } from "sonner";
-import type { AdditionalCost } from "./page";
+export interface AdditionalCost {
+  id: string;
+  workspace_id: string;
+  name: string;
+  type: "fixed" | "variable";
+  amount: number;
+  currency: string;
+  created_at: string;
+}
 
 interface Props {
   costs: AdditionalCost[];
