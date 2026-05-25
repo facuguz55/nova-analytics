@@ -18,9 +18,15 @@ export const metadata: Metadata = {
     "Dashboard de analytics para e-commerce. TiendaNube, Meta Ads y Gmail en un solo lugar.",
   metadataBase: new URL("https://analytics.novaagency.info"),
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/apple-icon.png",
+    icon: [
+      { url: "/logo-favicon.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo-favicon.png", sizes: "48x48", type: "image/png" },
+      { url: "/logo-favicon.png", sizes: "96x96", type: "image/png" },
+      { url: "/logo.png",         sizes: "192x192", type: "image/png" },
+      { url: "/logo.png",         sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/logo-favicon.png",
+    apple: "/logo.png",
   },
   openGraph: {
     type: "website",
@@ -54,6 +60,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="icon" type="image/png" sizes="96x96" href="/logo-favicon.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
         {/* Previene flash de tema incorrecto */}
         <script
           dangerouslySetInnerHTML={{

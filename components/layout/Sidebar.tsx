@@ -101,20 +101,21 @@ export default function Sidebar({
     >
       {/* Logo */}
       <div
-        className="flex items-center gap-3 px-4 py-5 flex-shrink-0"
-        style={{ borderBottom: "1px solid rgba(124,58,237,0.15)", minHeight: "64px" }}
+        className={`flex items-center flex-shrink-0 ${collapsed ? "justify-center px-2 py-4" : "gap-3 px-4 py-4"}`}
+        style={{ borderBottom: "1px solid rgba(124,58,237,0.15)", minHeight: "68px" }}
       >
         <img
           src="https://xfientejntectnwbqmdr.supabase.co/storage/v1/object/public/Logo%20Nova/Gemini_Generated_Image_mq47ltmq47ltmq47-removebg-preview.png"
           alt="Nova Analytics"
-          className="w-8 h-8 object-contain flex-shrink-0"
+          className="object-contain flex-shrink-0"
+          style={{ width: collapsed ? "36px" : "40px", height: collapsed ? "36px" : "40px" }}
         />
         {!collapsed && (
           <div className="overflow-hidden">
-            <p className="font-bold leading-none tracking-tight truncate text-[#F1F5F9]" style={{ fontSize: "15px" }}>
+            <p className="font-bold leading-none tracking-tight truncate text-[#F1F5F9]" style={{ fontSize: "16px", letterSpacing: "-0.01em" }}>
               Nova Analytics
             </p>
-            <p className="text-[11px] text-[#94A3B8] mt-0.5">Dashboard</p>
+            <p className="text-[11px] text-[#94A3B8] mt-0.5 tracking-wide">Dashboard</p>
           </div>
         )}
       </div>

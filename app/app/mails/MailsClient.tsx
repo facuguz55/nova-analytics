@@ -105,18 +105,53 @@ function parseMailBody(cuerpo: string): MailSegment[] {
   return segments;
 }
 
+// Inyectamos un <style> en el HTML del email para que el iframe
+// herede el fondo oscuro de la app. No tocamos colores de texto originales
+// del email — solo fondo del <html>/<body> cuando es blanco/sin definir.
+function wrapHtmlForDarkIframe(html: string): string {
+  const darkStyle = `<style>
+    :root { color-scheme: dark; }
+    html, body {
+      background: #111118 !important;
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      padding: 8px !important;
+      margin: 0 !important;
+    }
+    /* Solo aplicar color de texto si el elemento no tiene su propio color */
+    body:not([style*="color"]) { color: #CBD5E1; }
+    a { color: #8B5CF6; }
+    img { max-width: 100%; height: auto; }
+  </style>`;
+
+  // Insertar antes de </head> o al principio si no hay <head>
+  if (/<\/head>/i.test(html)) {
+    return html.replace(/<\/head>/i, `${darkStyle}</head>`);
+  }
+  if (/<body/i.test(html)) {
+    return html.replace(/<body/i, `${darkStyle}<body`);
+  }
+  return darkStyle + html;
+}
+
 function MailBody({ body, isHtml }: { body: string; isHtml: boolean }) {
   if (isHtml) {
     return (
       <iframe
-        srcDoc={body}
+        srcDoc={wrapHtmlForDarkIframe(body)}
         className="w-full rounded-xl"
-        style={{ minHeight: "200px", border: "none", background: "white" }}
+        style={{ minHeight: "300px", border: "none", background: "#111118" }}
         sandbox=""
         // sandbox="" sin permisos — bloquea JS, cookies y acceso al DOM padre
-        // "allow-same-origin" fue eliminado porque permitía ejecutar JS de emails externos
         title="Email"
         referrerPolicy="no-referrer"
+        onLoad={(e) => {
+          // Auto-resize al contenido real del email
+          try {
+            const iframe = e.currentTarget;
+            const h = iframe.contentDocument?.body?.scrollHeight;
+            if (h && h > 0) iframe.style.height = `${h + 32}px`;
+          } catch { /* sandboxed */ }
+        }}
       />
     );
   }
@@ -136,7 +171,15 @@ function MailBody({ body, isHtml }: { body: string; isHtml: boolean }) {
           {seg.header && (
             <p className="text-[10px] text-[#64748B] mb-2 italic">{seg.header}</p>
           )}
-          <pre className="text-sm text-[#94A3B8] leading-relaxed whitespace-pre-wrap font-sans">
+          <pre
+            className="text-sm leading-relaxed whitespace-pre-wrap"
+            style={{
+              color: "#CBD5E1",
+              fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
+              fontSize: "13.5px",
+              lineHeight: "1.7",
+            }}
+          >
             {seg.text}
           </pre>
         </div>
