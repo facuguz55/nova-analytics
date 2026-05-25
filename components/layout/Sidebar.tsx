@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Bot, Bell, Store, BarChart2,
   ShoppingCart, Package, Users, TrendingUp, Target,
   Megaphone, Mail, Plug, DollarSign, User,
-  ChevronLeft, ChevronRight, Zap, LogOut,
+  ChevronLeft, ChevronRight, LogOut,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -104,9 +104,11 @@ export default function Sidebar({
         className="flex items-center gap-3 px-4 py-5 flex-shrink-0"
         style={{ borderBottom: "1px solid rgba(124,58,237,0.15)", minHeight: "64px" }}
       >
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#2563EB] flex items-center justify-center flex-shrink-0">
-          <Zap className="w-4 h-4 text-white" />
-        </div>
+        <img
+          src="https://xfientejntectnwbqmdr.supabase.co/storage/v1/object/public/Logo%20Nova/Gemini_Generated_Image_mq47ltmq47ltmq47-removebg-preview.png"
+          alt="Nova Analytics"
+          className="w-8 h-8 object-contain flex-shrink-0"
+        />
         {!collapsed && (
           <div className="overflow-hidden">
             <p className="font-bold leading-none tracking-tight truncate text-[#F1F5F9]" style={{ fontSize: "15px" }}>

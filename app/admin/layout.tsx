@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Zap, LayoutDashboard, Users, BarChart2, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, BarChart2, LogOut } from "lucide-react";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -31,9 +31,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           className="flex items-center gap-3 px-4 py-5"
           style={{ borderBottom: "1px solid rgba(239,68,68,0.15)" }}
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#ef4444] to-[#7C3AED] flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white" />
-          </div>
+          <img
+            src="https://xfientejntectnwbqmdr.supabase.co/storage/v1/object/public/Logo%20Nova/Gemini_Generated_Image_mq47ltmq47ltmq47-removebg-preview.png"
+            alt="Nova"
+            className="w-8 h-8 object-contain"
+          />
           <div>
             <p className="font-bold text-sm text-[#F1F5F9]">Nova HQ</p>
             <p className="text-[10px] text-red-400">Super Admin</p>

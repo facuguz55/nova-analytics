@@ -13,9 +13,11 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[rgba(124,58,237,0.15)] bg-[rgba(10,10,15,0.85)] backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#2563EB] flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
+            <img
+              src="https://xfientejntectnwbqmdr.supabase.co/storage/v1/object/public/Logo%20Nova/Gemini_Generated_Image_mq47ltmq47ltmq47-removebg-preview.png"
+              alt="Nova Analytics"
+              className="w-8 h-8 object-contain"
+            />
             <span className="font-bold text-lg tracking-tight">
               Nova Analytics
             </span>
@@ -352,9 +354,11 @@ export default function LandingPage() {
       <footer className="border-t border-[rgba(124,58,237,0.15)] py-8 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[#94A3B8]">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#7C3AED] to-[#2563EB] flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white" />
-            </div>
+            <img
+              src="https://xfientejntectnwbqmdr.supabase.co/storage/v1/object/public/Logo%20Nova/Gemini_Generated_Image_mq47ltmq47ltmq47-removebg-preview.png"
+              alt="Nova Analytics"
+              className="w-6 h-6 object-contain"
+            />
             <span className="font-semibold text-white">
               Nova Analytics
             </span>
