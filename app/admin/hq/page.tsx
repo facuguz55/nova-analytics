@@ -60,11 +60,10 @@ export default async function HQPage() {
     };
   });
 
-  const planCounts = {
-    free: allWorkspaces.filter((w) => w.plan === "free").length,
-    pro: allWorkspaces.filter((w) => w.plan === "pro").length,
-    agency: allWorkspaces.filter((w) => w.plan === "agency").length,
-  };
+  const planCounts = allWorkspaces.reduce((acc, ws) => {
+    acc[ws.plan] = (acc[ws.plan] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   const STATS = [
     { label: "Workspaces", value: String(workspaceCount ?? 0), icon: Store, color: "#7C3AED" },
@@ -77,6 +76,8 @@ export default async function HQPage() {
     free: "#64748B",
     pro: "#7C3AED",
     agency: "#e1691e",
+    trial: "#22c55e",
+    active: "#2563EB",
   };
 
   return (
@@ -124,18 +125,43 @@ export default async function HQPage() {
         className="rounded-2xl p-5"
         style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
       >
-        <p className="text-sm font-semibold text-[#F1F5F9] mb-4">Distribución por plan</p>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm font-semibold text-[#F1F5F9]">Distribución por plan</p>
+          <p className="text-xs text-[#64748B]">{workspaceCount} total</p>
+        </div>
+
+        {/* Barra apilada */}
+        {workspaceCount > 0 && (
+          <div className="flex h-3 rounded-full overflow-hidden mb-4 gap-px">
+            {Object.entries(planCounts).filter(([, n]) => n > 0).map(([plan, count]) => (
+              <div
+                key={plan}
+                style={{
+                  width: `${(count / workspaceCount) * 100}%`,
+                  background: PLAN_COLORS[plan] ?? "#94A3B8",
+                }}
+                title={`${plan}: ${count}`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Leyenda con barras individuales */}
+        <div className="space-y-2">
           {Object.entries(planCounts).map(([plan, count]) => (
-            <div key={plan} className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ background: PLAN_COLORS[plan] ?? "#94A3B8" }} />
-              <span className="text-sm font-semibold text-[#F1F5F9] capitalize">{plan}</span>
-              <span
-                className="text-xs font-bold px-2 py-0.5 rounded-full"
-                style={{ background: `${PLAN_COLORS[plan] ?? "#94A3B8"}20`, color: PLAN_COLORS[plan] ?? "#94A3B8" }}
-              >
-                {count}
-              </span>
+            <div key={plan} className="flex items-center gap-3">
+              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: PLAN_COLORS[plan] ?? "#94A3B8" }} />
+              <span className="text-xs text-[#94A3B8] capitalize w-14 flex-shrink-0">{plan}</span>
+              <div className="flex-1 h-1.5 rounded-full" style={{ background: "rgba(124,58,237,0.08)" }}>
+                <div
+                  className="h-1.5 rounded-full"
+                  style={{
+                    width: workspaceCount > 0 ? `${(count / workspaceCount) * 100}%` : "0%",
+                    background: PLAN_COLORS[plan] ?? "#94A3B8",
+                  }}
+                />
+              </div>
+              <span className="text-xs font-bold text-[#F1F5F9] w-5 text-right">{count}</span>
             </div>
           ))}
         </div>
