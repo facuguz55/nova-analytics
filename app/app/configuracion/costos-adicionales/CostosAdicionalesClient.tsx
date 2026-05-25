@@ -69,7 +69,7 @@ export default function CostosAdicionalesClient({ costs: initialCosts, workspace
   async function handleDelete(id: string) {
     setDeletingId(id);
     try {
-      await deleteAdditionalCost(id, workspaceId);
+      await deleteAdditionalCost(id);
       setCosts((prev) => prev.filter((c) => c.id !== id));
       toast.success("Costo eliminado");
     } catch (e) {

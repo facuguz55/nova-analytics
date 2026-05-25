@@ -130,7 +130,7 @@ export async function triggerSync() {
     // Pasar el user id en header interno para que el endpoint pueda autenticar
     headers: {
       "x-internal-user-id": user.id,
-      "x-internal-secret": process.env.INTERNAL_API_SECRET ?? "",
+      "x-internal-secret": process.env.INTERNAL_API_SECRET ?? (() => { throw new Error("INTERNAL_API_SECRET no configurado"); })(),
     },
   });
 
@@ -184,11 +184,18 @@ export async function startTrial() {
 
   const { data: rawUserRow } = await supabase
     .from("users")
-    .select("workspace_id")
+    .select("workspace_id, workspaces(plan)")
     .eq("id", user.id)
     .single();
-  const workspaceId = (rawUserRow as unknown as { workspace_id: string | null } | null)?.workspace_id;
+
+  type UserWithPlan = { workspace_id: string | null; workspaces: { plan: string } | null };
+  const row = rawUserRow as unknown as UserWithPlan | null;
+  const workspaceId = row?.workspace_id;
   if (!workspaceId) throw new Error("Sin workspace");
+
+  // Prevenir abuso: solo se puede activar trial si el plan actual es "free"
+  const currentPlan = row?.workspaces?.plan ?? "free";
+  if (currentPlan !== "free") throw new Error("El trial solo puede activarse desde el plan gratuito");
 
   await (supabase as any).from("workspaces")
     .update({ plan: "trial", trial_started_at: new Date().toISOString() })
@@ -282,11 +289,13 @@ export async function saveComisiones(formData: FormData) {
 }
 
 // ── Costos adicionales ─────────────────────────────────────────────────
+const VALID_CURRENCIES = ["ARS", "USD", "EUR", "BRL", "MXN", "COP", "CLP", "UYU"] as const;
+
 const AdditionalCostSchema = z.object({
   name:     z.string().min(1).max(100),
   type:     z.enum(["fixed", "variable"]),
   amount:   z.coerce.number().min(0).max(99999999),
-  currency: z.string().max(10).default("ARS"),
+  currency: z.enum(VALID_CURRENCIES).default("ARS"), // whitelist — no string arbitrario
 });
 
 export async function addAdditionalCost(formData: FormData) {
@@ -321,7 +330,7 @@ export async function addAdditionalCost(formData: FormData) {
   return data;
 }
 
-export async function deleteAdditionalCost(id: string, workspaceId: string) {
+export async function deleteAdditionalCost(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
@@ -329,11 +338,20 @@ export async function deleteAdditionalCost(id: string, workspaceId: string) {
   // Validar UUID básico
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw new Error("ID inválido");
 
+  // ⚠️ workspaceId siempre del servidor — nunca del cliente (previene IDOR)
+  const { data: userRow } = await supabase
+    .from("users")
+    .select("workspace_id")
+    .eq("id", user.id)
+    .single();
+  if (!userRow) throw new Error("Sin workspace");
+  const workspaceId = (userRow as unknown as { workspace_id: string }).workspace_id;
+
   const db = supabase as unknown as { from: (t: string) => any };
   const { error } = await db.from("additional_costs")
     .delete()
     .eq("id", id)
-    .eq("workspace_id", workspaceId); // doble check de ownership
+    .eq("workspace_id", workspaceId); // ownership verificado server-side
 
   if (error) throw new Error(error.message);
   revalidatePath("/app/configuracion/costos-adicionales");

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const revalidate = 3600; // 1 hora
@@ -52,6 +53,11 @@ function buildHistorical(currentPrice: number): { date: string; value: number }[
 }
 
 export async function GET() {
+  // Defense-in-depth: auth check además del middleware
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const dolares = await fetchDolarData();
 
   // Mapear tipos
