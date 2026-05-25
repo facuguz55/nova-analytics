@@ -39,6 +39,14 @@ const NAV_SECTIONS = [
       { href: "/app/mails",    label: "Mails",    icon: Mail },
     ],
   },
+  {
+    label: "CONFIGURACIÓN",
+    items: [
+      { href: "/app/configuracion/integraciones",  label: "Integraciones",  icon: Plug },
+      { href: "/app/configuracion/financiera",     label: "Finanzas",       icon: DollarSign },
+      { href: "/app/configuracion/notificaciones", label: "Notificaciones", icon: BellRing },
+    ],
+  },
 ];
 
 const CONFIG_ITEMS = [
