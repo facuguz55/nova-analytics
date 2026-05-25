@@ -82,18 +82,6 @@ function IntegrationCard({
       className="rounded-2xl flex flex-col"
       style={{ background: "#111118", border: `1px solid ${isConnected ? "rgba(34,197,94,0.2)" : "rgba(124,58,237,0.2)"}` }}
     >
-      {/* Barra superior de estado */}
-      <div
-        className="h-1 rounded-t-2xl"
-        style={{
-          background: comingSoon
-            ? "rgba(100,116,139,0.3)"
-            : isConnected
-            ? "linear-gradient(90deg, #22c55e, #16a34a)"
-            : "linear-gradient(90deg, #7C3AED, #2563EB)",
-        }}
-      />
-
       <div className="p-6 flex flex-col gap-5 flex-1">
         {/* Header: icono + nombre + badge */}
         <div className="flex items-start gap-4">
