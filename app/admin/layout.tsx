@@ -8,8 +8,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const superAdmins = (process.env.SUPER_ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase());
-  if (!superAdmins.includes((user.email ?? "").toLowerCase())) {
+  const { data: profile } = await supabase.from("users").select("role").eq("id", user.id).single();
+  if (profile?.role !== "super_admin") {
     redirect("/app/dashboard");
   }
 
