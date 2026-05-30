@@ -68,14 +68,14 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Verificar billing
+    // Verificar billing y estado del workspace
     const { data: userRow } = await supabase
       .from("users")
-      .select("workspace_id, role, workspaces(plan, trial_started_at)")
+      .select("workspace_id, role, workspaces(plan, status, trial_started_at)")
       .eq("id", user.id)
       .single();
 
-    type WsRow = { plan: string; trial_started_at: string | null };
+    type WsRow = { plan: string; status: string; trial_started_at: string | null };
     type URow  = { workspace_id: string; role: string; workspaces: WsRow | null };
     const ur = userRow as unknown as URow | null;
 
@@ -83,12 +83,17 @@ export async function middleware(request: NextRequest) {
 
     const workspaceId = ur?.workspace_id;
 
-    // Para server actions devolver 402 JSON en vez de redirect HTML
-    // (los redirects rompen el flujo del action en el cliente)
+    // Para server actions devolver JSON en vez de redirect HTML
     const isServerAction =
       request.method === "POST" &&
       !!request.headers.get("next-action") &&
       request.headers.get("origin") === request.nextUrl.origin;
+
+    // Workspace suspendido → página de suspensión
+    if (ur?.workspaces?.status === "suspended") {
+      if (isServerAction) return NextResponse.json({ error: "account_suspended" }, { status: 403 });
+      return NextResponse.redirect(new URL("/suspended", request.url));
+    }
 
     function billingDenied() {
       return isServerAction
@@ -169,6 +174,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api/auth|auth/callback).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/auth|auth/callback|suspended).*)",
   ],
 };

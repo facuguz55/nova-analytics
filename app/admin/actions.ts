@@ -20,6 +20,7 @@ export async function changeWorkspaceStatus(workspaceId: string, status: string)
   const service = createServiceClient();
   const { error } = await service.from("workspaces").update({ status }).eq("id", workspaceId);
   if (error) throw new Error(error.message);
+  // El middleware chequea workspaces.status directamente — no hace falta tocar subscriptions
   revalidateAdmin();
 }
 
