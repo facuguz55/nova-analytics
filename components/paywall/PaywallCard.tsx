@@ -1,20 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CreditCard, Lock, Zap, CheckCircle2, Loader2 } from "lucide-react";
 import { startTrial } from "@/app/app/actions";
 import { toast } from "sonner";
 
 export default function PaywallCard() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function handleStartTrial() {
     setLoading(true);
     try {
       await startTrial();
+      router.push("/app/dashboard");
+      router.refresh();
     } catch (e) {
-      // NEXT_REDIRECT no es un error real — es cómo Next.js ejecuta redirect()
-      if (e instanceof Error && e.message === "NEXT_REDIRECT") return;
       toast.error("Error al activar la prueba: " + (e instanceof Error ? e.message : "Intentá de nuevo"));
       setLoading(false);
     }

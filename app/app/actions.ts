@@ -185,7 +185,8 @@ export async function startTrial() {
   });
 
   revalidatePath("/app");
-  redirect("/app/dashboard");
+  // No usar redirect() — lanza NEXT_REDIRECT que los catch del cliente interceptan
+  // y bloquean la navegación. El cliente navega con router.push() al recibir el éxito.
 }
 
 // ── Cotizaciones ───────────────────────────────────────────────────────

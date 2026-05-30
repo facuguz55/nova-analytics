@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Check, Star, ArrowRight, Sparkles, Zap,
   BarChart2, TrendingUp, ShoppingCart, Crown,
@@ -27,6 +28,7 @@ const PLAN_META: Record<string, { label: string; color: string; bg: string; bord
 };
 
 export default function PlanesClient({ plan, trialDaysLeft, ordersLastMonth }: Props) {
+  const router = useRouter();
   const [starting, setStarting] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
@@ -37,10 +39,13 @@ export default function PlanesClient({ plan, trialDaysLeft, ordersLastMonth }: P
 
   async function handleStartTrial() {
     setStarting(true);
-    try { await startTrial(); }
-    catch (e) {
-      if (e instanceof Error && e.message === "NEXT_REDIRECT") return;
-      toast.error("Error: " + (e instanceof Error ? e.message : "")); setStarting(false);
+    try {
+      await startTrial();
+      router.push("/app/dashboard");
+      router.refresh();
+    } catch (e) {
+      toast.error("Error: " + (e instanceof Error ? e.message : ""));
+      setStarting(false);
     }
   }
 
