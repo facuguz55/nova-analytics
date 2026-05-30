@@ -102,15 +102,13 @@ export async function middleware(request: NextRequest) {
     }
 
     if (workspaceId) {
-      const { data: wsData, error: wsError } = await service
+      const { data: wsData } = await service
         .from("workspaces")
-        .select("plan, status, trial_started_at")
+        .select("plan, status")
         .eq("id", workspaceId)
         .single();
 
-      console.log("[middleware] workspace check", { workspaceId, wsData, wsError });
-
-      type WsRow = { plan: string; status: string; trial_started_at: string | null };
+      type WsRow = { plan: string; status: string };
       const ws = wsData as unknown as WsRow | null;
 
       if (ws?.status === "suspended") {
@@ -140,10 +138,9 @@ export async function middleware(request: NextRequest) {
       }
 
       // Sin registro en subscriptions: plan "free" pasa (ve el PaywallCard en el layout).
-      // Solo bloquear trial legacy expirado.
+      // Plan "trial" legacy sin subscription se trata como expirado.
       const plan = ws?.plan ?? "free";
-      const trialStartedAt = ws?.trial_started_at ?? null;
-      if (plan === "trial" && isTrialExpired(trialStartedAt)) {
+      if (plan === "trial") {
         return billingDenied();
       }
     }
