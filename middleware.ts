@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Rutas de API que requieren plan activo (no free)
@@ -44,6 +45,12 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
 
+  // Service client para queries de BD que RLS bloquea al client anon
+  const service = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   // ── Auth: /login y /register ────────────────────────────────────────────────
   if ((path === "/login" || path === "/register") && user) {
     return NextResponse.redirect(new URL("/app/dashboard", request.url));
@@ -52,7 +59,7 @@ export async function middleware(request: NextRequest) {
   // ── Admin: requiere super_admin ─────────────────────────────────────────────
   if (path.startsWith("/admin")) {
     if (!user) return NextResponse.redirect(new URL("/login", request.url));
-    const { data: profile } = await supabase.from("users").select("role").eq("id", user.id).single();
+    const { data: profile } = await service.from("users").select("role").eq("id", user.id).single();
     if (profile?.role !== "super_admin") {
       return NextResponse.redirect(new URL("/app/dashboard", request.url));
     }
@@ -68,8 +75,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Obtener workspace_id y role del usuario
-    const { data: userRow } = await supabase
+    // Obtener workspace_id y role del usuario (service bypasa RLS)
+    const { data: userRow } = await service
       .from("users")
       .select("workspace_id, role")
       .eq("id", user.id)
@@ -95,8 +102,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (workspaceId) {
-      // Verificar estado del workspace directamente (join puede devolver null por RLS)
-      const { data: wsData } = await supabase
+      const { data: wsData } = await service
         .from("workspaces")
         .select("plan, status, trial_started_at")
         .eq("id", workspaceId)
@@ -110,7 +116,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/suspended", request.nextUrl.origin));
       }
 
-      const { data: sub } = await supabase
+      const { data: sub } = await service
         .from("subscriptions")
         .select("status, trial_ends_at")
         .eq("workspace_id", workspaceId)
@@ -152,7 +158,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Verificar plan
-    const { data: row } = await supabase
+    const { data: row } = await service
       .from("users")
       .select("role, workspaces(plan, trial_started_at)")
       .eq("id", user.id)
