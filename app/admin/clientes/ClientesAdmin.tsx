@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Plus, Search, ChevronDown, MoreHorizontal,
   Trash2, KeyRound, Crown, Pencil, Check, X, UserPlus,
@@ -145,9 +146,21 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 function ClientRow({ client }: { client: Client }) {
   const [open, setOpen]           = useState(false);
+  const [menuPos, setMenuPos]     = useState({ top: 0, right: 0 });
   const [showReset, setShowReset] = useState(false);
   const [showEdit, setShowEdit]   = useState(false);
   const [pending, start]          = useTransition();
+  const btnRef                    = useRef<HTMLButtonElement>(null);
+  const [mounted, setMounted]     = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  function openMenu() {
+    if (!btnRef.current) return;
+    const r = btnRef.current.getBoundingClientRect();
+    setMenuPos({ top: r.bottom + 4, right: window.innerWidth - r.right });
+    setOpen(true);
+  }
   const [newPwd, setNewPwd]       = useState("");
   const [editName, setEditName]   = useState(client.users[0]?.name ?? "");
   const [editEmail, setEditEmail] = useState(client.users[0]?.email ?? "");
@@ -203,19 +216,17 @@ function ClientRow({ client }: { client: Client }) {
             ? <p className="text-xs text-[#f59e0b]">Trial → {fmt(sub.trial_ends_at)}</p>
             : <span className="text-xs text-[#475569]">—</span>}
         </td>
-        <td className="px-4 py-3 relative">
-          <button onClick={() => setOpen(!open)}
+        <td className="px-4 py-3">
+          <button ref={btnRef} onClick={openMenu}
             className="p-1.5 rounded-lg transition-colors hover:bg-[rgba(124,58,237,0.1)]">
             <MoreHorizontal size={15} color="#64748B" />
           </button>
 
-          {open && (
+          {mounted && open && createPortal(
             <>
-              {/* Backdrop */}
-              <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 z-20 rounded-xl py-1 min-w-[200px]"
-                onClick={(e) => e.stopPropagation()}
-                style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}>
+              <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+              <div className="fixed z-50 rounded-xl py-1 min-w-[200px]"
+                style={{ top: menuPos.top, right: menuPos.right, background: "#111118", border: "1px solid rgba(124,58,237,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}>
 
                 <div className="px-3 py-2">
                   <p className="text-[10px] text-[#475569] uppercase tracking-wider mb-1.5">Plan</p>
@@ -258,7 +269,8 @@ function ClientRow({ client }: { client: Client }) {
                     }} />
                 )}
               </div>
-            </>
+            </>,
+            document.body
           )}
         </td>
       </tr>
