@@ -67,7 +67,61 @@ export async function middleware(request: NextRequest) {
       url.searchParams.set("next", path);
       return NextResponse.redirect(url);
     }
-    // La protección de paywall se hace en el layout (más rápido, sin DB query extra)
+
+    // Verificar billing: obtener workspace_id del usuario
+    const { data: userRow } = await supabase
+      .from("users")
+      .select("workspace_id, role, workspaces(plan, trial_started_at)")
+      .eq("id", user.id)
+      .single();
+
+    type WsRow = { plan: string; trial_started_at: string | null };
+    type URow = { workspace_id: string; role: string; workspaces: WsRow | null };
+    const ur = userRow as unknown as URow | null;
+
+    // Super admin siempre pasa
+    if (ur?.role === "super_admin") return supabaseResponse;
+
+    const workspaceId = ur?.workspace_id;
+
+    if (workspaceId) {
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("status, trial_ends_at")
+        .eq("workspace_id", workspaceId)
+        .maybeSingle();
+
+      type SubRow = { status: string; trial_ends_at: string | null };
+      const subscription = sub as SubRow | null;
+
+      if (subscription) {
+        const status = subscription.status;
+        if (status === "expired" || status === "cancelled") {
+          return NextResponse.redirect(new URL("/billing", request.url));
+        }
+        if (status === "trial") {
+          const endsAt = subscription.trial_ends_at
+            ? new Date(subscription.trial_ends_at)
+            : null;
+          if (!endsAt || endsAt.getTime() < Date.now()) {
+            return NextResponse.redirect(new URL("/billing", request.url));
+          }
+        }
+        // active o trial válido → pasa
+        return supabaseResponse;
+      }
+
+      // Sin registro en subscriptions → usar lógica legacy de workspaces.plan
+      const plan = ur?.workspaces?.plan ?? "free";
+      const trialStartedAt = ur?.workspaces?.trial_started_at ?? null;
+      const hasLegacyAccess =
+        ACTIVE_PLANS.includes(plan) &&
+        !(plan === "trial" && isTrialExpired(trialStartedAt));
+      if (!hasLegacyAccess) {
+        return NextResponse.redirect(new URL("/billing", request.url));
+      }
+    }
+
     return supabaseResponse;
   }
 
