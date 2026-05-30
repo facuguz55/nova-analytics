@@ -58,7 +58,7 @@ export default function TerminosPage() {
             <p>
               Nova Analytics es una plataforma SaaS (Software as a Service) operada por <strong className="text-white">Nova Agency</strong> que ofrece un dashboard unificado de analítica para comercios electrónicos, integrando TiendaNube, Meta Ads y Gmail con asistencia de inteligencia artificial.
             </p>
-            <p className="mt-3">El servicio se provee "tal como está" ("as is") y puede ser modificado, actualizado o discontinuado con previo aviso razonable a los usuarios.</p>
+            <p className="mt-3">El servicio se provee &ldquo;tal como está&rdquo; (&ldquo;as is&rdquo;) y puede ser modificado, actualizado o discontinuado con previo aviso razonable a los usuarios.</p>
           </Section>
 
           <Section title="2. Elegibilidad">

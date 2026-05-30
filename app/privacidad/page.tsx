@@ -51,7 +51,7 @@ export default function PrivacidadPage() {
 
           <Section title="1. Quiénes somos">
             <p>
-              Nova Analytics es un servicio operado por <strong className="text-white">Nova Agency</strong> (en adelante, "Nova", "nosotros" o "la plataforma"), con sede en Argentina. Proveemos un dashboard de analítica unificada para comercios electrónicos que integra TiendaNube, Meta Ads y Gmail.
+              Nova Analytics es un servicio operado por <strong className="text-white">Nova Agency</strong> (en adelante, &ldquo;Nova&rdquo;, &ldquo;nosotros&rdquo; o &ldquo;la plataforma&rdquo;), con sede en Argentina. Proveemos un dashboard de analítica unificada para comercios electrónicos que integra TiendaNube, Meta Ads y Gmail.
             </p>
             <p className="mt-3">
               Al utilizar Nova Analytics aceptás esta Política de Privacidad. Si tenés dudas podés contactarnos en <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#8B5CF6] hover:underline">{CONTACT_EMAIL}</a>.
