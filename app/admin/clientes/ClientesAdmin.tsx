@@ -156,10 +156,15 @@ function ClientRow({ client }: { client: Client }) {
   const user = client.users[0] ?? null;
   const sub  = client.subscription;
 
-  function act(fn: () => Promise<void>, msg: string) {
+  async function act(fn: () => Promise<void>, msg: string) {
     start(async () => {
-      try { await fn(); toast.success(msg); setOpen(false); }
-      catch (e) { toast.error(e instanceof Error ? e.message : "Error"); }
+      try {
+        await fn();
+        toast.success(msg);
+        setOpen(false);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Error al ejecutar la acción");
+      }
     });
   }
 
@@ -209,6 +214,7 @@ function ClientRow({ client }: { client: Client }) {
               {/* Backdrop */}
               <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
               <div className="absolute right-0 top-full mt-1 z-20 rounded-xl py-1 min-w-[200px]"
+                onClick={(e) => e.stopPropagation()}
                 style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}>
 
                 <div className="px-3 py-2">
