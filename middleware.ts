@@ -68,6 +68,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
+    // Server actions usan POST — saltear check de billing para no bloquearlos
+    if (request.method === "POST") return supabaseResponse;
+
     // Verificar billing: obtener workspace_id del usuario
     const { data: userRow } = await supabase
       .from("users")
