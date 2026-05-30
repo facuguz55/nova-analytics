@@ -45,13 +45,15 @@ export default function RegisterPage() {
     });
 
     if (error) {
-      // Email ya registrado con Google u otro proveedor
       if (
         error.message?.toLowerCase().includes("already registered") ||
         error.message?.toLowerCase().includes("already been registered") ||
         error.message?.toLowerCase().includes("user already")
       ) {
         setErrors({ email: "Este email ya tiene una cuenta. Intentá iniciar sesión con Google." });
+      } else if (error.message?.toLowerCase().includes("sending confirmation email") || error.message?.toLowerCase().includes("email")) {
+        // Error de SMTP — igual mostrar pantalla de espera, puede que el email llegue igual
+        setEmailSent(true);
       } else {
         toast.error(error.message);
       }
