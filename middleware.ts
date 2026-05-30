@@ -68,14 +68,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Server actions (POST + Next-Action header): pasan sin billing check.
-    // Los actions individuales verifican auth/ownership internamente.
-    // La billing gate es para prevenir acceso a páginas, no a actions específicos.
-    if (request.method === "POST" && request.headers.get("next-action")) {
-      return supabaseResponse;
-    }
-
-    // Verificar billing: obtener workspace_id del usuario
+    // Verificar billing
     const { data: userRow } = await supabase
       .from("users")
       .select("workspace_id, role, workspaces(plan, trial_started_at)")
@@ -83,23 +76,24 @@ export async function middleware(request: NextRequest) {
       .single();
 
     type WsRow = { plan: string; trial_started_at: string | null };
-    type URow = { workspace_id: string; role: string; workspaces: WsRow | null };
+    type URow  = { workspace_id: string; role: string; workspaces: WsRow | null };
     const ur = userRow as unknown as URow | null;
 
-    // Super admin siempre pasa
     if (ur?.role === "super_admin") return supabaseResponse;
 
     const workspaceId = ur?.workspace_id;
 
-    // Server actions: Next.js los identifica con el header "Next-Action".
-    // En vez de redirect HTML (que rompe el action), devolver 402 JSON.
-    const isServerAction = request.method === "POST" && !!request.headers.get("next-action");
+    // Para server actions devolver 402 JSON en vez de redirect HTML
+    // (los redirects rompen el flujo del action en el cliente)
+    const isServerAction =
+      request.method === "POST" &&
+      !!request.headers.get("next-action") &&
+      request.headers.get("origin") === request.nextUrl.origin;
 
     function billingDenied() {
-      if (isServerAction) {
-        return NextResponse.json({ error: "billing_required" }, { status: 402 });
-      }
-      return NextResponse.redirect(new URL("/billing", request.url));
+      return isServerAction
+        ? NextResponse.json({ error: "billing_required" }, { status: 402 })
+        : NextResponse.redirect(new URL("/billing", request.url));
     }
 
     if (workspaceId) {
@@ -113,29 +107,22 @@ export async function middleware(request: NextRequest) {
       const subscription = sub as SubRow | null;
 
       if (subscription) {
-        const status = subscription.status;
-        if (status === "expired" || status === "cancelled") {
+        // Solo bloquear suscripciones explícitamente terminadas
+        if (subscription.status === "expired" || subscription.status === "cancelled") {
           return billingDenied();
         }
-        if (status === "trial") {
-          const endsAt = subscription.trial_ends_at
-            ? new Date(subscription.trial_ends_at)
-            : null;
-          if (!endsAt || endsAt.getTime() < Date.now()) {
-            return billingDenied();
-          }
+        if (subscription.status === "trial") {
+          const endsAt = subscription.trial_ends_at ? new Date(subscription.trial_ends_at) : null;
+          if (!endsAt || endsAt.getTime() < Date.now()) return billingDenied();
         }
-        // active o trial válido → pasa
         return supabaseResponse;
       }
 
-      // Sin registro en subscriptions → usar lógica legacy de workspaces.plan
+      // Sin registro en subscriptions: plan "free" pasa (ve el PaywallCard en el layout).
+      // Solo bloquear trial legacy expirado.
       const plan = ur?.workspaces?.plan ?? "free";
       const trialStartedAt = ur?.workspaces?.trial_started_at ?? null;
-      const hasLegacyAccess =
-        ACTIVE_PLANS.includes(plan) &&
-        !(plan === "trial" && isTrialExpired(trialStartedAt));
-      if (!hasLegacyAccess) {
+      if (plan === "trial" && isTrialExpired(trialStartedAt)) {
         return billingDenied();
       }
     }
