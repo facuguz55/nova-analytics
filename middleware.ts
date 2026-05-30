@@ -68,6 +68,13 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
+    // Server actions (POST + Next-Action header): pasan sin billing check.
+    // Los actions individuales verifican auth/ownership internamente.
+    // La billing gate es para prevenir acceso a páginas, no a actions específicos.
+    if (request.method === "POST" && request.headers.get("next-action")) {
+      return supabaseResponse;
+    }
+
     // Verificar billing: obtener workspace_id del usuario
     const { data: userRow } = await supabase
       .from("users")
