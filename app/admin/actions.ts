@@ -12,8 +12,30 @@ function revalidateAdmin() {
 
 export async function changeWorkspacePlan(workspaceId: string, plan: string) {
   const service = createServiceClient();
+
   const { error } = await service.from("workspaces").update({ plan }).eq("id", workspaceId);
   if (error) throw new Error(error.message);
+
+  // Sincronizar subscriptions: fuente única de verdad para acceso
+  if (plan === "trial") {
+    await service.from("subscriptions").upsert({
+      workspace_id: workspaceId,
+      status: "trial",
+      provider: "manual",
+      trial_ends_at: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+    }, { onConflict: "workspace_id" });
+  } else if (["active", "pro", "agency"].includes(plan)) {
+    await service.from("subscriptions").upsert({
+      workspace_id: workspaceId,
+      status: "active",
+      provider: "manual",
+      trial_ends_at: null,
+    }, { onConflict: "workspace_id" });
+  } else {
+    // "free" → sin suscripción = sin acceso
+    await service.from("subscriptions").delete().eq("workspace_id", workspaceId);
+  }
+
   revalidateAdmin();
 }
 

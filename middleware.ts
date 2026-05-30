@@ -2,7 +2,6 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Rutas de API que requieren plan activo (no free)
 const LOCKED_API_ROUTES = [
   "/api/ia/chat",
   "/api/tiendanube",
@@ -12,14 +11,16 @@ const LOCKED_API_ROUTES = [
   "/api/ai",
 ];
 
-// Planes que tienen acceso completo
-const ACTIVE_PLANS = ["trial", "active", "pro", "agency"];
+type SubRow = { status: string; trial_ends_at: string | null };
 
-function isTrialExpired(trialStartedAt: string | null): boolean {
-  if (!trialStartedAt) return true;
-  const started = new Date(trialStartedAt);
-  const expires = new Date(started.getTime() + 14 * 86_400_000);
-  return Date.now() > expires.getTime();
+function hasActiveAccess(sub: SubRow | null): boolean {
+  if (!sub) return false;
+  if (["active", "pro", "agency"].includes(sub.status)) return true;
+  if (sub.status === "trial") {
+    const endsAt = sub.trial_ends_at ? new Date(sub.trial_ends_at) : null;
+    return !!endsAt && endsAt.getTime() > Date.now();
+  }
+  return false;
 }
 
 export async function middleware(request: NextRequest) {
@@ -45,7 +46,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
 
-  // Service client para queries de BD que RLS bloquea al client anon
+  // Service client para queries que RLS bloquea al anon
   const service = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -75,7 +76,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Obtener workspace_id y role del usuario (service bypasa RLS)
     const { data: userRow } = await service
       .from("users")
       .select("workspace_id, role")
@@ -89,7 +89,6 @@ export async function middleware(request: NextRequest) {
 
     const workspaceId = ur?.workspace_id;
 
-    // Para server actions devolver JSON en vez de redirect HTML
     const isServerAction =
       request.method === "POST" &&
       !!request.headers.get("next-action") &&
@@ -101,83 +100,64 @@ export async function middleware(request: NextRequest) {
         : NextResponse.redirect(new URL("/billing", request.url));
     }
 
-    if (workspaceId) {
-      const { data: wsData } = await service
-        .from("workspaces")
-        .select("plan, status")
-        .eq("id", workspaceId)
-        .single();
+    if (!workspaceId) return billingDenied();
 
-      type WsRow = { plan: string; status: string };
-      const ws = wsData as unknown as WsRow | null;
+    // Verificar suspensión
+    const { data: wsData } = await service
+      .from("workspaces")
+      .select("status")
+      .eq("id", workspaceId)
+      .single();
 
-      if (ws?.status === "suspended") {
-        if (isServerAction) return NextResponse.json({ error: "account_suspended" }, { status: 403 });
-        return NextResponse.redirect(new URL("/suspended", request.nextUrl.origin));
-      }
-
-      const { data: sub } = await service
-        .from("subscriptions")
-        .select("status, trial_ends_at")
-        .eq("workspace_id", workspaceId)
-        .maybeSingle();
-
-      type SubRow = { status: string; trial_ends_at: string | null };
-      const subscription = sub as SubRow | null;
-
-      if (subscription) {
-        // Solo bloquear suscripciones explícitamente terminadas
-        if (subscription.status === "expired" || subscription.status === "cancelled") {
-          return billingDenied();
-        }
-        if (subscription.status === "trial") {
-          const endsAt = subscription.trial_ends_at ? new Date(subscription.trial_ends_at) : null;
-          if (!endsAt || endsAt.getTime() < Date.now()) return billingDenied();
-        }
-        return supabaseResponse;
-      }
-
-      // Sin registro en subscriptions: plan "free" pasa (ve el PaywallCard en el layout).
-      // Plan "trial" legacy sin subscription se trata como expirado.
-      const plan = ws?.plan ?? "free";
-      if (plan === "trial") {
-        return billingDenied();
-      }
+    if ((wsData as { status: string } | null)?.status === "suspended") {
+      if (isServerAction) return NextResponse.json({ error: "account_suspended" }, { status: 403 });
+      return NextResponse.redirect(new URL("/suspended", request.nextUrl.origin));
     }
+
+    // Fuente única de verdad: tabla subscriptions
+    const { data: sub } = await service
+      .from("subscriptions")
+      .select("status, trial_ends_at")
+      .eq("workspace_id", workspaceId)
+      .maybeSingle();
+
+    if (!hasActiveAccess(sub as SubRow | null)) return billingDenied();
 
     return supabaseResponse;
   }
 
-  // ── API routes protegidas: requieren plan activo ────────────────────────────
+  // ── API routes protegidas ───────────────────────────────────────────────────
   const isLockedRoute = LOCKED_API_ROUTES.some((r) => path.startsWith(r));
   if (isLockedRoute) {
-    // Sin auth → 401
-    if (!user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    // Verificar plan
     const { data: row } = await service
       .from("users")
-      .select("role, workspaces(plan, trial_started_at)")
+      .select("role, workspace_id")
       .eq("id", user.id)
       .single();
 
-    type WorkspaceRow = { plan: string; trial_started_at: string | null };
-    const ws = (row as unknown as { role: string; workspaces: WorkspaceRow | null } | null);
-    const isSuperAdmin = ws?.role === "super_admin";
-    const plan = ws?.workspaces?.plan ?? "free";
-    const trialStartedAt = ws?.workspaces?.trial_started_at ?? null;
+    type URow2 = { role: string; workspace_id: string | null };
+    const ur2 = row as unknown as URow2 | null;
 
-    const hasAccess =
-      isSuperAdmin ||
-      (ACTIVE_PLANS.includes(plan) &&
-        !(plan === "trial" && isTrialExpired(trialStartedAt)));
+    if (ur2?.role === "super_admin") return supabaseResponse;
 
-    if (!hasAccess) {
+    const workspaceId = ur2?.workspace_id;
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Plan requerido", code: "PLAN_LOCKED" }, { status: 403 });
+    }
+
+    const { data: sub } = await service
+      .from("subscriptions")
+      .select("status, trial_ends_at")
+      .eq("workspace_id", workspaceId)
+      .maybeSingle();
+
+    if (!hasActiveAccess(sub as SubRow | null)) {
+      const expired = (sub as SubRow | null)?.status === "trial";
       return NextResponse.json(
-        { error: "Plan requerido", code: "PLAN_LOCKED" },
-        { status: 403 }
+        { error: expired ? "Trial vencido" : "Plan requerido", code: expired ? "TRIAL_EXPIRED" : "PLAN_LOCKED" },
+        { status: expired ? 402 : 403 }
       );
     }
   }

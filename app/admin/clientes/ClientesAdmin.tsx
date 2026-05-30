@@ -44,6 +44,27 @@ function fmt(iso: string) {
   return new Date(iso).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" });
 }
 
+function TrialBadge({ sub }: { sub: SubRow | null }) {
+  if (sub?.status !== "trial") return null;
+  const endsAt = sub.trial_ends_at ? new Date(sub.trial_ends_at) : null;
+  if (!endsAt) return (
+    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: "#ef4444", background: "rgba(239,68,68,0.12)" }}>
+      Trial sin fecha
+    </span>
+  );
+  const daysLeft = Math.ceil((endsAt.getTime() - Date.now()) / 86_400_000);
+  if (daysLeft <= 0) return (
+    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: "#ef4444", background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)" }}>
+      Trial vencido
+    </span>
+  );
+  return (
+    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: "#f59e0b", background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.25)" }}>
+      Trial · {daysLeft}d restantes
+    </span>
+  );
+}
+
 // ── Modal crear cliente ───────────────────────────────────────────────────────
 
 function CreateModal({ onClose }: { onClose: () => void }) {
@@ -202,18 +223,24 @@ function ClientRow({ client }: { client: Client }) {
             </>
           ) : <span className="text-xs text-[#475569]">Sin usuario</span>}
         </td>
-        <td className="px-4 py-3"><PlanBadge plan={ws.plan} /></td>
+        <td className="px-4 py-3">
+          <div className="flex flex-col gap-1">
+            <PlanBadge plan={ws.plan} />
+            <TrialBadge sub={sub} />
+          </div>
+        </td>
         <td className="px-4 py-3">
           <span className="text-xs font-medium" style={{ color: ws.status === "active" ? "#22c55e" : "#ef4444" }}>
             {ws.status}
           </span>
-          {sub && <p className="text-[10px] text-[#64748B] mt-0.5">{sub.status}</p>}
         </td>
         <td className="px-4 py-3">
           {sub?.next_billing_at
             ? <p className="text-xs text-[#94A3B8]">{fmt(sub.next_billing_at)}</p>
             : sub?.trial_ends_at
-            ? <p className="text-xs text-[#f59e0b]">Trial → {fmt(sub.trial_ends_at)}</p>
+            ? <p className="text-xs" style={{ color: Math.ceil((new Date(sub.trial_ends_at).getTime() - Date.now()) / 86_400_000) <= 0 ? "#ef4444" : "#f59e0b" }}>
+                Vence {fmt(sub.trial_ends_at)}
+              </p>
             : <span className="text-xs text-[#475569]">—</span>}
         </td>
         <td className="px-4 py-3">

@@ -26,14 +26,16 @@ export default async function HQPage() {
   type AuditRow = { action: string; workspace_id: string | null; created_at: string };
   type TokenRow = { workspace_id: string | null; input_tokens: number; output_tokens: number };
   type BillingRow = { workspace_id: string; amount: number; status: string };
+  type SubRow = { workspace_id: string; status: string; trial_ends_at: string | null };
 
-  const [wsRes, userRes, intRes, auditRes, tokenRes, billingRes] = await Promise.all([
+  const [wsRes, userRes, intRes, auditRes, tokenRes, billingRes, subRes] = await Promise.all([
     service.from("workspaces").select("*", { count: "exact" }).order("created_at", { ascending: false }),
     service.from("users").select("*", { count: "exact" }).order("created_at", { ascending: false }),
     service.from("integrations").select("workspace_id, provider, status").eq("status", "active"),
     service.from("audit_logs").select("action, workspace_id, created_at").order("created_at", { ascending: false }).limit(20),
     service.from("token_usage").select("workspace_id, input_tokens, output_tokens"),
     service.from("billing").select("workspace_id, amount, status").eq("status", "paid"),
+    service.from("subscriptions").select("workspace_id, status, trial_ends_at"),
   ]);
 
   const workspaceCount = wsRes.count ?? 0;
@@ -44,6 +46,20 @@ export default async function HQPage() {
   const audits = (auditRes.data ?? []) as unknown as AuditRow[];
   const tokenRows = (tokenRes.data ?? []) as unknown as TokenRow[];
   const billingRows = (billingRes.data ?? []) as unknown as BillingRow[];
+  const allSubs = (subRes.data ?? []) as unknown as SubRow[];
+
+  function getSubBadge(workspaceId: string): { label: string; color: string; bg: string } {
+    const sub = allSubs.find((s) => s.workspace_id === workspaceId);
+    if (!sub) return { label: "Sin acceso", color: "#ef4444", bg: "rgba(239,68,68,0.1)" };
+    if (["active", "pro", "agency"].includes(sub.status)) return { label: "Activo", color: "#22c55e", bg: "rgba(34,197,94,0.1)" };
+    if (sub.status === "trial") {
+      const endsAt = sub.trial_ends_at ? new Date(sub.trial_ends_at) : null;
+      const daysLeft = endsAt ? Math.ceil((endsAt.getTime() - Date.now()) / 86_400_000) : 0;
+      if (daysLeft <= 0) return { label: "Trial vencido", color: "#ef4444", bg: "rgba(239,68,68,0.1)" };
+      return { label: `Trial · ${daysLeft}d`, color: "#f59e0b", bg: "rgba(245,158,11,0.1)" };
+    }
+    return { label: sub.status, color: "#64748B", bg: "rgba(100,116,139,0.1)" };
+  }
 
   // Agregar tokens por workspace
   const HAIKU_INPUT_COST_PER_M  = 0.80;
@@ -209,7 +225,7 @@ export default async function HQPage() {
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
-                {["WORKSPACE", "PLAN", "USUARIOS", "INTEGRACIONES", "PAGOS", "BILLING", "CREADO"].map((col) => (
+                {["WORKSPACE", "PLAN", "ACCESO", "USUARIOS", "INTEGRACIONES", "PAGOS", "BILLING", "CREADO"].map((col) => (
                   <th key={col} className="text-left px-5 py-3 text-[10px] font-semibold tracking-widest text-[#94A3B8] uppercase whitespace-nowrap">
                     {col}
                   </th>
@@ -219,7 +235,7 @@ export default async function HQPage() {
             <tbody>
               {workspaceStats.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-sm text-[#64748B]">
+                  <td colSpan={8} className="px-5 py-10 text-center text-sm text-[#64748B]">
                     Sin workspaces registrados
                   </td>
                 </tr>
@@ -246,6 +262,17 @@ export default async function HQPage() {
                     >
                       {ws.plan}
                     </span>
+                  </td>
+                  <td className="px-5 py-3 whitespace-nowrap">
+                    {(() => {
+                      const b = getSubBadge(ws.id);
+                      return (
+                        <span className="text-[11px] font-bold px-2 py-1 rounded-full"
+                          style={{ color: b.color, background: b.bg }}>
+                          {b.label}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-5 py-3 whitespace-nowrap">
                     <span className="text-sm text-[#F1F5F9]">{ws.userCount}</span>
