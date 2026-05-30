@@ -13,7 +13,9 @@ export default function PaywallCard() {
     try {
       await startTrial();
     } catch (e) {
-      toast.error("Error al activar la prueba: " + (e instanceof Error ? e.message : "Intenta de nuevo"));
+      // NEXT_REDIRECT no es un error real — es cómo Next.js ejecuta redirect()
+      if (e instanceof Error && e.message === "NEXT_REDIRECT") return;
+      toast.error("Error al activar la prueba: " + (e instanceof Error ? e.message : "Intentá de nuevo"));
       setLoading(false);
     }
   }

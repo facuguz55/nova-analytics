@@ -38,7 +38,10 @@ export default function PlanesClient({ plan, trialDaysLeft, ordersLastMonth }: P
   async function handleStartTrial() {
     setStarting(true);
     try { await startTrial(); }
-    catch (e) { toast.error("Error: " + (e instanceof Error ? e.message : "")); setStarting(false); }
+    catch (e) {
+      if (e instanceof Error && e.message === "NEXT_REDIRECT") return;
+      toast.error("Error: " + (e instanceof Error ? e.message : "")); setStarting(false);
+    }
   }
 
   return (
