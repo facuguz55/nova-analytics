@@ -124,9 +124,26 @@ function CreateModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+// ── Modal genérico ────────────────────────────────────────────────────────────
+
+function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.75)" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)" }}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-[#F1F5F9]">{title}</h3>
+          <button onClick={onClose}><X size={15} color="#64748B" /></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // ── Row de cliente ────────────────────────────────────────────────────────────
 
-function ClientRow({ client, onRefresh }: { client: Client; onRefresh: () => void }) {
+function ClientRow({ client }: { client: Client }) {
   const [open, setOpen]           = useState(false);
   const [showReset, setShowReset] = useState(false);
   const [showEdit, setShowEdit]   = useState(false);
@@ -145,6 +162,11 @@ function ClientRow({ client, onRefresh }: { client: Client; onRefresh: () => voi
       catch (e) { toast.error(e instanceof Error ? e.message : "Error"); }
     });
   }
+
+  const inputCls = "w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.2)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none";
+  const btnRow   = "flex gap-2 pt-1";
+  const btnCancel = "flex-1 py-2.5 rounded-xl text-sm text-[#64748B] border border-[rgba(255,255,255,0.08)] hover:text-[#94A3B8] transition-colors";
+  const btnSave   = "flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 hover:opacity-90";
 
   return (
     <>
@@ -173,7 +195,7 @@ function ClientRow({ client, onRefresh }: { client: Client; onRefresh: () => voi
           {sub?.next_billing_at
             ? <p className="text-xs text-[#94A3B8]">{fmt(sub.next_billing_at)}</p>
             : sub?.trial_ends_at
-            ? <p className="text-xs text-[#f59e0b]">Trial hasta {fmt(sub.trial_ends_at)}</p>
+            ? <p className="text-xs text-[#f59e0b]">Trial → {fmt(sub.trial_ends_at)}</p>
             : <span className="text-xs text-[#475569]">—</span>}
         </td>
         <td className="px-4 py-3 relative">
@@ -183,112 +205,95 @@ function ClientRow({ client, onRefresh }: { client: Client; onRefresh: () => voi
           </button>
 
           {open && (
-            <div className="absolute right-0 top-full mt-1 z-20 rounded-xl py-1 min-w-[190px]"
-              style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+            <>
+              {/* Backdrop */}
+              <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+              <div className="absolute right-0 top-full mt-1 z-20 rounded-xl py-1 min-w-[200px]"
+                style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}>
 
-              {/* Cambiar plan */}
-              <div className="px-3 py-1.5">
-                <p className="text-[10px] text-[#475569] uppercase tracking-wider mb-1">Plan</p>
-                <div className="flex flex-wrap gap-1">
-                  {PLANS.map((p) => (
-                    <button key={p} onClick={() => act(() => changeWorkspacePlan(ws.id, p), `Plan → ${p}`)}
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full transition-all hover:opacity-80"
-                      style={ws.plan === p
-                        ? { background: "#7C3AED", color: "white" }
-                        : { background: "rgba(124,58,237,0.1)", color: "#8B5CF6" }}>
-                      {p}
-                    </button>
-                  ))}
+                <div className="px-3 py-2">
+                  <p className="text-[10px] text-[#475569] uppercase tracking-wider mb-1.5">Plan</p>
+                  <div className="flex flex-wrap gap-1">
+                    {PLANS.map((p) => (
+                      <button key={p} onClick={() => act(() => changeWorkspacePlan(ws.id, p), `Plan → ${p}`)}
+                        disabled={pending}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-full transition-all hover:opacity-80 disabled:opacity-40"
+                        style={ws.plan === p
+                          ? { background: "#7C3AED", color: "white" }
+                          : { background: "rgba(124,58,237,0.1)", color: "#8B5CF6" }}>
+                        {p}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="my-1" style={{ borderTop: "1px solid rgba(124,58,237,0.1)" }} />
+                <div className="my-1" style={{ borderTop: "1px solid rgba(124,58,237,0.1)" }} />
+                <MenuItem icon={Pencil}   label="Editar usuario"    onClick={() => { setOpen(false); setShowEdit(true); }} />
+                <MenuItem icon={KeyRound} label="Reset contraseña"  onClick={() => { setOpen(false); setShowReset(true); }} />
+                <MenuItem
+                  icon={ws.status === "active" ? ShieldOff : Check}
+                  label={ws.status === "active" ? "Suspender acceso" : "Activar acceso"}
+                  onClick={() => act(
+                    () => changeWorkspaceStatus(ws.id, ws.status === "active" ? "suspended" : "active"),
+                    ws.status === "active" ? "Workspace suspendido" : "Workspace activado"
+                  )} />
 
-              <MenuItem icon={Pencil}  label="Editar usuario"     onClick={() => { setOpen(false); setShowEdit(true); }} />
-              <MenuItem icon={KeyRound} label="Reset contraseña"  onClick={() => { setOpen(false); setShowReset(true); }} />
-              <MenuItem icon={ws.status === "active" ? ShieldOff : Check}
-                label={ws.status === "active" ? "Suspender" : "Activar"}
-                onClick={() => act(() => changeWorkspaceStatus(ws.id, ws.status === "active" ? "suspended" : "active"),
-                  ws.status === "active" ? "Workspace suspendido" : "Workspace activado")} />
-
-              <div className="my-1" style={{ borderTop: "1px solid rgba(239,68,68,0.15)" }} />
-
-              <MenuItem icon={Trash2} label="Eliminar workspace" danger
-                onClick={() => {
-                  if (!confirm(`¿Eliminar "${ws.name}"? Esto es irreversible.`)) return;
-                  act(() => deleteWorkspace(ws.id), "Workspace eliminado");
-                }} />
-              {user && (
-                <MenuItem icon={Trash2} label="Eliminar usuario" danger
+                <div className="my-1" style={{ borderTop: "1px solid rgba(239,68,68,0.15)" }} />
+                <MenuItem icon={Trash2} label="Eliminar workspace" danger
                   onClick={() => {
-                    if (!confirm(`¿Eliminar usuario ${user.email}?`)) return;
-                    act(() => deleteUser(user.id), "Usuario eliminado");
+                    if (!confirm(`¿Eliminar "${ws.name}"? Irreversible.`)) return;
+                    act(() => deleteWorkspace(ws.id), "Workspace eliminado");
                   }} />
-              )}
-            </div>
+                {user && (
+                  <MenuItem icon={Trash2} label="Eliminar usuario" danger
+                    onClick={() => {
+                      if (!confirm(`¿Eliminar usuario ${user.email}?`)) return;
+                      act(() => deleteUser(user.id), "Usuario eliminado");
+                    }} />
+                )}
+              </div>
+            </>
           )}
         </td>
       </tr>
 
-      {/* Modal reset password */}
+      {/* Modales fuera del <tr> para HTML válido */}
       {showReset && user && (
-        <tr><td colSpan={6}>
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
-            <div className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)" }}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-[#F1F5F9]">Reset contraseña</h3>
-                <button onClick={() => setShowReset(false)}><X size={15} color="#64748B" /></button>
-              </div>
-              <p className="text-xs text-[#64748B]">{user.email}</p>
-              <input
-                type="text"
-                placeholder="Nueva contraseña (mín. 8 caracteres)"
-                value={newPwd}
-                onChange={(e) => setNewPwd(e.target.value)}
-                className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.2)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none"
-              />
-              <div className="flex gap-2">
-                <button onClick={() => setShowReset(false)} className="flex-1 py-2.5 rounded-xl text-sm text-[#64748B] border border-[rgba(255,255,255,0.08)]">Cancelar</button>
-                <button disabled={pending || newPwd.length < 8}
-                  onClick={() => { act(() => resetClientPassword(user.id, newPwd), "Contraseña actualizada"); setShowReset(false); setNewPwd(""); }}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50"
-                  style={{ background: "#7C3AED" }}>
-                  {pending ? "Guardando..." : "Guardar"}
-                </button>
-              </div>
-            </div>
+        <Modal title="Reset contraseña" onClose={() => { setShowReset(false); setNewPwd(""); }}>
+          <p className="text-xs text-[#64748B]">{user.email}</p>
+          <input type="password" placeholder="Nueva contraseña (mín. 8 caracteres)"
+            value={newPwd} onChange={(e) => setNewPwd(e.target.value)} className={inputCls} />
+          <div className={btnRow}>
+            <button onClick={() => { setShowReset(false); setNewPwd(""); }} className={btnCancel}>Cancelar</button>
+            <button disabled={pending || newPwd.length < 8}
+              onClick={() => { act(() => resetClientPassword(user.id, newPwd), "Contraseña actualizada"); setShowReset(false); setNewPwd(""); }}
+              className={btnSave} style={{ background: "#7C3AED" }}>
+              {pending ? "Guardando..." : "Guardar"}
+            </button>
           </div>
-        </td></tr>
+        </Modal>
       )}
 
-      {/* Modal editar usuario */}
       {showEdit && user && (
-        <tr><td colSpan={6}>
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
-            <div className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)" }}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-[#F1F5F9]">Editar usuario</h3>
-                <button onClick={() => setShowEdit(false)}><X size={15} color="#64748B" /></button>
-              </div>
-              {[{ label: "Nombre", val: editName, set: setEditName }, { label: "Email", val: editEmail, set: setEditEmail }].map((f) => (
-                <div key={f.label}>
-                  <label className="text-xs text-[#94A3B8] mb-1 block">{f.label}</label>
-                  <input value={f.val} onChange={(e) => f.set(e.target.value)}
-                    className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.2)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] outline-none" />
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <button onClick={() => setShowEdit(false)} className="flex-1 py-2.5 rounded-xl text-sm text-[#64748B] border border-[rgba(255,255,255,0.08)]">Cancelar</button>
-                <button disabled={pending}
-                  onClick={() => act(() => updateClientInfo(user.id, editName, editEmail), "Usuario actualizado")}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50"
-                  style={{ background: "#7C3AED" }}>
-                  {pending ? "Guardando..." : "Guardar"}
-                </button>
-              </div>
+        <Modal title="Editar usuario" onClose={() => setShowEdit(false)}>
+          {[
+            { label: "Nombre", val: editName, set: setEditName },
+            { label: "Email",  val: editEmail, set: setEditEmail },
+          ].map((f) => (
+            <div key={f.label}>
+              <label className="text-xs text-[#94A3B8] mb-1 block">{f.label}</label>
+              <input value={f.val} onChange={(e) => f.set(e.target.value)} className={inputCls} />
             </div>
+          ))}
+          <div className={btnRow}>
+            <button onClick={() => setShowEdit(false)} className={btnCancel}>Cancelar</button>
+            <button disabled={pending}
+              onClick={() => act(() => updateClientInfo(user.id, editName, editEmail), "Usuario actualizado")}
+              className={btnSave} style={{ background: "#7C3AED" }}>
+              {pending ? "Guardando..." : "Guardar"}
+            </button>
           </div>
-        </td></tr>
+        </Modal>
       )}
     </>
   );
@@ -400,7 +405,7 @@ export default function ClientesAdmin({ clients }: { clients: Client[] }) {
               <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-[#475569]">No hay clientes</td></tr>
             ) : (
               filtered.map((c) => (
-                <ClientRow key={c.workspace.id} client={c} onRefresh={() => {}} />
+                <ClientRow key={c.workspace.id} client={c} />
               ))
             )}
           </tbody>

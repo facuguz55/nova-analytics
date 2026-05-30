@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 function revalidateAdmin() {
   revalidatePath("/admin/hq");
+  revalidatePath("/admin/clientes");
   revalidatePath("/admin/workspaces");
   revalidatePath("/admin/analytics");
 }

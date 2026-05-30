@@ -92,7 +92,7 @@ export async function middleware(request: NextRequest) {
     // Workspace suspendido → página de suspensión
     if (ur?.workspaces?.status === "suspended") {
       if (isServerAction) return NextResponse.json({ error: "account_suspended" }, { status: 403 });
-      return NextResponse.redirect(new URL("/suspended", request.url));
+      return NextResponse.redirect(new URL("/suspended", request.nextUrl.origin));
     }
 
     function billingDenied() {
