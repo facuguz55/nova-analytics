@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { LayoutDashboard, Users, BarChart2, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, BarChart2, LogOut, UserPlus, Store } from "lucide-react";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -14,9 +14,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   const nav = [
-    { href: "/admin/hq", label: "HQ Dashboard", icon: LayoutDashboard },
-    { href: "/admin/workspaces", label: "Workspaces", icon: Users },
-    { href: "/admin/analytics", label: "Analytics", icon: BarChart2 },
+    { href: "/admin/hq",         label: "HQ Dashboard", icon: LayoutDashboard },
+    { href: "/admin/clientes",   label: "Clientes",     icon: UserPlus },
+    { href: "/admin/workspaces", label: "Workspaces",   icon: Store },
+    { href: "/admin/analytics",  label: "Analytics",    icon: BarChart2 },
   ];
 
   return (
