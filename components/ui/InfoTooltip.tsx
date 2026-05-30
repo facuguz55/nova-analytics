@@ -1,52 +1,81 @@
 "use client";
 
 import { Info } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 interface Props {
-  /** Texto técnico (modo Pro) */
   text: string;
-  /** Texto simple para no-técnicos (modo Simple). Si no se provee, usa text. */
   simpleText?: string;
-  /** Tamaño del ícono */
   size?: number;
-  /** Posición del tooltip (default: top) */
   side?: "top" | "bottom" | "left" | "right";
 }
 
-/**
- * Pequeño ícono (i) con tooltip al hover/click. Funciona en mobile (click)
- * y desktop (hover).
- */
 export default function InfoTooltip({ text, simpleText, size = 12, side = "top" }: Props) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen]           = useState(false);
+  const [coords, setCoords]       = useState({ top: 0, left: 0 });
   const [modoSimple, setModoSimple] = useState(false);
+  const [mounted, setMounted]     = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
 
-  // Read mode from html data attr (set by Navbar)
-  if (typeof document !== "undefined") {
+  useEffect(() => {
+    setMounted(true);
     const mode = document.documentElement.getAttribute("data-modo");
-    if (mode === "simple" && !modoSimple) setModoSimple(true);
-    if (mode !== "simple" && modoSimple) setModoSimple(false);
+    setModoSimple(mode === "simple");
+  }, []);
+
+  const calcPosition = useCallback(() => {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    const TOOLTIP_W = 220;
+    const TOOLTIP_H = 80; // estimado
+
+    let top = 0;
+    let left = 0;
+
+    if (side === "top" || (!side)) {
+      top  = r.top - TOOLTIP_H - 8 + window.scrollY;
+      left = r.left + r.width / 2 - TOOLTIP_W / 2 + window.scrollX;
+    } else if (side === "bottom") {
+      top  = r.bottom + 8 + window.scrollY;
+      left = r.left + r.width / 2 - TOOLTIP_W / 2 + window.scrollX;
+    } else if (side === "left") {
+      top  = r.top + r.height / 2 - TOOLTIP_H / 2 + window.scrollY;
+      left = r.left - TOOLTIP_W - 8 + window.scrollX;
+    } else {
+      top  = r.top + r.height / 2 - TOOLTIP_H / 2 + window.scrollY;
+      left = r.right + 8 + window.scrollX;
+    }
+
+    // Clamp horizontalmente para no salirse de la pantalla
+    const maxLeft = window.innerWidth - TOOLTIP_W - 8;
+    left = Math.max(8, Math.min(left, maxLeft));
+
+    // Si no hay espacio arriba, mostrar abajo
+    if (top < window.scrollY + 8 && (side === "top" || !side)) {
+      top = r.bottom + 8 + window.scrollY;
+    }
+
+    setCoords({ top, left });
+  }, [side]);
+
+  function handleEnter() {
+    calcPosition();
+    setOpen(true);
   }
 
   const displayText = modoSimple && simpleText ? simpleText : text;
 
-  const positions: Record<string, React.CSSProperties> = {
-    top:    { bottom: "100%", left: "50%", transform: "translateX(-50%)", marginBottom: "8px" },
-    bottom: { top: "100%", left: "50%", transform: "translateX(-50%)", marginTop: "8px" },
-    left:   { right: "100%", top: "50%", transform: "translateY(-50%)", marginRight: "8px" },
-    right:  { left: "100%", top: "50%", transform: "translateY(-50%)", marginLeft: "8px" },
-  };
-
   return (
     <span
+      ref={ref}
       className="relative inline-flex"
-      onMouseEnter={() => setOpen(true)}
+      onMouseEnter={handleEnter}
       onMouseLeave={() => setOpen(false)}
     >
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        onClick={(e) => { e.stopPropagation(); calcPosition(); setOpen(!open); }}
         className="flex items-center justify-center rounded-full transition-all hover:bg-[rgba(124,58,237,0.15)] cursor-help"
         style={{ width: size + 6, height: size + 6 }}
         aria-label="Más información"
@@ -54,22 +83,23 @@ export default function InfoTooltip({ text, simpleText, size = 12, side = "top" 
         <Info size={size} strokeWidth={2} color="#7C3AED" className="opacity-60 hover:opacity-100" />
       </button>
 
-      {open && (
+      {mounted && open && createPortal(
         <span
-          className="absolute z-50 rounded-lg px-3 py-2 text-[11px] leading-relaxed pointer-events-none"
+          className="fixed z-[9999] rounded-lg px-3 py-2 text-[11px] leading-relaxed pointer-events-none"
           style={{
-            ...positions[side],
+            top:       coords.top,
+            left:      coords.left,
+            width:     220,
             background: "#1a1a2e",
-            border: "1px solid rgba(124,58,237,0.4)",
-            color: "#F1F5F9",
-            minWidth: "180px",
-            maxWidth: "260px",
+            border:    "1px solid rgba(124,58,237,0.4)",
+            color:     "#F1F5F9",
             boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
             whiteSpace: "normal",
           }}
         >
           {displayText}
-        </span>
+        </span>,
+        document.body
       )}
     </span>
   );

@@ -83,12 +83,14 @@ function filterByStatus(orders: TNOrder[], filter: StatusFilter): TNOrder[] {
   return orders;
 }
 
+function toLocalDateStr(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 function filterByDateRange(orders: TNOrder[], since: string, until: string): TNOrder[] {
-  const sinceDate = new Date(since + "T00:00:00");
-  const untilDate = new Date(until + "T23:59:59");
   return orders.filter((o) => {
-    const d = new Date(o.created_at);
-    return d >= sinceDate && d <= untilDate;
+    const dateStr = toLocalDateStr(new Date(o.created_at));
+    return dateStr >= since && dateStr <= until;
   });
 }
 

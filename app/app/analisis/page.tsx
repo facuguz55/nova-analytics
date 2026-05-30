@@ -97,7 +97,22 @@ export default async function AnalisisPage({
 
   let initialOrders: TNOrder[] = [];
   try {
-    initialOrders = await getOrders(connection.opts, 1, 100, { since });
+    // Para hoy/ayer no confiamos en el filtro server-side de TiendaNube
+    // (la API devuelve las últimas N órdenes sin importar la fecha).
+    // Traemos las últimas 200 órdenes y dejamos que el cliente filtre por fecha local.
+    const isShortPreset = activePreset === "hoy" || activePreset === "ayer";
+    if (isShortPreset) {
+      const [p1, p2] = await Promise.allSettled([
+        getOrders(connection.opts, 1, 100),
+        getOrders(connection.opts, 2, 100),
+      ]);
+      initialOrders = [
+        ...(p1.status === "fulfilled" ? p1.value : []),
+        ...(p2.status === "fulfilled" ? p2.value : []),
+      ];
+    } else {
+      initialOrders = await getOrders(connection.opts, 1, 100, { since });
+    }
   } catch {
     // El cliente mostrará error
   }
