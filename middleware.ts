@@ -102,11 +102,13 @@ export async function middleware(request: NextRequest) {
     }
 
     if (workspaceId) {
-      const { data: wsData } = await service
+      const { data: wsData, error: wsError } = await service
         .from("workspaces")
         .select("plan, status, trial_started_at")
         .eq("id", workspaceId)
         .single();
+
+      console.log("[middleware] workspace check", { workspaceId, wsData, wsError });
 
       type WsRow = { plan: string; status: string; trial_started_at: string | null };
       const ws = wsData as unknown as WsRow | null;
