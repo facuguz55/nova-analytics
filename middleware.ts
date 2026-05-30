@@ -68,15 +68,14 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Verificar billing y estado del workspace
+    // Obtener workspace_id y role del usuario
     const { data: userRow } = await supabase
       .from("users")
-      .select("workspace_id, role, workspaces(plan, status, trial_started_at)")
+      .select("workspace_id, role")
       .eq("id", user.id)
       .single();
 
-    type WsRow = { plan: string; status: string; trial_started_at: string | null };
-    type URow  = { workspace_id: string; role: string; workspaces: WsRow | null };
+    type URow = { workspace_id: string; role: string };
     const ur = userRow as unknown as URow | null;
 
     if (ur?.role === "super_admin") return supabaseResponse;
@@ -89,12 +88,6 @@ export async function middleware(request: NextRequest) {
       !!request.headers.get("next-action") &&
       request.headers.get("origin") === request.nextUrl.origin;
 
-    // Workspace suspendido → página de suspensión
-    if (ur?.workspaces?.status === "suspended") {
-      if (isServerAction) return NextResponse.json({ error: "account_suspended" }, { status: 403 });
-      return NextResponse.redirect(new URL("/suspended", request.nextUrl.origin));
-    }
-
     function billingDenied() {
       return isServerAction
         ? NextResponse.json({ error: "billing_required" }, { status: 402 })
@@ -102,6 +95,21 @@ export async function middleware(request: NextRequest) {
     }
 
     if (workspaceId) {
+      // Verificar estado del workspace directamente (join puede devolver null por RLS)
+      const { data: wsData } = await supabase
+        .from("workspaces")
+        .select("plan, status, trial_started_at")
+        .eq("id", workspaceId)
+        .single();
+
+      type WsRow = { plan: string; status: string; trial_started_at: string | null };
+      const ws = wsData as unknown as WsRow | null;
+
+      if (ws?.status === "suspended") {
+        if (isServerAction) return NextResponse.json({ error: "account_suspended" }, { status: 403 });
+        return NextResponse.redirect(new URL("/suspended", request.nextUrl.origin));
+      }
+
       const { data: sub } = await supabase
         .from("subscriptions")
         .select("status, trial_ends_at")
@@ -125,8 +133,8 @@ export async function middleware(request: NextRequest) {
 
       // Sin registro en subscriptions: plan "free" pasa (ve el PaywallCard en el layout).
       // Solo bloquear trial legacy expirado.
-      const plan = ur?.workspaces?.plan ?? "free";
-      const trialStartedAt = ur?.workspaces?.trial_started_at ?? null;
+      const plan = ws?.plan ?? "free";
+      const trialStartedAt = ws?.trial_started_at ?? null;
       if (plan === "trial" && isTrialExpired(trialStartedAt)) {
         return billingDenied();
       }
