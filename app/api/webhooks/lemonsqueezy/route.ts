@@ -6,6 +6,7 @@ type SubscriptionAttributes = {
   status: string;
   renews_at: string | null;
   ends_at: string | null;
+  trial_ends_at: string | null;
   customer_id: number;
 };
 
@@ -39,6 +40,7 @@ async function upsertSubscription(
     provider_subscription_id?: string;
     provider_customer_id?: string;
     next_billing_at?: string | null;
+    trial_ends_at?: string | null;
     cancelled_at?: string | null;
   }
 ) {
@@ -61,6 +63,9 @@ async function upsertSubscription(
         }),
         ...(fields.next_billing_at !== undefined && {
           next_billing_at: fields.next_billing_at,
+        }),
+        ...(fields.trial_ends_at !== undefined && {
+          trial_ends_at: fields.trial_ends_at,
         }),
         ...(fields.cancelled_at !== undefined && {
           cancelled_at: fields.cancelled_at,
@@ -105,18 +110,32 @@ export async function POST(request: Request) {
 
   switch (eventName) {
     case "subscription_created":
-    case "subscription_updated":
-    case "order_created": {
-      const nextBilling =
-        eventName !== "order_created" ? (attrs?.renews_at ?? null) : null;
+    case "subscription_updated": {
+      const lsStatus    = attrs?.status ?? "active";
+      const trialEndsAt = attrs?.trial_ends_at ?? null;
+      const nextBilling = attrs?.renews_at ?? null;
+
+      // LS usa "on_trial" cuando está en período de prueba
+      const ourStatus = lsStatus === "on_trial" ? "trial" : "active";
 
       await upsertSubscription(workspaceId, {
-        status: "active",
-        ...(eventName !== "order_created" && {
-          provider_subscription_id: subscriptionId,
-        }),
+        status: ourStatus,
+        provider_subscription_id: subscriptionId,
         ...(customerId && { provider_customer_id: customerId }),
         next_billing_at: nextBilling,
+        trial_ends_at: trialEndsAt,
+        cancelled_at: null,
+      });
+      await updateWorkspacePlan(workspaceId, ourStatus === "trial" ? "trial" : "active");
+      break;
+    }
+
+    case "order_created": {
+      // Primer pago procesado — ya no es trial
+      await upsertSubscription(workspaceId, {
+        status: "active",
+        ...(customerId && { provider_customer_id: customerId }),
+        trial_ends_at: null,
         cancelled_at: null,
       });
       await updateWorkspacePlan(workspaceId, "active");
@@ -132,7 +151,8 @@ export async function POST(request: Request) {
       break;
     }
 
-    case "subscription_expired": {
+    case "subscription_expired":
+    case "subscription_payment_failed": {
       await upsertSubscription(workspaceId, {
         status: "expired",
         provider_subscription_id: subscriptionId,

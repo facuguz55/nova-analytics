@@ -1,35 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
-  Check, Star, ArrowRight, Sparkles, Zap,
-  BarChart2, TrendingUp, ShoppingCart, Crown,
-  MessageCircle, ChevronDown, ChevronUp,
+  Check, Star, Sparkles, Zap,
+  Crown, ChevronDown, ChevronUp, CreditCard,
+  MessageCircle, ArrowRight, ShoppingCart, BarChart2, TrendingUp,
 } from "lucide-react";
-import { startTrial } from "@/app/app/actions";
 import { toast } from "sonner";
 
 interface Props {
   plan: string;
   trialDaysLeft: number | null;
-  ordersLastMonth: number;
+  workspaceId: string;
+  userEmail: string;
 }
 
-const FREE_FEATURES  = ["Dashboard completo", "Hasta 80 órdenes/mes", "Métricas de tienda", "Sin tarjeta de crédito"];
-const PRO_FEATURES   = ["Órdenes ilimitadas", "Meta Ads completo", "IA Assistant sin límites", "Cotizaciones y comisiones", "Costos adicionales y envíos", "Soporte prioritario", "Exportación de reportes"];
+const FREE_FEATURES = ["Dashboard completo", "Métricas de tienda", "Acceso básico"];
+const PRO_FEATURES  = ["Órdenes ilimitadas", "Meta Ads completo", "IA Assistant sin límites", "Cotizaciones y comisiones", "Costos adicionales y envíos", "Soporte prioritario", "Exportación de reportes"];
 
 const PLAN_META: Record<string, { label: string; color: string; bg: string; border: string; desc: string }> = {
-  free:   { label: "Plan Gratuito",     color: "#94A3B8", bg: "rgba(100,116,139,0.08)", border: "rgba(100,116,139,0.25)", desc: "Acceso básico al dashboard." },
-  trial:  { label: "Prueba Gratuita",   color: "#f59e0b", bg: "rgba(245,158,11,0.08)",  border: "rgba(245,158,11,0.3)",   desc: "Acceso completo Pro por 14 días." },
-  pro:    { label: "Plan Pro",          color: "#8B5CF6", bg: "rgba(124,58,237,0.08)",  border: "rgba(124,58,237,0.3)",   desc: "Acceso completo sin límites." },
-  active: { label: "Plan Pro",          color: "#8B5CF6", bg: "rgba(124,58,237,0.08)",  border: "rgba(124,58,237,0.3)",   desc: "Acceso completo sin límites." },
-  agency: { label: "Plan Agency",       color: "#e1691e", bg: "rgba(225,105,30,0.08)",  border: "rgba(225,105,30,0.3)",   desc: "Multi-tienda y soporte dedicado." },
+  free:   { label: "Plan Gratuito",   color: "#94A3B8", bg: "rgba(100,116,139,0.08)", border: "rgba(100,116,139,0.25)", desc: "Período de prueba no iniciado." },
+  trial:  { label: "Prueba Gratuita", color: "#f59e0b", bg: "rgba(245,158,11,0.08)",  border: "rgba(245,158,11,0.3)",   desc: "Acceso completo Pro por 7 días." },
+  pro:    { label: "Plan Pro",        color: "#8B5CF6", bg: "rgba(124,58,237,0.08)",  border: "rgba(124,58,237,0.3)",   desc: "Acceso completo sin límites." },
+  active: { label: "Plan Pro",        color: "#8B5CF6", bg: "rgba(124,58,237,0.08)",  border: "rgba(124,58,237,0.3)",   desc: "Acceso completo sin límites." },
+  agency: { label: "Plan Agency",     color: "#e1691e", bg: "rgba(225,105,30,0.08)",  border: "rgba(225,105,30,0.3)",   desc: "Multi-tienda y soporte dedicado." },
 };
 
-export default function PlanesClient({ plan, trialDaysLeft, ordersLastMonth }: Props) {
-  const router = useRouter();
-  const [starting, setStarting] = useState(false);
+export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props) {
+  const [loading,     setLoading]     = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   const isFree  = plan === "free";
@@ -37,15 +35,20 @@ export default function PlanesClient({ plan, trialDaysLeft, ordersLastMonth }: P
   const isPro   = plan === "pro" || plan === "agency" || plan === "active";
   const meta    = PLAN_META[plan] ?? PLAN_META.free;
 
-  async function handleStartTrial() {
-    setStarting(true);
+  async function handleCheckout() {
+    setLoading(true);
     try {
-      await startTrial();
-      router.push("/app/dashboard");
-      router.refresh();
+      const res = await fetch("/api/billing/checkout/lemonsqueezy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Error al generar el checkout");
+      window.location.href = json.url;
     } catch (e) {
-      toast.error("Error: " + (e instanceof Error ? e.message : ""));
-      setStarting(false);
+      toast.error(e instanceof Error ? e.message : "Error al conectar con el servidor");
+      setLoading(false);
     }
   }
 
@@ -88,7 +91,7 @@ export default function PlanesClient({ plan, trialDaysLeft, ordersLastMonth }: P
         </div>
         <div className="text-right flex-shrink-0">
           <p className="text-xs text-[#64748B]">Órdenes este mes</p>
-          <p className="text-lg font-black text-[#F1F5F9]">{ordersLastMonth.toLocaleString("es-AR")}</p>
+          <p className="text-lg font-black text-[#F1F5F9]">—</p>
         </div>
       </div>
 
@@ -123,8 +126,8 @@ export default function PlanesClient({ plan, trialDaysLeft, ordersLastMonth }: P
                 <Sparkles size={18} color="#8B5CF6" strokeWidth={2} />
               </div>
               <div>
-                <p className="text-sm font-bold text-[#F1F5F9]">Probá el Plan Pro gratis por 14 días</p>
-                <p className="text-xs text-[#64748B] mt-0.5">Sin tarjeta de crédito. Cancelás cuando querés.</p>
+                <p className="text-sm font-bold text-[#F1F5F9]">Probá el Plan Pro gratis por 7 días</p>
+                <p className="text-xs text-[#64748B] mt-0.5">Ingresás tu tarjeta, los primeros 7 días son gratis.</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -136,13 +139,13 @@ export default function PlanesClient({ plan, trialDaysLeft, ordersLastMonth }: P
               ))}
             </div>
             <button
-              onClick={handleStartTrial}
-              disabled={starting}
+              onClick={handleCheckout}
+              disabled={loading}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition-all hover:opacity-85 disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
             >
-              <Zap size={15} strokeWidth={2.5} />
-              {starting ? "Activando..." : "Activar prueba gratuita"}
+              <CreditCard size={15} strokeWidth={2.5} />
+              {loading ? "Redirigiendo..." : "Iniciar prueba gratis de 7 días"}
             </button>
           </div>
         </div>

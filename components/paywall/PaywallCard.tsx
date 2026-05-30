@@ -2,22 +2,39 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CreditCard, Lock, Zap, CheckCircle2, Loader2 } from "lucide-react";
-import { startTrial } from "@/app/app/actions";
+import { Zap, CheckCircle2, Loader2, CreditCard, Lock } from "lucide-react";
 import { toast } from "sonner";
 
-export default function PaywallCard() {
+const FEATURES = [
+  "Dashboard TiendaNube + Meta + Gmail centralizado",
+  "IA Assistant integrado con tus datos reales",
+  "Alertas inteligentes de stock y ventas",
+  "Análisis avanzado y rentabilidad",
+  "Soporte por WhatsApp con el equipo Nova",
+];
+
+interface Props {
+  workspaceId: string;
+  userEmail: string;
+}
+
+export default function PaywallCard({ workspaceId, userEmail }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  async function handleStartTrial() {
+  async function handleCheckout() {
     setLoading(true);
     try {
-      await startTrial();
-      router.push("/app/dashboard");
-      router.refresh();
+      const res = await fetch("/api/billing/checkout/lemonsqueezy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Error al generar el checkout");
+      window.location.href = json.url;
     } catch (e) {
-      toast.error("Error al activar la prueba: " + (e instanceof Error ? e.message : "Intentá de nuevo"));
+      toast.error(e instanceof Error ? e.message : "Error al conectar con el servidor");
       setLoading(false);
     }
   }
@@ -34,20 +51,15 @@ export default function PaywallCard() {
       </div>
 
       <h2 className="text-2xl font-black text-[#F1F5F9] text-center mb-1" style={{ letterSpacing: "-0.02em" }}>
-        Prueba Nova Analytics gratis
+        Probá Nova Analytics gratis
       </h2>
       <p className="text-[#94A3B8] text-sm text-center mb-6">
-        30 dias gratis &middot; Despues <span className="text-[#F1F5F9] font-semibold">$77.000/mes ARS</span>
+        7 días gratis &middot; Después{" "}
+        <span className="text-[#F1F5F9] font-semibold">$77.000/mes ARS</span>
       </p>
 
-      <div className="space-y-2 mb-6">
-        {[
-          "Dashboard TiendaNube + Meta + Gmail centralizado",
-          "IA Assistant integrado con tus datos reales",
-          "Alertas inteligentes de stock y ventas",
-          "Analisis avanzado y rentabilidad",
-          "Soporte por WhatsApp con el equipo Nova",
-        ].map((f) => (
+      <div className="space-y-2 mb-8">
+        {FEATURES.map((f) => (
           <div key={f} className="flex items-start gap-2">
             <CheckCircle2 size={14} color="#22c55e" strokeWidth={2.5} className="mt-0.5 flex-shrink-0" />
             <span className="text-sm text-[#94A3B8]">{f}</span>
@@ -55,80 +67,29 @@ export default function PaywallCard() {
         ))}
       </div>
 
-      <div className="space-y-3 mb-5">
-        <div>
-          <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Numero de tarjeta</label>
-          <div
-            className="flex items-center gap-2 rounded-xl px-4 py-3"
-            style={{ background: "#0a0a0f", border: "1px solid rgba(124,58,237,0.25)" }}
-          >
-            <CreditCard size={15} color="#64748B" strokeWidth={2} className="flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="1234 5678 9012 3456"
-              maxLength={19}
-              className="flex-1 min-w-0 bg-transparent text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none"
-              onChange={(e) => {
-                const v = e.target.value.replace(/\D/g, "").slice(0, 16);
-                e.target.value = v.replace(/(.{4})/g, "$1 ").trim();
-              }}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Vencimiento</label>
-            <input
-              type="text"
-              placeholder="MM/AA"
-              maxLength={5}
-              className="w-full rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none"
-              style={{ background: "#0a0a0f", border: "1px solid rgba(124,58,237,0.25)" }}
-              onChange={(e) => {
-                const v = e.target.value.replace(/\D/g, "").slice(0, 4);
-                e.target.value = v.length > 2 ? v.slice(0, 2) + "/" + v.slice(2) : v;
-              }}
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">CVV</label>
-            <input
-              type="text"
-              placeholder="123"
-              maxLength={4}
-              className="w-full rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none"
-              style={{ background: "#0a0a0f", border: "1px solid rgba(124,58,237,0.25)" }}
-              onChange={(e) => {
-                e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
-              }}
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Nombre en la tarjeta</label>
-          <input
-            type="text"
-            placeholder="Tu nombre completo"
-            className="w-full rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none"
-            style={{ background: "#0a0a0f", border: "1px solid rgba(124,58,237,0.25)" }}
-          />
-        </div>
-      </div>
-
       <button
-        onClick={handleStartTrial}
+        onClick={handleCheckout}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60"
+        className="w-full flex items-center justify-center gap-2 rounded-xl py-4 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60"
         style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
       >
-        {loading && <Loader2 size={15} className="animate-spin" />}
-        {loading ? "Activando prueba..." : "Iniciar prueba gratis de 30 dias"}
+        {loading ? (
+          <>
+            <Loader2 size={15} className="animate-spin" />
+            Redirigiendo a pago seguro...
+          </>
+        ) : (
+          <>
+            <CreditCard size={15} />
+            Iniciar prueba gratis de 7 días
+          </>
+        )}
       </button>
 
       <div className="flex items-center justify-center gap-1.5 mt-4">
         <Lock size={11} color="#64748B" strokeWidth={2} />
         <span className="text-[11px] text-[#64748B]">
-          No se realizara ningun cobro durante los 30 dias de prueba
+          Pago seguro vía Lemon Squeezy · Cancelás cuando quieras
         </span>
       </div>
     </div>

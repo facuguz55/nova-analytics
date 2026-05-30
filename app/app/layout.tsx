@@ -70,7 +70,10 @@ export default async function DashboardLayout({
           {isLocked ? (
             /* Paywall real: children NUNCA se renderizan en el DOM */
             <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "rgba(10,10,15,0.95)" }}>
-              <PaywallCard />
+              <PaywallCard
+                workspaceId={workspace?.id ?? ""}
+                userEmail={userRow?.email ?? user.email ?? ""}
+              />
             </div>
           ) : (
             <>
