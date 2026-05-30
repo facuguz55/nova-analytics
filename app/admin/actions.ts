@@ -19,24 +19,52 @@ export async function changeWorkspacePlan(workspaceId: string, plan: string) {
 
 export async function changeWorkspaceStatus(workspaceId: string, status: string) {
   const service = createServiceClient();
-  const { error } = await service.from("workspaces").update({ status }).eq("id", workspaceId);
+  const { error, data } = await service
+    .from("workspaces")
+    .update({ status })
+    .eq("id", workspaceId)
+    .select("id, status");
+  console.log("[changeWorkspaceStatus]", { workspaceId, status, data, error });
   if (error) throw new Error(error.message);
-  // El middleware chequea workspaces.status directamente — no hace falta tocar subscriptions
   revalidateAdmin();
 }
 
 export async function deleteWorkspace(workspaceId: string) {
   const service = createServiceClient();
+
+  // 1. Obtener todos los usuarios del workspace
+  const { data: wsUsers } = await service
+    .from("users")
+    .select("id")
+    .eq("workspace_id", workspaceId);
+
+  // 2. Eliminar cada usuario de Supabase Auth
+  if (wsUsers && wsUsers.length > 0) {
+    await Promise.allSettled(
+      wsUsers.map((u) => service.auth.admin.deleteUser(u.id))
+    );
+  }
+
+  // 3. Eliminar registros de la tabla users
+  await service.from("users").delete().eq("workspace_id", workspaceId);
+
+  // 4. Eliminar workspace (subscriptions y otros con CASCADE se eliminan automáticamente)
   const { error } = await service.from("workspaces").delete().eq("id", workspaceId);
   if (error) throw new Error(error.message);
+
   revalidateAdmin();
 }
 
 export async function deleteUser(userId: string) {
   const service = createServiceClient();
+
+  // 1. Eliminar de la tabla users
   await service.from("users").delete().eq("id", userId);
+
+  // 2. Eliminar de Supabase Auth
   const { error } = await service.auth.admin.deleteUser(userId);
   if (error) throw new Error(error.message);
+
   revalidateAdmin();
 }
 
