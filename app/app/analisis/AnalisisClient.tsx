@@ -363,8 +363,20 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
     }
   }
 
+  // Para hoy/ayer recalcular en LOCAL timezone (el servidor usa UTC y puede desfasar un día)
+  const { effectiveSince, effectiveUntil } = useMemo(() => {
+    if (activePreset === "hoy" || activePreset === "ayer") {
+      const now = new Date();
+      const offset = activePreset === "ayer" ? 1 : 0;
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+      const s = toLocalDateStr(d);
+      return { effectiveSince: s, effectiveUntil: s };
+    }
+    return { effectiveSince: since, effectiveUntil: until };
+  }, [activePreset, since, until]);
+
   // Filtrar por rango de fechas Y estado
-  const ordersInRange = useMemo(() => filterByDateRange(allOrders, since, until), [allOrders, since, until]);
+  const ordersInRange = useMemo(() => filterByDateRange(allOrders, effectiveSince, effectiveUntil), [allOrders, effectiveSince, effectiveUntil]);
   const filtered      = useMemo(() => filterByStatus(ordersInRange, statusFilter), [ordersInRange, statusFilter]);
   const monthlyData   = useMemo(() => computeMonthlyData(filtered), [filtered]);
   const byWeekday     = useMemo(() => computeByWeekday(filtered), [filtered]);
