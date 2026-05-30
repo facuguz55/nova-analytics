@@ -68,9 +68,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Server actions usan POST — saltear check de billing para no bloquearlos
-    if (request.method === "POST") return supabaseResponse;
-
     // Verificar billing: obtener workspace_id del usuario
     const { data: userRow } = await supabase
       .from("users")
@@ -87,6 +84,17 @@ export async function middleware(request: NextRequest) {
 
     const workspaceId = ur?.workspace_id;
 
+    // Server actions: Next.js los identifica con el header "Next-Action".
+    // En vez de redirect HTML (que rompe el action), devolver 402 JSON.
+    const isServerAction = request.method === "POST" && !!request.headers.get("next-action");
+
+    function billingDenied() {
+      if (isServerAction) {
+        return NextResponse.json({ error: "billing_required" }, { status: 402 });
+      }
+      return NextResponse.redirect(new URL("/billing", request.url));
+    }
+
     if (workspaceId) {
       const { data: sub } = await supabase
         .from("subscriptions")
@@ -100,14 +108,14 @@ export async function middleware(request: NextRequest) {
       if (subscription) {
         const status = subscription.status;
         if (status === "expired" || status === "cancelled") {
-          return NextResponse.redirect(new URL("/billing", request.url));
+          return billingDenied();
         }
         if (status === "trial") {
           const endsAt = subscription.trial_ends_at
             ? new Date(subscription.trial_ends_at)
             : null;
           if (!endsAt || endsAt.getTime() < Date.now()) {
-            return NextResponse.redirect(new URL("/billing", request.url));
+            return billingDenied();
           }
         }
         // active o trial válido → pasa
@@ -121,7 +129,7 @@ export async function middleware(request: NextRequest) {
         ACTIVE_PLANS.includes(plan) &&
         !(plan === "trial" && isTrialExpired(trialStartedAt));
       if (!hasLegacyAccess) {
-        return NextResponse.redirect(new URL("/billing", request.url));
+        return billingDenied();
       }
     }
 
