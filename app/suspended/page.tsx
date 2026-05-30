@@ -102,7 +102,7 @@ export default function SuspendedPage() {
 
         {/* CTA */}
         <a
-          href="https://wa.me/5491100000000"
+          href="https://wa.me/5493424633285"
           className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl text-sm font-bold transition-all"
           style={{
             background: "rgba(140,0,0,0.3)",
