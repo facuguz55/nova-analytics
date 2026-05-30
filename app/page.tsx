@@ -344,7 +344,11 @@ export default function LandingPage() {
             <span className="font-semibold text-white">Nova Analytics</span>
             <span>— by Nova Agency</span>
           </div>
-          <div>© 2025 Nova Agency. Todos los derechos reservados.</div>
+          <div className="flex items-center gap-4">
+            <Link href="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
+            <Link href="/terminos" className="hover:text-white transition-colors">Términos</Link>
+            <span>© 2025 Nova Agency</span>
+          </div>
         </div>
       </footer>
 
