@@ -52,6 +52,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error interno";
+    console.error("[checkout/lemonsqueezy] error:", message, {
+      hasApiKey: !!process.env.LEMONSQUEEZY_API_KEY,
+      hasStoreId: !!process.env.LEMONSQUEEZY_STORE_ID,
+      hasVariantId: !!process.env.LEMONSQUEEZY_VARIANT_ID,
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
