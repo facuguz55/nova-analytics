@@ -95,11 +95,11 @@ export default function CotizacionesClient({
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
             Cotizaciones
           </h1>
           <p className="text-sm text-[#94A3B8] mt-0.5">
@@ -115,7 +115,7 @@ export default function CotizacionesClient({
       </div>
 
       {/* Config card */}
-      <div className="rounded-2xl p-6 space-y-5" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+      <div className="rounded-2xl p-4 sm:p-6 space-y-5" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
         <p className="text-sm font-semibold text-[#F1F5F9]">Cotización activa de la cuenta</p>
 
         {/* Tipo de dólar */}
@@ -162,7 +162,7 @@ export default function CotizacionesClient({
             </div>
           </div>
           <div
-            className="flex items-center gap-2 rounded-xl px-4 py-3 w-48"
+            className="flex items-center gap-2 rounded-xl px-4 py-3 w-full sm:w-48"
             style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
           >
             <span className="text-sm text-[#64748B]">%</span>
@@ -199,7 +199,7 @@ export default function CotizacionesClient({
 
       {/* Stats cards */}
       {currentRaw && (
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: "Precio Actual",  value: adjustedRate ?? currentRaw, sub: null,    color: typeColor },
             { label: "Últ. 7 Días",   value: avg7,   sub: avg7   ? pct(currentRaw, avg7)   : null, color: "#64748B" },

@@ -352,13 +352,13 @@ export default function ClientesAdmin({ clients }: { clients: Client[] }) {
   };
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 sm:p-6 space-y-5">
       {showCreate && <CreateModal onClose={() => setShowCreate(false)} />}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Clientes</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Clientes</h1>
           <p className="text-sm text-[#64748B] mt-0.5">Gestión completa de cuentas</p>
         </div>
         <button onClick={() => setShowCreate(true)}
@@ -370,7 +370,7 @@ export default function ClientesAdmin({ clients }: { clients: Client[] }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: "Total", value: stats.total, icon: Store, color: "#7C3AED" },
           { label: "Activos",  value: stats.active,  icon: Crown,  color: "#22c55e" },
@@ -391,8 +391,8 @@ export default function ClientesAdmin({ clients }: { clients: Client[] }) {
       </div>
 
       {/* Filtros */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative flex-1 sm:max-w-xs">
           <Search size={13} color="#64748B" className="absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             value={search}
@@ -410,6 +410,7 @@ export default function ClientesAdmin({ clients }: { clients: Client[] }) {
 
       {/* Tabla */}
       <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}>
@@ -428,6 +429,7 @@ export default function ClientesAdmin({ clients }: { clients: Client[] }) {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

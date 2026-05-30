@@ -64,11 +64,11 @@ export default function ConfiguracionClient({ user }: Props) {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl">
+    <div className="p-4 sm:p-6 space-y-6 max-w-2xl">
 
       {/* Título */}
       <div>
-        <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Configuración</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Configuración</h1>
         <p className="text-sm text-[#64748B] mt-1">Gestioná tu cuenta y las preferencias del workspace.</p>
       </div>
 
@@ -149,7 +149,7 @@ export default function ConfiguracionClient({ user }: Props) {
               </div>
             ))}
 
-            <div className="flex items-center justify-between pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
               <p className="text-xs text-[#475569]">
                 {newPwd.length > 0 && newPwd.length < 8
                   ? <span className="text-[#f59e0b]">Mínimo 8 caracteres</span>

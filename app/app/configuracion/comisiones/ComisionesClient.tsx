@@ -48,10 +48,10 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+        <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
           Comisiones de pago
         </h1>
         <p className="text-sm text-[#94A3B8] mt-0.5">
@@ -65,7 +65,7 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
         style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
       >
         <div
-          className="px-6 py-4 flex items-center justify-between"
+          className="px-6 py-4 flex flex-wrap items-center justify-between gap-2"
           style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}
         >
           <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
         style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
       >
         <div
-          className="px-6 py-4 flex items-center justify-between"
+          className="px-6 py-4 flex flex-wrap items-center justify-between gap-2"
           style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}
         >
           <div className="flex items-center gap-3">
@@ -140,13 +140,13 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
         </div>
 
         <div className="p-5 space-y-4">
-          <div className="flex items-end gap-4">
+          <div className="flex flex-wrap items-end gap-4">
             <div className="space-y-2">
               <label className="text-xs font-semibold text-[#94A3B8] uppercase tracking-widest">
                 Impuesto %
               </label>
               <div
-                className="flex items-center gap-2 rounded-xl px-4 py-3 w-40"
+                className="flex items-center gap-2 rounded-xl px-4 py-3 w-full sm:w-40"
                 style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
               >
                 <Percent size={14} color="#64748B" strokeWidth={2} />
@@ -185,7 +185,7 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
         style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
       >
         <div
-          className="px-6 py-4 flex items-center justify-between"
+          className="px-6 py-4 flex flex-wrap items-center justify-between gap-2"
           style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}
         >
           <div className="flex items-center gap-3">
@@ -214,7 +214,7 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
                 Comisión %
               </label>
               <div
-                className="flex items-center gap-2 rounded-xl px-4 py-3 w-36"
+                className="flex items-center gap-2 rounded-xl px-4 py-3 w-full sm:w-36"
                 style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
               >
                 <span className="text-sm text-[#64748B]">%</span>
@@ -236,7 +236,7 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
                 Impuesto %
               </label>
               <div
-                className="flex items-center gap-2 rounded-xl px-4 py-3 w-36"
+                className="flex items-center gap-2 rounded-xl px-4 py-3 w-full sm:w-36"
                 style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
               >
                 <span className="text-sm text-[#64748B]">%</span>

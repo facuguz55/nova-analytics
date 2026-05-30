@@ -84,12 +84,12 @@ export default function FinancieraClient({ config }: { config: Config }) {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
 
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
             Parámetros generales
           </h1>
           <p className="text-sm text-[#94A3B8] mt-1 max-w-2xl">
@@ -109,7 +109,7 @@ export default function FinancieraClient({ config }: { config: Config }) {
       <form ref={formRef} action={handleSubmit} className="space-y-6">
 
         {/* Campos — 3 columnas (1 por cada parámetro) para que ocupen toda la pantalla */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {fields.map((f) => (
             <div
               key={f.name}
@@ -144,7 +144,7 @@ export default function FinancieraClient({ config }: { config: Config }) {
                   className="flex-1 min-w-0 bg-transparent text-xl font-black text-[#F1F5F9] outline-none"
                   style={{ appearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
                 />
-                <span className="flex-shrink-0 text-xs font-semibold text-[#64748B] whitespace-nowrap">{f.suffix}</span>
+                <span className="flex-shrink-0 text-xs font-semibold text-[#64748B] whitespace-nowrap hidden sm:inline">{f.suffix}</span>
               </div>
             </div>
           ))}

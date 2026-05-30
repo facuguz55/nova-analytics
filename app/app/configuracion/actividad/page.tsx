@@ -51,11 +51,11 @@ export default async function ActividadPage() {
   }
 
   return (
-    <div className="p-6 space-y-5 max-w-2xl">
+    <div className="p-4 sm:p-6 space-y-5 max-w-2xl">
       <div>
         <div className="flex items-center gap-2">
           <Shield size={18} color="#8B5CF6" strokeWidth={2} />
-          <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
             Registro de actividad
           </h1>
         </div>
@@ -79,7 +79,7 @@ export default async function ActividadPage() {
               return (
                 <div
                   key={log.id}
-                  className="flex items-start gap-3 px-5 py-3"
+                  className="flex items-start gap-3 px-4 sm:px-5 py-3"
                   style={{ borderBottom: i < logs.length - 1 ? "1px solid rgba(124,58,237,0.07)" : "none" }}
                 >
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"

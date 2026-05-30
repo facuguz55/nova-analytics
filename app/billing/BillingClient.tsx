@@ -84,12 +84,12 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
       className="min-h-screen flex items-center justify-center p-6"
       style={{ background: "#0a0f1e" }}
     >
-      <div className="w-full max-w-2xl space-y-6">
+      <div className="w-full max-w-2xl space-y-5 sm:space-y-6">
 
         {/* Header */}
         <div className="text-center space-y-1">
           <h1
-            className="text-3xl font-black text-[#F1F5F9]"
+            className="text-2xl sm:text-3xl font-black text-[#F1F5F9]"
             style={{ letterSpacing: "-0.03em" }}
           >
             Facturación
@@ -208,7 +208,7 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
 
         {/* ── Sin plan activo: cards de pago ── */}
         {!isActive && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
             {/* Card USD */}
             <div

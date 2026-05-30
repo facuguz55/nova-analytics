@@ -111,14 +111,14 @@ export default async function HQPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       {/* Header */}
       <div
-        className="flex items-center justify-between p-4 rounded-2xl"
+        className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl"
         style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}
       >
         <div>
-          <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
             Nova HQ
           </h1>
           <p className="text-sm text-red-400 mt-0.5">Vista super admin — solo visible para cuentas autorizadas</p>
@@ -289,7 +289,7 @@ export default async function HQPage() {
         className="rounded-2xl overflow-hidden"
         style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
       >
-        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+        <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-2" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
           <div className="flex items-center gap-2">
             <Sparkles size={15} color="#8B5CF6" strokeWidth={2} />
             <p className="text-sm font-semibold text-[#F1F5F9]">Uso de tokens IA por workspace</p>
@@ -329,7 +329,7 @@ export default async function HQPage() {
                   </span>
 
                   {/* Nombre */}
-                  <div className="w-36 flex-shrink-0">
+                  <div className="w-24 sm:w-36 flex-shrink-0">
                     <p className="text-sm font-semibold text-[#F1F5F9] truncate">{ws.name}</p>
                     <p className="text-[10px] text-[#64748B] capitalize">{ws.plan}</p>
                   </div>
@@ -348,7 +348,7 @@ export default async function HQPage() {
                   </div>
 
                   {/* Tokens + costo */}
-                  <div className="text-right flex-shrink-0 w-40">
+                  <div className="text-right flex-shrink-0 hidden sm:block sm:w-40">
                     <p className="text-xs font-bold text-[#F1F5F9]">
                       {total.toLocaleString("es-AR")} tokens
                     </p>
@@ -375,13 +375,13 @@ export default async function HQPage() {
           {(audits ?? []).length === 0 ? (
             <div className="px-5 py-6 text-center text-sm text-[#64748B]">Sin eventos</div>
           ) : (audits ?? []).map((log, i) => (
-            <div key={i} className="flex items-center justify-between px-5 py-2.5">
-              <div className="flex items-center gap-3">
+            <div key={i} className="flex flex-wrap items-center justify-between gap-2 px-5 py-2.5">
+              <div className="flex items-center gap-3 min-w-0">
                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "#7C3AED" }} />
-                <span className="text-sm font-mono text-[#94A3B8]">{log.action}</span>
+                <span className="text-sm font-mono text-[#94A3B8] truncate">{log.action}</span>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-[#475569] font-mono">{log.workspace_id?.slice(0, 8)}...</span>
+              <div className="flex items-center gap-4 flex-shrink-0">
+                <span className="text-xs text-[#475569] font-mono hidden sm:inline">{log.workspace_id?.slice(0, 8)}...</span>
                 <span className="text-xs text-[#475569]">
                   {new Date(log.created_at).toLocaleString("es-AR", {
                     day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
@@ -403,7 +403,7 @@ export default async function HQPage() {
         </div>
         <div className="divide-y divide-[rgba(124,58,237,0.08)]">
           {allUsers.slice(0, 10).map((u) => (
-            <div key={u.id} className="flex items-center justify-between px-5 py-3">
+            <div key={u.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-3">
               <div className="flex items-center gap-3">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"

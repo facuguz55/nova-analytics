@@ -286,12 +286,12 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
   return (
     <Suspense>
       <URLParamHandler />
-      <div className="p-6 space-y-8">
+      <div className="p-4 sm:p-6 space-y-8">
 
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 flex-wrap">
           <div>
-            <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+            <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
               Integraciones
             </h1>
             <p className="text-sm text-[#94A3B8] mt-1">

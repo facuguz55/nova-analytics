@@ -13,9 +13,9 @@ const TAG_ICONS = {
 
 export default function ChangelogPage() {
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-8">
+    <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+        <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
           Novedades
         </h1>
         <p className="text-sm text-[#94A3B8] mt-1">

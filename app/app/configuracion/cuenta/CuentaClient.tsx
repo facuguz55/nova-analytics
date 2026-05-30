@@ -95,9 +95,9 @@ export default function CuentaClient({ user, workspace }: Props) {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-3xl">
+    <div className="p-4 sm:p-6 space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Mi Cuenta</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Mi Cuenta</h1>
         <p className="text-sm text-[#94A3B8] mt-1">Perfil, seguridad y workspace.</p>
       </div>
 
@@ -178,7 +178,7 @@ export default function CuentaClient({ user, workspace }: Props) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs text-[#475569]">
               <Calendar size={12} strokeWidth={2} />
               Miembro desde {new Date(user.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })}
@@ -317,7 +317,7 @@ export default function CuentaClient({ user, workspace }: Props) {
           <AlertTriangle size={14} color="#ef4444" strokeWidth={2} />
           <p className="text-sm font-semibold text-[#ef4444]">Zona peligrosa</p>
         </div>
-        <div className="p-5 flex items-center justify-between gap-4" style={{ background: "#111118" }}>
+        <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ background: "#111118" }}>
           <div>
             <p className="text-sm font-semibold text-[#F1F5F9]">Eliminar cuenta</p>
             <p className="text-xs text-[#64748B] mt-0.5">Acción permanente e irreversible.</p>
