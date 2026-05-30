@@ -52,7 +52,6 @@ export default function RegisterPage() {
       ) {
         setErrors({ email: "Este email ya tiene una cuenta. Intentá iniciar sesión con Google." });
       } else if (error.message?.toLowerCase().includes("sending confirmation email") || error.message?.toLowerCase().includes("email")) {
-        // Error de SMTP — igual mostrar pantalla de espera, puede que el email llegue igual
         setEmailSent(true);
       } else {
         toast.error(error.message);
@@ -61,9 +60,17 @@ export default function RegisterPage() {
       return;
     }
 
-    // Supabase envía confirmación — mostramos pantalla de espera
-    setEmailSent(true);
-    setLoading(false);
+    const { data } = await supabase.auth.getSession();
+
+    if (data.session) {
+      // Confirmación de email desactivada — sesión inmediata.
+      // El callback crea el workspace y redirige al dashboard.
+      router.push("/auth/callback?next=/app/dashboard");
+    } else {
+      // Confirmación de email activa — mostrar pantalla de espera.
+      setEmailSent(true);
+      setLoading(false);
+    }
   }
 
   async function handleGoogle() {
