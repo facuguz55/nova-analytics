@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 const LAST_UPDATED = "30 de mayo de 2025";
-const CONTACT_EMAIL = "hola@novaagency.info";
+const CONTACT_EMAIL = "novaagencytec@gmail.com";
 
 export default function PrivacidadPage() {
   return (
@@ -157,7 +157,7 @@ export default function PrivacidadPage() {
               <p className="text-sm text-[#94A3B8] mt-1">
                 Email: <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#8B5CF6] hover:underline">{CONTACT_EMAIL}</a>
               </p>
-              <p className="text-sm text-[#94A3B8]">Buenos Aires, Argentina</p>
+              <p className="text-sm text-[#94A3B8]">Santa Fe, Argentina</p>
             </div>
           </Section>
 

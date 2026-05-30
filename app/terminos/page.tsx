@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 const LAST_UPDATED = "30 de mayo de 2025";
-const CONTACT_EMAIL = "hola@novaagency.info";
+const CONTACT_EMAIL = "novaagencytec@gmail.com";
 const PRICE_ARS = "$77.000";
 
 export default function TerminosPage() {
@@ -184,7 +184,7 @@ export default function TerminosPage() {
             <p>
               Estos Términos se rigen por las leyes de la <strong className="text-white">República Argentina</strong>.
               Cualquier controversia que no pueda resolverse amigablemente será sometida a la jurisdicción de los
-              Tribunales Ordinarios de la <strong className="text-white">Ciudad Autónoma de Buenos Aires</strong>,
+              Tribunales Ordinarios de la <strong className="text-white">ciudad de Santa Fe, Provincia de Santa Fe</strong>,
               renunciando ambas partes a cualquier otro fuero que pudiera corresponderles.
             </p>
           </Section>
@@ -196,7 +196,7 @@ export default function TerminosPage() {
               <p className="text-sm text-[#94A3B8] mt-1">
                 Email: <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#8B5CF6] hover:underline">{CONTACT_EMAIL}</a>
               </p>
-              <p className="text-sm text-[#94A3B8]">Buenos Aires, Argentina</p>
+              <p className="text-sm text-[#94A3B8]">Santa Fe, Argentina</p>
             </div>
           </Section>
 
