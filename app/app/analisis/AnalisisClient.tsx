@@ -165,14 +165,14 @@ function DateRangeSelector({
   const isCustomActive = activePreset === "custom";
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      {/* Preset pills */}
-      <div className="flex gap-0.5 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+      {/* Preset pills — scroll horizontal en mobile */}
+      <div className="flex gap-0.5 rounded-xl p-1 overflow-x-auto max-w-full" style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}>
         {PRESETS.map((p) => (
           <button
             key={p.key}
             onClick={() => { onChange(p.key); setShowCustom(false); }}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
+            className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0"
             style={{
               background: activePreset === p.key && !showCustom ? "#7C3AED" : "transparent",
               color: activePreset === p.key && !showCustom ? "#fff" : "#94A3B8",
@@ -553,15 +553,15 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
       {filtered.length > 0 && (
         <>
           {/* Resumen */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {[
-              { label: "Órdenes",        value: String(filtered.length),                                    color: "#8B5CF6" },
-              { label: "Ingresos",       value: fmt(totalRevenue),                                          color: "#22c55e" },
-              { label: "Ticket prom.",   value: filtered.length > 0 ? fmt(totalRevenue / filtered.length) : "$0", color: "#e1691e" },
+              { label: "Órdenes",      value: String(filtered.length),                                         color: "#8B5CF6", bg: "rgba(139,92,246,0.08)" },
+              { label: "Ingresos",     value: fmt(totalRevenue),                                               color: "#22c55e", bg: "rgba(34,197,94,0.08)" },
+              { label: "Ticket prom.", value: filtered.length > 0 ? fmt(totalRevenue / filtered.length) : "$0",color: "#e1691e", bg: "rgba(225,105,30,0.08)" },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl p-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
-                <p className="text-xs text-[#94A3B8] mb-1">{s.label}</p>
-                <p className="text-2xl font-black" style={{ color: s.color }}>{s.value}</p>
+              <div key={s.label} className="rounded-2xl p-3 sm:p-4 flex flex-col gap-1" style={{ background: s.bg, border: `1px solid ${s.color}25` }}>
+                <p className="text-[10px] sm:text-xs font-medium" style={{ color: s.color + "aa" }}>{s.label}</p>
+                <p className="text-lg sm:text-2xl font-black leading-none" style={{ color: s.color }}>{s.value}</p>
               </div>
             ))}
           </div>
