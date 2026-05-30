@@ -146,13 +146,23 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
   return (
     <>
       <header
-        className="flex items-center justify-between px-6 flex-shrink-0 gap-3"
-        style={{ height: "64px", background: "#0d0d14", borderBottom: "1px solid rgba(124,58,237,0.15)" }}
+        className="flex items-center justify-between px-4 sm:px-6 flex-shrink-0 gap-3"
+        style={{ height: "56px", background: "#0d0d14", borderBottom: "1px solid rgba(124,58,237,0.15)" }}
       >
-        {/* Search bar */}
+        {/* Logo en mobile */}
+        <div className="flex sm:hidden items-center gap-2">
+          <img
+            src="https://xfientejntectnwbqmdr.supabase.co/storage/v1/object/public/Logo%20Nova/Gemini_Generated_Image_mq47ltmq47ltmq47-removebg-preview.png"
+            alt="Nova"
+            className="w-7 h-7 object-contain"
+          />
+          <span className="font-bold text-sm text-[#F1F5F9]">Nova Analytics</span>
+        </div>
+
+        {/* Search bar — solo en sm+ */}
         <button
           onClick={openSearch}
-          className="flex items-center gap-2 rounded-lg px-3 transition-all hover:border-purple-500/40 hover:bg-purple-500/10"
+          className="hidden sm:flex items-center gap-2 rounded-lg px-3 transition-all hover:border-purple-500/40 hover:bg-purple-500/10"
           style={{
             height: "36px",
             background: "rgba(124,58,237,0.06)",
@@ -175,8 +185,17 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
         {/* Right */}
         <div className="flex items-center gap-2 ml-auto">
 
-          {/* Secciones (solo Redondeo) */}
-          <div ref={seccionesRef} className="relative">
+          {/* Botón buscar en mobile */}
+          <button
+            onClick={openSearch}
+            className="flex sm:hidden items-center justify-center rounded-lg transition-all"
+            style={{ width: "36px", height: "36px", background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)", color: "#94A3B8" }}
+          >
+            <Search size={16} strokeWidth={2} />
+          </button>
+
+          {/* Secciones — solo en sm+ */}
+          <div ref={seccionesRef} className="relative hidden sm:block">
             <button
               onClick={() => setShowSecciones(!showSecciones)}
               className="flex items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all hover:bg-[rgba(124,58,237,0.1)]"
@@ -247,10 +266,10 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
             )}
           </div>
 
-          {/* Badge Novedades */}
+          {/* Badge Novedades — solo sm+ */}
           <Link
             href="/app/changelog"
-            className="flex items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition-all hover:opacity-85"
+            className="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition-all hover:opacity-85"
             style={{ height: "36px", background: "rgba(225,105,30,0.15)", border: "1px solid rgba(225,105,30,0.35)", color: "#e1691e" }}
             title="Ver novedades de la versión"
           >
@@ -258,18 +277,18 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
             v{CURRENT_VERSION}
           </Link>
 
-          {/* Actividad */}
+          {/* Actividad — solo sm+ */}
           <Link
             href="/app/configuracion/actividad"
-            className="flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(124,58,237,0.1)]"
+            className="hidden sm:flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(124,58,237,0.1)]"
             style={{ width: "36px", height: "36px", background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)", color: "#94A3B8" }}
             title="Registro de actividad"
           >
             <Activity size={14} strokeWidth={2} />
           </Link>
 
-          {/* Alertas */}
-          <div className="relative">
+          {/* Alertas — solo sm+ */}
+          <div className="relative hidden sm:block">
             <Link
               href="/app/alertas"
               className="flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(124,58,237,0.1)]"

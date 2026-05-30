@@ -104,7 +104,7 @@ export default function OrdenesClient({
   ];
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -135,12 +135,12 @@ export default function OrdenesClient({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3">
         {/* Search */}
         <form onSubmit={handleSearch} className="flex items-center gap-2">
           <div
-            className="flex items-center gap-2 rounded-xl px-3 py-2"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)", minWidth: "240px" }}
+            className="flex items-center gap-2 rounded-xl px-3 py-2 flex-1"
+            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
           >
             <Search size={13} color="#64748B" strokeWidth={2} />
             <input
@@ -153,7 +153,7 @@ export default function OrdenesClient({
           </div>
           <button
             type="submit"
-            className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-white flex-shrink-0"
             style={{ background: "#7C3AED" }}
           >
             Buscar
@@ -162,14 +162,14 @@ export default function OrdenesClient({
 
         {/* Status filter */}
         <div
-          className="flex items-center gap-1 rounded-xl p-1"
+          className="flex items-center gap-1 rounded-xl p-1 overflow-x-auto"
           style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
         >
           {STATUS_FILTERS.map((f) => (
             <button
               key={f.value}
               onClick={() => updateParams({ status: f.value === "all" ? "" : f.value })}
-              className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+              className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap"
               style={{
                 background: statusFilter === f.value || (f.value === "all" && statusFilter === "all") ? "#7C3AED" : "transparent",
                 color: statusFilter === f.value || (f.value === "all" && statusFilter === "all") ? "white" : "#94A3B8",

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
+import BottomNav from "@/components/layout/BottomNav";
 import FloatingAI from "@/components/layout/FloatingAI";
 import PaywallCard from "@/components/paywall/PaywallCard";
 import { Analytics } from "@vercel/analytics/next";
@@ -51,24 +52,27 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0a0a0f]">
-      <Sidebar
-        userName={userRow?.name ?? user.email?.split("@")[0] ?? "Usuario"}
-        userEmail={userRow?.email ?? user.email ?? ""}
-        avatarUrl={userRow?.avatar_url ?? null}
-        workspaceName={workspace?.name ?? "Mi Tienda"}
-        workspacePlan={plan}
-        activeProviders={Array.from(activeProviders)}
-        alertCount={alerts}
-      />
+      {/* Sidebar solo en sm+ */}
+      <div className="hidden sm:flex h-full">
+        <Sidebar
+          userName={userRow?.name ?? user.email?.split("@")[0] ?? "Usuario"}
+          userEmail={userRow?.email ?? user.email ?? ""}
+          avatarUrl={userRow?.avatar_url ?? null}
+          workspaceName={workspace?.name ?? "Mi Tienda"}
+          workspacePlan={plan}
+          activeProviders={Array.from(activeProviders)}
+          alertCount={alerts}
+        />
+      </div>
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Navbar
           userName={userRow?.name ?? user.email?.split("@")[0] ?? "Usuario"}
           avatarUrl={userRow?.avatar_url ?? null}
           alertCount={alerts}
         />
-        <main className="relative flex-1 overflow-y-auto bg-[#0a0a0f]">
+        {/* pb-16 en mobile para que no tape el BottomNav */}
+        <main className="relative flex-1 overflow-y-auto bg-[#0a0a0f] pb-16 sm:pb-0">
           {isLocked ? (
-            /* Paywall real: children NUNCA se renderizan en el DOM */
             <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "rgba(10,10,15,0.95)" }}>
               <PaywallCard
                 workspaceId={workspace?.id ?? ""}
@@ -83,6 +87,8 @@ export default async function DashboardLayout({
           )}
         </main>
       </div>
+      {/* Bottom nav solo en mobile */}
+      <BottomNav />
       <Analytics />
     </div>
   );

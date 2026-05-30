@@ -305,13 +305,13 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   ];
 
   return (
-    <div className="p-6 space-y-5 max-w-screen-2xl">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 max-w-screen-2xl">
 
       {/* Header ────────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-3xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+            <h2 className="text-2xl sm:text-3xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
               Buen día, {data.userName.split(" ")[0]} 👋
             </h2>
             {data.isSuperAdmin && (
@@ -363,7 +363,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           </div>
 
           {/* Presets fecha */}
-          <div className="flex items-center gap-0.5 rounded-xl p-1"
+          <div className="flex items-center gap-0.5 rounded-xl p-1 flex-wrap"
             style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
             {DATE_PRESETS.map(({ key, label }) => {
               const active = preset === key;
@@ -411,12 +411,12 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           <Store size={14} color="#7C3AED" strokeWidth={2.5} />
           <p className="text-xs font-bold tracking-widest text-[#94A3B8] uppercase">Tienda</p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 divide-x-0 sm:divide-x" style={{ borderColor: "rgba(124,58,237,0.1)" }}>
           {TIENDA_METRICS.map((m, i) => {
             const Icon = m.icon;
             return (
-              <div key={m.label} className="p-4 flex flex-col gap-1"
-                style={{ borderRight: i < TIENDA_METRICS.length - 1 ? "1px solid rgba(124,58,237,0.1)" : "none" }}>
+              <div key={m.label} className="p-3 sm:p-4 flex flex-col gap-1"
+                style={{ borderBottom: i < TIENDA_METRICS.length - 2 ? "1px solid rgba(124,58,237,0.1)" : undefined }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     <p className="text-[11px] text-[#64748B] font-medium">{m.label}</p>
@@ -451,7 +451,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           {ANUNCIOS_METRICS.map((m, i) => {
             const Icon = m.icon;
             return (
-              <div key={m.label} className="p-4 flex flex-col gap-1"
+              <div key={m.label} className="p-3 sm:p-4 flex flex-col gap-1"
                 style={{ borderRight: i < ANUNCIOS_METRICS.length - 1 ? "1px solid rgba(24,119,242,0.08)" : "none" }}>
                 <div className="flex items-center justify-between">
                   <p className="text-[11px] text-[#64748B] font-medium">{m.label}</p>
@@ -520,22 +520,24 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       </div>
 
       {/* Insight IA ─────────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-4 rounded-2xl p-5"
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 rounded-2xl p-4 sm:p-5"
         style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(37,99,235,0.05))", border: "1px solid rgba(124,58,237,0.25)" }}>
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "rgba(124,58,237,0.15)" }}>
-          <Brain size={20} color="#8B5CF6" strokeWidth={2} />
-        </div>
-        <div className="flex-1">
-          <p className="font-bold text-[#F1F5F9] text-sm mb-1">Insight IA del día</p>
-          <p className="text-sm text-[#94A3B8]">
-            {data.tnConnected
-              ? `${preset === "hoy" ? "Hoy llevás" : "En el período seleccionado:"} ${fmtC(revenue)} en ${orders} orden${orders !== 1 ? "es" : ""}. Ticket promedio: ${fmtC(aov)}. Margen neto: ${profitPct.toFixed(1)}%.`
-              : "Conectá TiendaNube para recibir insights de IA basados en tus datos reales de ventas."}
-          </p>
+        <div className="flex items-center gap-3 flex-1">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(124,58,237,0.15)" }}>
+            <Brain size={20} color="#8B5CF6" strokeWidth={2} />
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-[#F1F5F9] text-sm mb-1">Insight IA del día</p>
+            <p className="text-sm text-[#94A3B8]">
+              {data.tnConnected
+                ? `${preset === "hoy" ? "Hoy llevás" : "En el período seleccionado:"} ${fmtC(revenue)} en ${orders} orden${orders !== 1 ? "es" : ""}. Ticket promedio: ${fmtC(aov)}. Margen neto: ${profitPct.toFixed(1)}%.`
+                : "Conectá TiendaNube para recibir insights de IA basados en tus datos reales de ventas."}
+            </p>
+          </div>
         </div>
         <Link href="/app/ia"
-          className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
+          className="w-full sm:w-auto flex-shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
           style={{ color: "#8B5CF6", background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)" }}>
           Ver análisis <ArrowRight size={14} />
         </Link>
