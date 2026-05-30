@@ -78,7 +78,7 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       {/* Stats */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
@@ -122,9 +122,9 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
       )}
 
       {/* Toolbar: search + sort + export */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
         {/* Búsqueda */}
-        <div className="flex items-center gap-2 rounded-xl px-3 py-2 flex-1 min-w-[180px]"
+        <div className="flex items-center gap-2 rounded-xl px-3 py-2 flex-1 min-w-0 w-full sm:w-auto"
           style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
           <Users size={12} color="#64748B" strokeWidth={2} />
           <input

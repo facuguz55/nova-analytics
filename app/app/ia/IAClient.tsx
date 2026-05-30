@@ -93,7 +93,7 @@ export default function IAClient({ businessContext }: { businessContext: string 
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -114,7 +114,7 @@ export default function IAClient({ businessContext }: { businessContext: string 
               )}
             </div>
             <div
-              className="max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed"
+              className="max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed"
               style={{
                 background: msg.role === "user"
                   ? "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(37,99,235,0.15))"
@@ -164,7 +164,7 @@ export default function IAClient({ businessContext }: { businessContext: string 
 
       {/* Suggestions (solo si está en el inicio) */}
       {messages.length <= 1 && (
-        <div className="px-6 pb-3 flex flex-wrap gap-2">
+        <div className="px-4 sm:px-6 pb-3 flex flex-wrap gap-2">
           {SUGGESTIONS.map((s) => (
             <button
               key={s}
@@ -185,7 +185,7 @@ export default function IAClient({ businessContext }: { businessContext: string 
 
       {/* Input */}
       <div
-        className="px-6 pb-5 flex-shrink-0"
+        className="px-4 sm:px-6 pb-5 flex-shrink-0"
         style={{ borderTop: "1px solid rgba(124,58,237,0.15)", paddingTop: "16px" }}
       >
         <div

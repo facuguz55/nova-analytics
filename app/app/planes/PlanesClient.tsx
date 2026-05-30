@@ -53,17 +53,17 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
   }
 
   return (
-    <div className="p-6 space-y-5 max-w-2xl">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 max-w-2xl">
 
       {/* ── Tu plan actual ── */}
       <div>
-        <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Planes</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Planes</h1>
         <p className="text-sm text-[#94A3B8] mt-1">Estado de tu suscripción y opciones disponibles.</p>
       </div>
 
       {/* Plan status card */}
       <div
-        className="rounded-2xl p-5 flex items-center gap-4"
+        className="rounded-2xl p-4 sm:p-5 flex items-center gap-4 flex-wrap"
         style={{ background: meta.bg, border: `2px solid ${meta.border}` }}
       >
         <div
@@ -105,7 +105,7 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
           {showDetails ? <ChevronUp size={15} color="#64748B" /> : <ChevronDown size={15} color="#64748B" />}
         </button>
         {showDetails && (
-          <div className="px-5 pb-5 grid grid-cols-2 gap-2">
+          <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-2">
             {(isPro || isTrial ? [...FREE_FEATURES, ...PRO_FEATURES] : FREE_FEATURES).map((f) => (
               <div key={f} className="flex items-center gap-2">
                 <Check size={13} color="#22c55e" strokeWidth={2.5} className="flex-shrink-0" />
@@ -130,7 +130,7 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
                 <p className="text-xs text-[#64748B] mt-0.5">Ingresás tu tarjeta, los primeros 7 días son gratis.</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {PRO_FEATURES.slice(0, 4).map((f) => (
                 <div key={f} className="flex items-center gap-1.5">
                   <Check size={11} color="#8B5CF6" strokeWidth={2.5} className="flex-shrink-0" />
@@ -203,7 +203,7 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
           ].map((row) => {
             const Icon = row.icon;
             return (
-              <div key={row.feature} className="grid grid-cols-3 items-center px-5 py-3 gap-4">
+              <div key={row.feature} className="grid grid-cols-3 items-center px-3 sm:px-5 py-3 gap-2 sm:gap-4">
                 <div className="flex items-center gap-2">
                   <Icon size={13} color="#64748B" strokeWidth={2} />
                   <span className="text-xs text-[#94A3B8]">{row.feature}</span>
@@ -214,7 +214,7 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
             );
           })}
         </div>
-        <div className="grid grid-cols-3 px-5 py-2" style={{ borderTop: "1px solid rgba(124,58,237,0.1)", background: "rgba(124,58,237,0.04)" }}>
+        <div className="grid grid-cols-3 px-3 sm:px-5 py-2" style={{ borderTop: "1px solid rgba(124,58,237,0.1)", background: "rgba(124,58,237,0.04)" }}>
           <span />
           <span className="text-[10px] font-bold text-center text-[#64748B] uppercase tracking-widest">Gratis</span>
           <span className="text-[10px] font-bold text-center uppercase tracking-widest" style={{ color: "#8B5CF6" }}>Pro</span>

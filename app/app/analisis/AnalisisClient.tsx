@@ -397,8 +397,8 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
   // ── Sin conexión ──────────────────────────────────────────────────────────
   if (!isConnected) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-black text-[#F1F5F9] mb-2" style={{ letterSpacing: "-0.02em" }}>Análisis</h1>
+      <div className="p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9] mb-2" style={{ letterSpacing: "-0.02em" }}>Análisis</h1>
         <div className="rounded-2xl p-10 text-center" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
           <Store size={40} color="#7C3AED" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conectá tu TiendaNube</p>
@@ -423,12 +423,12 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
   ];
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
 
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Análisis</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Análisis</h1>
           <p className="text-sm text-[#94A3B8] mt-0.5">Evolución histórica y patrones de ventas</p>
         </div>
 

@@ -344,12 +344,12 @@ export default function MailsClient({
     : baseFiltered;
 
   return (
-    <div className="flex" style={{ height: "calc(100vh - 64px)" }}>
+    <div className="flex flex-col sm:flex-row" style={{ height: "calc(100vh - 64px)" }}>
 
       {/* ── PANEL IZQUIERDO ─────────────────────────────────────────────── */}
       <div
-        className="flex flex-col flex-shrink-0"
-        style={{ width: "300px", borderRight: "1px solid rgba(124,58,237,0.12)" }}
+        className={`flex-col flex-shrink-0 ${selected ? "hidden sm:flex" : "flex"} sm:w-[300px] w-full`}
+        style={{ borderRight: "1px solid rgba(124,58,237,0.12)" }}
       >
         {/* Header */}
         <div className="px-4 py-3 flex-shrink-0" style={{ borderBottom: "1px solid rgba(124,58,237,0.12)" }}>
@@ -486,7 +486,7 @@ export default function MailsClient({
       </div>
 
       {/* ── PANEL DERECHO ─────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+      <div className={`flex-1 flex flex-col min-w-0 min-h-0 ${!selected ? "hidden sm:flex" : "flex"}`}>
         {!selected ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-8">
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "rgba(124,58,237,0.1)" }}>
@@ -501,7 +501,13 @@ export default function MailsClient({
           <div className="flex flex-col flex-1 min-h-0">
 
             {/* Header */}
-            <div className="flex-shrink-0 px-6 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.12)" }}>
+            <div className="flex-shrink-0 px-4 sm:px-6 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.12)" }}>
+              <button
+                onClick={() => setSelected(null)}
+                className="flex sm:hidden items-center gap-1.5 text-xs text-[#64748B] mb-3 hover:text-[#94A3B8]"
+              >
+                ← Volver
+              </button>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <h2 className="font-bold text-[#F1F5F9] text-base truncate">{selected.subject}</h2>
@@ -532,7 +538,7 @@ export default function MailsClient({
             </div>
 
             {/* Cuerpo scrolleable */}
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 min-h-0">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-6 min-h-0">
 
               {/* Body */}
               <MailBody body={selected.body || selected.snippet} isHtml={selected.isHtml} />

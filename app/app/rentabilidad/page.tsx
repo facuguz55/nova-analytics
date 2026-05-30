@@ -96,15 +96,15 @@ export default async function RentabilidadPage({
   ];
 
   return (
-    <div className="p-6 space-y-5 max-w-3xl">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 max-w-3xl">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Rentabilidad</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Rentabilidad</h1>
           <p className="text-sm text-[#94A3B8] mt-0.5">
             {connection ? `Datos en tiempo real desde TiendaNube (${days}d)` : "Conecta TiendaNube para ver analisis"}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="flex gap-1 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}>
             {([30, 60, 90] as const).map((d) => (
               <Link key={d} href={`?days=${d}`}
@@ -133,7 +133,7 @@ export default async function RentabilidadPage({
 
       {connection && (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { label: "Ingresos brutos", value: formatCurrency(totalRevenue), icon: DollarSign, color: "#F1F5F9" },
               { label: "Ingresos netos", value: formatCurrency(netRevenue), icon: TrendingUp, color: "#22c55e" },
@@ -144,7 +144,7 @@ export default async function RentabilidadPage({
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style={{ background: "rgba(124,58,237,0.12)" }}>
                   <s.icon size={15} color={s.color} strokeWidth={2} />
                 </div>
-                <p className="text-xl font-black text-[#F1F5F9]">{s.value}</p>
+                <p className="text-lg sm:text-xl font-black text-[#F1F5F9]">{s.value}</p>
                 <p className="text-xs text-[#94A3B8] mt-0.5">{s.label}</p>
               </div>
             ))}
@@ -155,7 +155,7 @@ export default async function RentabilidadPage({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-[#94A3B8] mb-1">Mes actual</p>
-                <p className="text-2xl font-black text-[#F1F5F9]">{formatCurrency(salesMes)}</p>
+                <p className="text-xl sm:text-2xl font-black text-[#F1F5F9]">{formatCurrency(salesMes)}</p>
                 <div className="flex items-center gap-1 mt-1">
                   {changePct >= 0 ? <ArrowUpRight size={13} color="#22c55e" strokeWidth={2.5} /> : <ArrowDownRight size={13} color="#ef4444" strokeWidth={2.5} />}
                   <span className="text-xs font-semibold" style={{ color: changePct >= 0 ? "#22c55e" : "#ef4444" }}>
@@ -165,7 +165,7 @@ export default async function RentabilidadPage({
               </div>
               <div>
                 <p className="text-xs text-[#94A3B8] mb-1">Mes anterior</p>
-                <p className="text-2xl font-black text-[#F1F5F9]">{formatCurrency(salesMesAnterior)}</p>
+                <p className="text-xl sm:text-2xl font-black text-[#F1F5F9]">{formatCurrency(salesMesAnterior)}</p>
                 <p className="text-xs text-[#64748B] mt-1">{prevMonthOrders.length} ordenes</p>
               </div>
             </div>

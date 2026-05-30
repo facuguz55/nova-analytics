@@ -105,11 +105,11 @@ export default function TiendaClient({
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Tienda Web</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Tienda Web</h1>
           {isConnected && storeName && (
             <p className="text-sm text-[#94A3B8] mt-0.5">
               <span className="text-green-400">●</span>{" "}
@@ -255,7 +255,7 @@ export default function TiendaClient({
                           <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(124,58,237,0.1)" }}>
                             <Package size={14} color="#7C3AED" />
                           </div>
-                          <span className="text-sm text-[#CBD5E1] truncate max-w-[160px]">{name}</span>
+                          <span className="text-sm text-[#CBD5E1] truncate max-w-[120px] sm:max-w-[160px]">{name}</span>
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className="text-sm font-semibold text-[#F1F5F9]">{fmt(price)}</p>

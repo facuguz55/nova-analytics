@@ -58,9 +58,9 @@ export default async function ProductosPage({
   })();
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
       <div>
-        <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Productos / Stock</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Productos / Stock</h1>
         <p className="text-sm text-[#94A3B8] mt-0.5">
           {connection ? `${products.length} productos en tiempo real desde TiendaNube` : "Conecta tu TiendaNube"}
         </p>
@@ -86,7 +86,7 @@ export default async function ProductosPage({
 
       {connection && !error && (
         <>
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {[
               { label: "Total productos", value: String(products.length), icon: Package, color: "#7C3AED" },
               { label: "Stock bajo (<=5)", value: String(lowStock.length), icon: AlertTriangle, color: "#f59e0b" },
@@ -122,7 +122,7 @@ export default async function ProductosPage({
             ))}
           </div>
 
-          <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+          <div className="rounded-2xl overflow-x-auto" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
             <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(124,58,237,0.15)" }}>
               <span className="text-sm text-[#94A3B8]">{filtered.length} producto{filtered.length !== 1 ? "s" : ""}</span>
               {avgMargin > 0 && <span className="text-xs text-[#64748B]">Margen prom: {avgMargin.toFixed(1)}%</span>}

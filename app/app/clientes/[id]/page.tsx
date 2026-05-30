@@ -33,7 +33,7 @@ export default async function ClientePerfilPage({
   const connection = await getTiendaNubeConnection();
   if (!connection) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <Link href="/app/clientes" className="flex items-center gap-2 text-sm text-[#64748B] mb-6 hover:text-[#94A3B8]">
           <ArrowLeft size={14} /> Volver a Clientes
         </Link>
@@ -94,7 +94,7 @@ export default async function ClientePerfilPage({
     .slice(0, 5);
 
   return (
-    <div className="p-6 space-y-5 max-w-3xl">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 max-w-3xl">
       {/* Back */}
       <Link href="/app/clientes"
         className="inline-flex items-center gap-2 text-sm text-[#64748B] hover:text-[#94A3B8] transition-colors">
@@ -103,7 +103,7 @@ export default async function ClientePerfilPage({
       </Link>
 
       {/* Header */}
-      <div className="rounded-2xl p-5 flex items-start gap-4"
+      <div className="rounded-2xl p-4 sm:p-5 flex items-start gap-4"
         style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
         <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-black text-[#7C3AED] flex-shrink-0"
           style={{ background: "rgba(124,58,237,0.15)" }}>
@@ -111,7 +111,7 @@ export default async function ClientePerfilPage({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+            <h1 className="text-lg sm:text-xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
               {customer.name}
             </h1>
             {isVIP && (
