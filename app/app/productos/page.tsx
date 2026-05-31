@@ -1,6 +1,6 @@
 ﻿import type { Metadata } from "next";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
-import { getProducts, getProductName, type TNProduct } from "@/lib/tiendanube/client";
+import { getAllProducts, getProductName, type TNProduct } from "@/lib/tiendanube/client";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { Package, AlertTriangle, DollarSign, TrendingUp, Store, ArrowRight } from "lucide-react";
@@ -21,17 +21,9 @@ export default async function ProductosPage({
   let error: string | null = null;
 
   if (connection) {
-    const [p1, p2, p3, p4] = await Promise.allSettled([
-      getProducts(connection.opts, 1, 100),
-      getProducts(connection.opts, 2, 100),
-      getProducts(connection.opts, 3, 100),
-      getProducts(connection.opts, 4, 100),
-    ]);
-    if (p1.status === "fulfilled") products = [...products, ...p1.value];
-    if (p2.status === "fulfilled") products = [...products, ...p2.value];
-    if (p3.status === "fulfilled") products = [...products, ...p3.value];
-    if (p4.status === "fulfilled") products = [...products, ...p4.value];
-    if (p1.status === "rejected") error = "Error al cargar productos desde TiendaNube";
+    const result = await getAllProducts(connection.opts).catch(() => null);
+    if (result) products = result;
+    else error = "Error al cargar productos desde TiendaNube";
   }
 
   let filtered = products;
@@ -131,13 +123,19 @@ export default async function ProductosPage({
               {filtered.length === 0 ? (
                 <div className="p-8 text-center text-sm text-[#64748B]">Sin productos que coincidan</div>
               ) : (
-                filtered.slice(0, 150).map((p) => {
+                filtered.map((p) => {
                   const name = getProductName(p);
                   const totalStock = p.variants.reduce((s, v) => s + (v.stock ?? 0), 0);
                   const price = parseFloat(p.variants[0]?.price ?? "0");
-                  const cost = parseFloat(p.variants[0]?.cost ?? "0");
-                  const margin = price > 0 && cost > 0 ? ((price - cost) / price * 100).toFixed(1) : null;
+                  // Costo promedio de todas las variantes con costo cargado
+                  const variantsWithCost = p.variants.filter((v) => parseFloat(v.cost ?? "0") > 0);
+                  const avgCost = variantsWithCost.length > 0
+                    ? variantsWithCost.reduce((acc, v) => acc + parseFloat(v.cost ?? "0"), 0) / variantsWithCost.length
+                    : 0;
+                  const margin = price > 0 && avgCost > 0 ? ((price - avgCost) / price * 100).toFixed(1) : null;
+                  const marginNum = margin ? parseFloat(margin) : null;
                   const stockColor = totalStock <= 0 ? "#ef4444" : totalStock <= 5 ? "#f59e0b" : "#22c55e";
+                  const marginColor = marginNum === null ? "#64748B" : marginNum >= 40 ? "#22c55e" : marginNum >= 20 ? "#f59e0b" : "#ef4444";
                   return (
                     <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[rgba(124,58,237,0.04)] transition-colors">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(124,58,237,0.1)" }}>
@@ -147,12 +145,28 @@ export default async function ProductosPage({
                         <p className="text-sm text-[#F1F5F9] truncate">{name}</p>
                         <p className="text-xs text-[#64748B]">{p.variants.length} variante{p.variants.length !== 1 ? "s" : ""}</p>
                       </div>
-                      <div className="text-right flex-shrink-0 space-y-0.5">
+                      {/* Costo */}
+                      <div className="hidden sm:block text-right flex-shrink-0 space-y-0.5 min-w-[80px]">
+                        {avgCost > 0 ? (
+                          <>
+                            <p className="text-xs text-[#64748B]">Costo</p>
+                            <p className="text-sm font-medium text-[#94A3B8]">{formatCurrency(avgCost)}</p>
+                          </>
+                        ) : (
+                          <p className="text-xs text-[#475569]">Sin costo</p>
+                        )}
+                      </div>
+                      {/* Precio + stock + margen */}
+                      <div className="text-right flex-shrink-0 space-y-0.5 min-w-[90px]">
                         <p className="text-sm font-semibold text-[#F1F5F9]">{formatCurrency(price)}</p>
                         <p className="text-xs font-medium" style={{ color: stockColor }}>
                           {totalStock <= 0 ? "Sin stock" : `${totalStock} en stock`}
                         </p>
-                        {margin && <p className="text-xs text-[#64748B]">Margen: {margin}%</p>}
+                        {margin && (
+                          <p className="text-xs font-semibold" style={{ color: marginColor }}>
+                            {margin}% margen
+                          </p>
+                        )}
                       </div>
                     </div>
                   );

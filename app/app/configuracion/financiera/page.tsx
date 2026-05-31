@@ -56,33 +56,27 @@ export default async function FinancieraPage({
   const productStats = { total: 0, withCost: 0 };
 
   if (connection) {
-    // Fetch sin caché para ver costos siempre actualizados; hasta 3 páginas (300 productos)
-    const pages = await Promise.allSettled(
-      [1, 2, 3].map((page) =>
-        fetch(
-          `https://api.tiendanube.com/v1/${connection.opts.storeId}/products?per_page=100&page=${page}`,
-          {
-            headers: {
-              Authentication: `bearer ${connection.opts.accessToken}`,
-              "User-Agent": "Nova Analytics (novaagency.info)",
-            },
-            cache: "no-store",
-          }
-        )
-          .then((r) => (r.ok ? (r.json() as Promise<import("@/lib/tiendanube/client").TNProduct[]>) : []))
-          .catch(() => [])
+    // Fetch sin caché, loop hasta traer todos los productos
+    const allProds: import("@/lib/tiendanube/client").TNProduct[] = [];
+    for (let page = 1; page <= 15; page++) {
+      const batch = await fetch(
+        `https://api.tiendanube.com/v1/${connection.opts.storeId}/products?per_page=100&page=${page}`,
+        {
+          headers: {
+            Authentication: `bearer ${connection.opts.accessToken}`,
+            "User-Agent": "Nova Analytics (novaagency.info)",
+          },
+          cache: "no-store",
+        }
       )
-    );
+        .then((r) => (r.ok ? (r.json() as Promise<import("@/lib/tiendanube/client").TNProduct[]>) : []))
+        .catch(() => []);
 
-    const prods = pages.flatMap((p) => (p.status === "fulfilled" ? p.value : []));
+      allProds.push(...batch);
+      if (batch.length < 100) break; // última página
+    }
 
-    // Deduplicar por id (puede haber solapamiento entre páginas)
-    const seen = new Set<number>();
-    const uniqueProds = prods.filter((p) => {
-      if (seen.has(p.id)) return false;
-      seen.add(p.id);
-      return true;
-    });
+    const uniqueProds = allProds;
 
     productStats.total = uniqueProds.length;
 

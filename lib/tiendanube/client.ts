@@ -147,6 +147,20 @@ export async function getProducts(
   });
 }
 
+// Trae TODOS los productos haciendo loop hasta que una página devuelva menos de perPage
+export async function getAllProducts(
+  opts: TiendaNubeOptions,
+  maxPages = 15
+): Promise<TNProduct[]> {
+  const all: TNProduct[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const batch = await getProducts(opts, page, 100).catch(() => []);
+    all.push(...batch);
+    if (batch.length < 100) break;
+  }
+  return all;
+}
+
 export async function getCustomers(
   opts: TiendaNubeOptions,
   page = 1,

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/supabase/cached-queries";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
-import { getOrdersForRange, getProducts } from "@/lib/tiendanube/client";
+import { getOrdersForRange, getAllProducts } from "@/lib/tiendanube/client";
 import RentabilidadClient from "./RentabilidadClient";
 
 export const metadata: Metadata = { title: "Rentabilidad" };
@@ -26,12 +26,12 @@ export default async function RentabilidadPage() {
   const cfg = (rawConfig as unknown as FinConfig | null) ?? { tax_rate: 21, platform_fee: 2, agency_fee: 0, usd_rate: 1200 };
 
   let rawOrders: Awaited<ReturnType<typeof getOrdersForRange>> = [];
-  let products: Awaited<ReturnType<typeof getProducts>> = [];
+  let products: import("@/lib/tiendanube/client").TNProduct[] = [];
 
   if (connection) {
     const [ordersRes, productsRes] = await Promise.allSettled([
       getOrdersForRange(connection.opts, { days: 90 }, 3),
-      getProducts(connection.opts, 1, 100),
+      getAllProducts(connection.opts),
     ]);
     if (ordersRes.status === "fulfilled") rawOrders = ordersRes.value;
     if (productsRes.status === "fulfilled") products = productsRes.value;
