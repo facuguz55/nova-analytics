@@ -190,7 +190,7 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
           style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)" }}>
           <AlertTriangle size={15} color="#f59e0b" strokeWidth={2.5} className="flex-shrink-0" />
           <p className="text-xs text-[#f59e0b]">
-            {metrics.noCostCount} ítems sin costo cargado en TiendaNube — el "Costo de productos" está subestimado.
+            {metrics.noCostCount} ítems sin costo cargado en TiendaNube — el &ldquo;Costo de productos&rdquo; está subestimado.
           </p>
         </div>
       )}
