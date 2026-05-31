@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { DollarSign, Percent, Save, TrendingUp, Info, Calculator } from "lucide-react";
+import { DollarSign, Percent, Save, TrendingUp, Info, Calculator, Package } from "lucide-react";
 import { updateFinancialConfig } from "@/app/app/actions";
 import { toast } from "sonner";
 
@@ -11,7 +11,7 @@ interface Config {
   platform_fee: number;
 }
 
-export default function FinancieraClient({ config }: { config: Config }) {
+export default function FinancieraClient({ config, avgCostPct }: { config: Config; avgCostPct: number }) {
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -238,6 +238,32 @@ export default function FinancieraClient({ config }: { config: Config }) {
         </div>
 
       </form>
+
+      {/* Card de costo promedio de productos desde TiendaNube */}
+      <div className="rounded-2xl p-5 flex items-center gap-4"
+        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: "rgba(34,197,94,0.12)" }}>
+          <Package size={18} color="#22c55e" strokeWidth={2} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-[#F1F5F9] text-sm">Costo de productos</p>
+          <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">
+            Costo promedio calculado desde las variantes de TiendaNube (solo lectura)
+          </p>
+        </div>
+        <div className="text-right flex-shrink-0">
+          {avgCostPct > 0 ? (
+            <>
+              <p className="text-2xl font-black text-[#22c55e]">{avgCostPct.toFixed(1)}%</p>
+              <p className="text-xs text-[#64748B]">del precio de venta</p>
+            </>
+          ) : (
+            <p className="text-sm text-[#64748B]">Sin datos</p>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
+import { getProducts } from "@/lib/tiendanube/client";
 import FinancieraHub from "./FinancieraHub";
 
 export const metadata: Metadata = { title: "Configuración Financiera" };
@@ -51,10 +52,23 @@ export default async function FinancieraPage({
 
   const connection = await getTiendaNubeConnection();
 
+  let avgCostPct = 0;
+  if (connection) {
+    const prods = await getProducts(connection.opts, 1, 100).catch(() => []);
+    const ratios = prods.flatMap((p) =>
+      p.variants
+        .filter((v) => parseFloat(v.cost_price ?? "0") > 0 && parseFloat(v.price) > 0)
+        .map((v) => parseFloat(v.cost_price!) / parseFloat(v.price))
+    );
+    if (ratios.length > 0)
+      avgCostPct = (ratios.reduce((a, b) => a + b, 0) / ratios.length) * 100;
+  }
+
   return (
     <FinancieraHub
       activeTab={tab}
       workspaceId={workspaceId}
+      avgCostPct={avgCostPct}
       generalConfig={{
         usd_rate:     cfg?.usd_rate     ?? 1200,
         tax_rate:     cfg?.tax_rate     ?? 21,

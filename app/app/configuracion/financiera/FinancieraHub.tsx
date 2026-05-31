@@ -33,6 +33,7 @@ interface ComisionesConfig {
 interface Props {
   activeTab: string;
   workspaceId: string;
+  avgCostPct: number;
   generalConfig: GeneralConfig;
   cotizacionesConfig: CotizacionesConfig;
   comisionesConfig: ComisionesConfig;
@@ -52,6 +53,7 @@ const TABS = [
 export default function FinancieraHub({
   activeTab,
   workspaceId,
+  avgCostPct,
   generalConfig,
   cotizacionesConfig,
   comisionesConfig,
@@ -109,7 +111,7 @@ export default function FinancieraHub({
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {activeTab === "general" && (
-          <FinancieraClient config={generalConfig} />
+          <FinancieraClient config={generalConfig} avgCostPct={avgCostPct} />
         )}
 
         {activeTab === "cotizaciones" && (
