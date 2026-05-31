@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { randomBytes } from "crypto";
 
 export async function GET(request: Request) {
-  const origin = new URL(request.url).origin;
+  const { origin, searchParams } = new URL(request.url);
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -19,7 +19,6 @@ export async function GET(request: Request) {
     "profile",
   ].join(" ");
 
-  // Generar state criptográficamente seguro para prevenir CSRF en OAuth
   const state = randomBytes(32).toString("hex");
 
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
@@ -33,14 +32,19 @@ export async function GET(request: Request) {
 
   const response = NextResponse.redirect(authUrl.toString());
 
-  // Guardar state en cookie HttpOnly — expira en 10 minutos
-  response.cookies.set("oauth_state_gmail", state, {
+  const cookieOpts = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "lax" as const,
     maxAge: 600,
     path: "/",
-  });
+  };
+
+  response.cookies.set("oauth_state_gmail", state, cookieOpts);
+
+  if (searchParams.get("from") === "onboarding") {
+    response.cookies.set("oauth_from", "onboarding", cookieOpts);
+  }
 
   return response;
 }

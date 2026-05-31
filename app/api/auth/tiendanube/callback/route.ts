@@ -89,8 +89,13 @@ export async function GET(request: Request) {
     headers: { "x-workspace-id": userRow.workspace_id },
   }).catch(() => {});
 
-  const successResponse = NextResponse.redirect(`${origin}/app/configuracion/integraciones?success=tiendanube`);
-  // Invalidar el state (one-time use)
+  const oauthFrom = cookieStore.get("oauth_from")?.value;
+  const redirectTo = oauthFrom === "onboarding"
+    ? `${origin}/onboarding?success=tiendanube`
+    : `${origin}/app/configuracion/integraciones?success=tiendanube`;
+
+  const successResponse = NextResponse.redirect(redirectTo);
   successResponse.cookies.delete("oauth_state_tn");
+  successResponse.cookies.delete("oauth_from");
   return successResponse;
 }

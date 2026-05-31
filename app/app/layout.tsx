@@ -16,11 +16,11 @@ export default async function DashboardLayout({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  type UserRow = { name: string | null; email: string; avatar_url: string | null; role: string; workspaces: { id: string; name: string; plan: string; status: string } | null };
+  type UserRow = { name: string | null; email: string; avatar_url: string | null; role: string; workspaces: { id: string; name: string; plan: string; status: string; onboarding_completed: boolean } | null };
   type IntRow = { provider: string; status: string };
 
   const [userRes, intRes, alertRes] = await Promise.allSettled([
-    supabase.from("users").select("*, workspaces(id, name, plan, status)").eq("id", user.id).single(),
+    supabase.from("users").select("*, workspaces(id, name, plan, status, onboarding_completed)").eq("id", user.id).single(),
     supabase.from("integrations").select("provider, status").eq("status", "active"),
     supabase.from("alerts").select("id", { count: "exact", head: true }).eq("read", false),
   ]);
@@ -37,6 +37,10 @@ export default async function DashboardLayout({
 
   const isSuperAdmin = userRow?.role === "super_admin";
   const plan = workspace?.plan ?? "free";
+
+  // Redirigir al onboarding si no fue completado aún
+  const onboardingCompleted = workspace?.onboarding_completed ?? false;
+  if (!isSuperAdmin && !onboardingCompleted) redirect("/onboarding");
 
   // Verificar si el trial venció
   const trialStartedAt = (workspace as unknown as { trial_started_at?: string | null } | null)?.trial_started_at ?? null;

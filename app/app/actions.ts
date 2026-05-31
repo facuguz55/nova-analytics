@@ -333,6 +333,25 @@ export async function deleteAdditionalCost(id: string) {
   revalidatePath("/app/configuracion/costos-adicionales");
 }
 
+export async function completeOnboarding() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data: userRow } = await supabase
+    .from("users")
+    .select("workspace_id")
+    .eq("id", user.id)
+    .single();
+  if (!userRow) throw new Error("Sin workspace");
+
+  await (supabase as any).from("workspaces")
+    .update({ onboarding_completed: true })
+    .eq("id", (userRow as any).workspace_id);
+
+  redirect("/app/dashboard");
+}
+
 export async function markAlertRead(alertId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

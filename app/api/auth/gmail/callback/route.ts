@@ -88,8 +88,13 @@ export async function GET(request: Request) {
     metadata: { email: profile.email },
   });
 
-  const successResponse = NextResponse.redirect(`${origin}/app/configuracion/integraciones?success=gmail`);
-  // Invalidar el state (one-time use)
+  const oauthFrom = cookieStore.get("oauth_from")?.value;
+  const redirectTo = oauthFrom === "onboarding"
+    ? `${origin}/onboarding?success=gmail`
+    : `${origin}/app/configuracion/integraciones?success=gmail`;
+
+  const successResponse = NextResponse.redirect(redirectTo);
   successResponse.cookies.delete("oauth_state_gmail");
+  successResponse.cookies.delete("oauth_from");
   return successResponse;
 }
