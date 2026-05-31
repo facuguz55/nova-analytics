@@ -53,7 +53,7 @@ export default async function FinancieraPage({
   const connection = await getTiendaNubeConnection();
 
   let avgCostPct = 0;
-  let productStats = { total: 0, withCost: 0 };
+  const productStats = { total: 0, withCost: 0 };
 
   if (connection) {
     // Fetch sin caché para ver costos siempre actualizados; hasta 3 páginas (300 productos)
