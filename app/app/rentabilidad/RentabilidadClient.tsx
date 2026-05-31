@@ -76,9 +76,9 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
   const costMap = useMemo(() => {
     const map = new Map<number, number>();
     for (const p of products) {
-      const variants = p.variants.filter((v) => parseFloat(v.cost_price ?? "0") > 0);
+      const variants = p.variants.filter((v) => parseFloat(v.cost ?? "0") > 0);
       if (variants.length === 0) continue;
-      const avg = variants.reduce((acc, v) => acc + parseFloat(v.cost_price!), 0) / variants.length;
+      const avg = variants.reduce((acc, v) => acc + parseFloat(v.cost ?? "0"), 0) / variants.length;
       map.set(p.id, avg);
     }
     return map;

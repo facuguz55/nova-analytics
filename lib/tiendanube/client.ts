@@ -43,7 +43,7 @@ export interface TNProduct {
     id: number;
     stock: number | null;
     price: string;
-    cost_price: string | null;
+    cost: string | null;
     sku?: string;
   }>;
   images?: Array<{ src: string }>;

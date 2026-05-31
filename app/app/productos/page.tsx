@@ -47,11 +47,11 @@ export default async function ProductosPage({
     return acc + price * Math.max(stock, 0);
   }, 0);
   const avgMargin = (() => {
-    const withCost = products.filter((p) => p.variants[0]?.cost_price);
+    const withCost = products.filter((p) => p.variants[0]?.cost);
     if (withCost.length === 0) return 0;
     const sum = withCost.reduce((acc, p) => {
       const price = parseFloat(p.variants[0]?.price ?? "0");
-      const cost = parseFloat(p.variants[0]?.cost_price ?? "0");
+      const cost = parseFloat(p.variants[0]?.cost ?? "0");
       return acc + (price > 0 ? ((price - cost) / price) * 100 : 0);
     }, 0);
     return sum / withCost.length;
@@ -135,7 +135,7 @@ export default async function ProductosPage({
                   const name = getProductName(p);
                   const totalStock = p.variants.reduce((s, v) => s + (v.stock ?? 0), 0);
                   const price = parseFloat(p.variants[0]?.price ?? "0");
-                  const cost = parseFloat(p.variants[0]?.cost_price ?? "0");
+                  const cost = parseFloat(p.variants[0]?.cost ?? "0");
                   const margin = price > 0 && cost > 0 ? ((price - cost) / price * 100).toFixed(1) : null;
                   const stockColor = totalStock <= 0 ? "#ef4444" : totalStock <= 5 ? "#f59e0b" : "#22c55e";
                   return (

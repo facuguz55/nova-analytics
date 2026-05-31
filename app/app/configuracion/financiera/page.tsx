@@ -89,7 +89,7 @@ export default async function FinancieraPage({
     const ratios: number[] = [];
     for (const p of uniqueProds) {
       for (const v of p.variants) {
-        const cost  = parseFloat(v.cost_price ?? "0");
+        const cost  = parseFloat(v.cost ?? "0");
         const price = parseFloat(v.price);
         if (!isNaN(cost) && cost > 0 && !isNaN(price) && price > 0) {
           ratios.push(cost / price);
