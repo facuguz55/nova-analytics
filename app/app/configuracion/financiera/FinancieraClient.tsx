@@ -11,7 +11,15 @@ interface Config {
   platform_fee: number;
 }
 
-export default function FinancieraClient({ config, avgCostPct }: { config: Config; avgCostPct: number }) {
+export default function FinancieraClient({
+  config,
+  avgCostPct,
+  productStats = { total: 0, withCost: 0 },
+}: {
+  config: Config;
+  avgCostPct: number;
+  productStats?: { total: number; withCost: number };
+}) {
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -240,17 +248,29 @@ export default function FinancieraClient({ config, avgCostPct }: { config: Confi
       </form>
 
       {/* Card de costo promedio de productos desde TiendaNube */}
-      <div className="rounded-2xl p-5 flex items-center gap-4"
+      <div className="rounded-2xl p-5 flex items-start gap-4"
         style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
           style={{ background: "rgba(34,197,94,0.12)" }}>
           <Package size={18} color="#22c55e" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-bold text-[#F1F5F9] text-sm">Costo de productos</p>
           <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">
-            Costo promedio calculado desde las variantes de TiendaNube (solo lectura)
+            Promedio calculado desde el campo <strong className="text-[#94A3B8]">Costo</strong> de las variantes en TiendaNube
           </p>
+          {productStats.total > 0 && (
+            <p className="text-xs mt-1.5" style={{ color: productStats.withCost > 0 ? "#22c55e" : "#f59e0b" }}>
+              {productStats.withCost > 0
+                ? `${productStats.withCost} variante${productStats.withCost !== 1 ? "s" : ""} con costo cargado de ${productStats.total} productos`
+                : `${productStats.total} productos encontrados, ninguno tiene costo cargado en TiendaNube`}
+            </p>
+          )}
+          {productStats.total === 0 && (
+            <p className="text-xs text-[#f59e0b] mt-1.5">
+              No se encontraron productos — verificá que TiendaNube esté conectado
+            </p>
+          )}
         </div>
         <div className="text-right flex-shrink-0">
           {avgCostPct > 0 ? (
@@ -259,7 +279,12 @@ export default function FinancieraClient({ config, avgCostPct }: { config: Confi
               <p className="text-xs text-[#64748B]">del precio de venta</p>
             </>
           ) : (
-            <p className="text-sm text-[#64748B]">Sin datos</p>
+            <div className="text-right">
+              <p className="text-sm font-semibold text-[#f59e0b]">Sin datos</p>
+              <p className="text-xs text-[#64748B] mt-0.5 max-w-[160px]">
+                Cargá el costo en cada variante desde TiendaNube → Productos
+              </p>
+            </div>
           )}
         </div>
       </div>

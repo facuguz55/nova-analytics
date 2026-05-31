@@ -53,15 +53,75 @@ export default async function FinancieraPage({
   const connection = await getTiendaNubeConnection();
 
   let avgCostPct = 0;
+  let productStats = { total: 0, withCost: 0 };
+
   if (connection) {
-    const prods = await getProducts(connection.opts, 1, 100).catch(() => []);
-    const ratios = prods.flatMap((p) =>
-      p.variants
-        .filter((v) => parseFloat(v.cost_price ?? "0") > 0 && parseFloat(v.price) > 0)
-        .map((v) => parseFloat(v.cost_price!) / parseFloat(v.price))
+    // Fetch sin caché para ver costos siempre actualizados; hasta 3 páginas (300 productos)
+    const pages = await Promise.allSettled(
+      [1, 2, 3].map((page) =>
+        fetch(
+          `https://api.tiendanube.com/v1/${connection.opts.storeId}/products?per_page=100&page=${page}`,
+          {
+            headers: {
+              Authentication: `bearer ${connection.opts.accessToken}`,
+              "User-Agent": "Nova Analytics (novaagency.info)",
+            },
+            cache: "no-store",
+          }
+        )
+          .then((r) => (r.ok ? (r.json() as Promise<import("@/lib/tiendanube/client").TNProduct[]>) : []))
+          .catch(() => [])
+      )
     );
-    if (ratios.length > 0)
+
+    const prods = pages.flatMap((p) => (p.status === "fulfilled" ? p.value : []));
+
+    // Deduplicar por id (puede haber solapamiento entre páginas)
+    const seen = new Set<number>();
+    const uniqueProds = prods.filter((p) => {
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
+
+    productStats.total = uniqueProds.length;
+
+    const ratios: number[] = [];
+    for (const p of uniqueProds) {
+      for (const v of p.variants) {
+        const cost  = parseFloat(v.cost_price ?? "0");
+        const price = parseFloat(v.price);
+        if (!isNaN(cost) && cost > 0 && !isNaN(price) && price > 0) {
+          ratios.push(cost / price);
+          productStats.withCost++;
+        }
+      }
+    }
+
+    if (ratios.length > 0) {
       avgCostPct = (ratios.reduce((a, b) => a + b, 0) / ratios.length) * 100;
+    }
+
+    // Fallback: si la API no devuelve costos, leer desde tn_products en Supabase
+    if (avgCostPct === 0) {
+      const { data: local } = await db
+        .from("tn_products")
+        .select("cost, price")
+        .gt("price", 0)
+        .gt("cost", 0);
+
+      if (local && local.length > 0) {
+        const localRatios = (local as { cost: number; price: number }[])
+          .filter((p) => p.cost > 0 && p.price > 0)
+          .map((p) => p.cost / p.price);
+
+        if (localRatios.length > 0) {
+          avgCostPct = (localRatios.reduce((a, b) => a + b, 0) / localRatios.length) * 100;
+          productStats.withCost = localRatios.length;
+          productStats.total = Math.max(productStats.total, local.length);
+        }
+      }
+    }
   }
 
   return (
@@ -69,6 +129,7 @@ export default async function FinancieraPage({
       activeTab={tab}
       workspaceId={workspaceId}
       avgCostPct={avgCostPct}
+      productStats={productStats}
       generalConfig={{
         usd_rate:     cfg?.usd_rate     ?? 1200,
         tax_rate:     cfg?.tax_rate     ?? 21,
