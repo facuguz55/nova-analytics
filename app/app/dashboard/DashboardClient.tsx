@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import Link from "next/link";
 import InfoTooltip from "@/components/ui/InfoTooltip";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import type { TNOrder } from "@/lib/tiendanube/client";
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
@@ -247,42 +248,42 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const TIENDA_METRICS = [
     {
       label: modoSimple ? "Pedidos"         : "Orders",
-      value: String(orders),
+      rawValue: orders, format: (n: number) => String(Math.round(n)),
       icon: ShoppingCart, color: "#2563EB",
       tip: "Cantidad total de órdenes pagas en el período seleccionado.",
       tipSimple: "Cuántos pedidos te hicieron en total.",
     },
     {
       label: modoSimple ? "Ventas"          : "Revenue",
-      value: fmtC(revenue),
+      rawValue: revenue, format: fmtC,
       icon: DollarSign,  color: "#7C3AED",
       tip: "Facturación bruta de las órdenes pagas (antes de impuestos y comisiones).",
       tipSimple: "Plata total que entró por tus ventas.",
     },
     {
       label: modoSimple ? "Ticket promedio" : "AOV",
-      value: fmtC(aov),
+      rawValue: aov, format: fmtC,
       icon: TrendingUp,  color: "#8B5CF6",
       tip: "Revenue ÷ órdenes. Cuánto gasta un cliente por compra.",
       tipSimple: "Cuánto te gasta en promedio cada cliente.",
     },
     {
       label: modoSimple ? "Ganancia neta"   : "Net Profit",
-      value: fmtC(netProfit),
+      rawValue: netProfit, format: fmtC,
       icon: BarChart2,   color: "#22c55e",
       tip: "Net Revenue × (1 − fee de plataforma). Lo que queda después de impuestos y comisiones.",
       tipSimple: "La plata real que te queda después de pagar impuestos y comisiones.",
     },
     {
       label: modoSimple ? "% Ganancia"      : "Profit %",
-      value: `${profitPct.toFixed(1)}%`,
+      rawValue: profitPct, format: (n: number) => `${n.toFixed(1)}%`,
       icon: Target,      color: "#f59e0b",
       tip: "Net Profit ÷ Revenue × 100. Margen porcentual sobre tu facturación.",
       tipSimple: "Qué porcentaje de tus ventas se convierte en ganancia.",
     },
     {
       label: modoSimple ? "Sin impuestos"   : "Net Rev.",
-      value: fmtC(netRevenue),
+      rawValue: netRevenue, format: fmtC,
       icon: DollarSign,  color: "#e1691e",
       tip: "Revenue ÷ (1 + IVA). Tu facturación sin impuestos.",
       tipSimple: "Lo que ganaste sin contar el IVA.",
@@ -324,7 +325,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           </div>
           <p className="text-sm text-[#94A3B8] mt-1">
             {data.tnConnected
-              ? <span className="text-green-400">● {data.storeName ?? "TiendaNube"} conectado</span>
+              ? <span className="flex items-center gap-1.5 text-[#22c55e] text-sm"><span className="live-dot" />{data.storeName ?? "TiendaNube"} · tiempo real</span>
               : <a href="/app/configuracion/integraciones" className="text-yellow-400 hover:underline">⚠ TiendaNube no conectado</a>}
           </p>
         </div>
@@ -405,7 +406,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       )}
 
       {/* TIENDA ─────────────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+      <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)", animationDelay: "0.05s" }}>
         <div className="flex items-center gap-2 px-5 py-3"
           style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}>
           <Store size={14} color="#7C3AED" strokeWidth={2.5} />
@@ -415,18 +416,18 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           {TIENDA_METRICS.map((m, i) => {
             const Icon = m.icon;
             return (
-              <div key={m.label} className="p-3 sm:p-4 flex flex-col gap-1"
-                style={{ borderBottom: i < TIENDA_METRICS.length - 2 ? "1px solid rgba(124,58,237,0.1)" : undefined }}>
+              <div key={m.label} className="metric-card p-3 sm:p-4 flex flex-col gap-1 anim-up"
+                style={{ borderBottom: i < TIENDA_METRICS.length - 2 ? "1px solid rgba(124,58,237,0.1)" : undefined, animationDelay: `${0.08 + i * 0.06}s` }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     <p className="text-[11px] text-[#64748B] font-medium">{m.label}</p>
                     <InfoTooltip text={m.tip} simpleText={m.tipSimple} size={11} />
                   </div>
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: `${m.color}15` }}>
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center anim-scale" style={{ background: `${m.color}15`, animationDelay: `${0.15 + i * 0.06}s` }}>
                     <Icon size={11} color={m.color} strokeWidth={2} />
                   </div>
                 </div>
-                <p className="text-xl font-black text-[#F1F5F9] leading-none">{m.value}</p>
+                <AnimatedNumber value={m.rawValue} format={m.format} duration={900} className="text-xl font-black text-[#F1F5F9] leading-none" />
               </div>
             );
           })}
@@ -434,7 +435,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       </div>
 
       {/* ANUNCIOS ───────────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(24,119,242,0.15)" }}>
+      <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(24,119,242,0.15)", animationDelay: "0.18s" }}>
         <div className="flex items-center gap-2 px-5 py-3"
           style={{ borderBottom: "1px solid rgba(24,119,242,0.1)", background: "rgba(24,119,242,0.04)" }}>
           <Target size={14} color="#1877F2" strokeWidth={2.5} />
@@ -467,7 +468,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       </div>
 
       {/* GRÁFICO últimos 30 días ─────────────────────────────────────────────── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+      <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)", animationDelay: "0.25s" }}>
         <div className="flex items-center justify-between px-5 py-3"
           style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Últimos 30 días</p>
@@ -520,8 +521,8 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       </div>
 
       {/* Insight IA ─────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 rounded-2xl p-4 sm:p-5"
-        style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(37,99,235,0.05))", border: "1px solid rgba(124,58,237,0.25)" }}>
+      <div className="anim-up flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 rounded-2xl p-4 sm:p-5"
+        style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(37,99,235,0.05))", border: "1px solid rgba(124,58,237,0.25)", animationDelay: "0.32s" }}>
         <div className="flex items-center gap-3 flex-1">
           <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ background: "rgba(124,58,237,0.15)" }}>
@@ -547,8 +548,8 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
         {recentOrders.length > 0 && (
-          <div className="xl:col-span-2 rounded-2xl overflow-hidden"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+          <div className="anim-up xl:col-span-2 rounded-2xl overflow-hidden"
+            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)", animationDelay: "0.38s" }}>
             <div className="px-5 py-3 flex items-center justify-between"
               style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
               <p className="text-sm font-semibold text-[#F1F5F9]">Últimas órdenes</p>

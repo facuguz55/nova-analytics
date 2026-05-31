@@ -140,6 +140,63 @@
 ::-webkit-scrollbar-track { background: #0a0a0f; }
 ::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.4); border-radius: 3px; }
 
+/* == Entrance animations == */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.anim-up {
+  animation: fadeInUp 0.45s cubic-bezier(0.16,1,0.3,1) both;
+}
+.anim-scale {
+  animation: scaleIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.anim-right {
+  animation: slideInRight 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* Stagger helpers — aplicar como style={{ animationDelay: `${i*0.06}s` }} */
+
+/* == Live pulse dot == */
+@keyframes live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+  50%       { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+}
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+/* == Metric card hover glow == */
+.metric-card {
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.metric-card:hover {
+  box-shadow: 0 0 0 1px rgba(124,58,237,0.25), 0 4px 24px rgba(124,58,237,0.12);
+  transform: translateY(-2px);
+}
+
+/* == Progress bar animated fill == */
+@keyframes bar-grow {
+  from { width: 0; }
+}
+.bar-fill {
+  animation: bar-grow 1s cubic-bezier(0.16,1,0.3,1) both;
+}
+
 /* == Skeleton shimmer == */
 @keyframes skeleton-wave {
   0%   { background-position: -200% 0; }

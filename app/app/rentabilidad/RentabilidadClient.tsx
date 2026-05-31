@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { TrendingUp, DollarSign, Percent, Store, ArrowRight, AlertTriangle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import Link from "next/link";
 import type { TNOrder, TNProduct } from "@/lib/tiendanube/client";
 
@@ -204,41 +205,49 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
           {/* Métricas */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Ingresos brutos",  value: formatCurrency(metrics.totalRevenue), icon: DollarSign, color: "#F1F5F9" },
-              { label: "Ingresos netos",   value: formatCurrency(metrics.netRevenue),   icon: TrendingUp, color: "#22c55e" },
-              { label: "Margen neto",      value: `${metrics.netMarginPct.toFixed(1)}%`, icon: Percent, color: "#e1691e" },
-              { label: "Margen bruto",     value: metrics.grossMarginPct > 0 ? `${metrics.grossMarginPct.toFixed(1)}%` : "Sin costo", icon: Percent, color: "#7C3AED" },
-            ].map((s) => (
-              <div key={s.label} className="rounded-2xl p-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style={{ background: "rgba(124,58,237,0.12)" }}>
+              { label: "Ingresos brutos", rawValue: metrics.totalRevenue, format: formatCurrency, icon: DollarSign, color: "#F1F5F9" },
+              { label: "Ingresos netos",  rawValue: metrics.netRevenue,   format: formatCurrency, icon: TrendingUp, color: "#22c55e" },
+              { label: "Margen neto",     rawValue: metrics.netMarginPct,  format: (n: number) => `${n.toFixed(1)}%`, icon: Percent, color: "#e1691e" },
+              { label: "Margen bruto",    rawValue: metrics.grossMarginPct, format: (n: number) => metrics.grossMarginPct > 0 ? `${n.toFixed(1)}%` : "Sin costo", icon: Percent, color: "#7C3AED" },
+            ].map((s, i) => (
+              <div key={s.label} className="metric-card anim-up rounded-2xl p-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)", animationDelay: `${0.05 + i * 0.07}s` }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 anim-scale" style={{ background: "rgba(124,58,237,0.12)", animationDelay: `${0.12 + i * 0.07}s` }}>
                   <s.icon size={15} color={s.color} strokeWidth={2} />
                 </div>
-                <p className="text-lg sm:text-xl font-black text-[#F1F5F9]">{s.value}</p>
+                <AnimatedNumber value={s.rawValue} format={s.format} className="text-lg sm:text-xl font-black text-[#F1F5F9]" />
                 <p className="text-xs text-[#94A3B8] mt-0.5">{s.label}</p>
               </div>
             ))}
           </div>
 
           {/* Desglose financiero (waterfall) */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+          <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)", animationDelay: "0.33s" }}>
             <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
               <p className="text-sm font-semibold text-[#F1F5F9]">Desglose financiero</p>
               <p className="text-xs text-[#64748B] mt-0.5">{metrics.ordersCount} órdenes pagas</p>
             </div>
             <div className="divide-y" style={{ borderColor: "rgba(124,58,237,0.08)" }}>
-              {waterfall.map((row) => (
-                <div key={row.label} className="flex items-center justify-between px-5 py-3.5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ background: row.type === "positive" ? "#2563EB" : row.type === "negative" ? "#ef4444" : "#22c55e" }} />
-                    <span className="text-sm text-[#94A3B8]">{row.label}</span>
+              {waterfall.map((row, i) => {
+                const pct = metrics.totalRevenue > 0 ? Math.abs(row.value) / metrics.totalRevenue * 100 : 0;
+                const barColor = row.type === "positive" ? "#2563EB" : row.type === "negative" ? "#ef4444" : "#22c55e";
+                return (
+                <div key={row.label} className="anim-up px-5 py-3" style={{ animationDelay: `${0.38 + i * 0.05}s` }}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: barColor }} />
+                      <span className="text-sm text-[#94A3B8]">{row.label}</span>
+                    </div>
+                    <span className="text-sm font-bold"
+                      style={{ color: row.type === "positive" ? "#F1F5F9" : row.type === "negative" ? "#ef4444" : "#22c55e" }}>
+                      {row.value < 0 ? "-" : ""}{formatCurrency(Math.abs(row.value))}
+                    </span>
                   </div>
-                  <span className="text-sm font-bold"
-                    style={{ color: row.type === "positive" ? "#F1F5F9" : row.type === "negative" ? "#ef4444" : "#22c55e" }}>
-                    {row.value < 0 ? "-" : ""}{formatCurrency(Math.abs(row.value))}
-                  </span>
+                  <div className="h-1 rounded-full w-full" style={{ background: "rgba(255,255,255,0.04)" }}>
+                    <div className="bar-fill h-1 rounded-full" style={{ width: `${Math.min(pct, 100)}%`, background: barColor, opacity: 0.6, animationDelay: `${0.45 + i * 0.05}s` }} />
+                  </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </>
