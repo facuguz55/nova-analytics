@@ -241,7 +241,7 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
 
                 <div>
                   <p className="text-2xl font-black text-[#F1F5F9]">
-                    ARS <span style={{ color: "#009EE3" }}>29.900</span>
+                    ARS <span style={{ color: "#009EE3" }}>70.000</span>
                     <span className="text-sm font-medium text-[#64748B]">/mes</span>
                   </p>
                   <p className="text-xs text-[#64748B] mt-0.5">Pago mensual · Cancela cuando quieras</p>
