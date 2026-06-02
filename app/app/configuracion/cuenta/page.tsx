@@ -9,14 +9,15 @@ export default async function CuentaPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  type UserRow = { id: string; email: string; name: string | null; avatar_url: string | null; role: string; created_at: string; workspaces: { name: string; plan: string; status: string } | null };
+  type UserRow = { id: string; email: string; name: string | null; avatar_url: string | null; role: string; created_at: string; workspace_id: string | null; workspaces: { id: string; name: string; plan: string; status: string } | null };
   const { data: rawUserRow } = await supabase
     .from("users")
-    .select("*, workspaces(name, plan, status)")
+    .select("*, workspaces(id, name, plan, status)")
     .eq("id", user.id)
     .single();
   const userRow = rawUserRow as unknown as UserRow | null;
   const workspace = userRow?.workspaces ?? null;
+  const workspaceId = workspace?.id ?? userRow?.workspace_id ?? "";
 
   // Detectar proveedor de auth (google, github, email, etc.)
   // Si tiene identities con provider != "email", es OAuth y no puede cambiar password local.
@@ -37,6 +38,7 @@ export default async function CuentaPage() {
         authProvider,
         isOAuthUser,
       }}
+      workspaceId={workspaceId}
       workspace={workspace ? {
         name: workspace.name,
         plan: workspace.plan,

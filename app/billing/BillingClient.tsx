@@ -42,7 +42,6 @@ const FEATURES = ["Órdenes ilimitadas", "Meta Ads", "IA sin límites", "Soporte
 
 export default function BillingClient({ workspaceId, userEmail, subscription }: Props) {
   const [loadingCheckout, setLoadingCheckout] = useState(false);
-  const [loadingCancel, setLoadingCancel] = useState(false);
   const [loadingTrial, setLoadingTrial] = useState(false);
 
   const isActive = subscription?.status === "active";
@@ -84,26 +83,6 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
       toast.error(err instanceof Error ? err.message : "Error al activar la prueba");
     } finally {
       setLoadingTrial(false);
-    }
-  }
-
-  async function handleCancel() {
-    if (!confirm("¿Cancelar tu suscripción? Seguirás teniendo acceso hasta el próximo vencimiento.")) return;
-    setLoadingCancel(true);
-    try {
-      const res = await fetch("/api/billing/cancel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ workspaceId }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "No se pudo cancelar");
-      toast.success("Suscripción cancelada. Seguís teniendo acceso hasta el próximo vencimiento.");
-      setTimeout(() => window.location.reload(), 2000);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error al cancelar");
-    } finally {
-      setLoadingCancel(false);
     }
   }
 
@@ -184,18 +163,12 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
             )}
 
             {!isCancelled && (
-              <button
-                onClick={handleCancel}
-                disabled={loadingCancel}
-                className="w-full py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
-                style={{
-                  background: "rgba(239,68,68,0.08)",
-                  border: "1px solid rgba(239,68,68,0.2)",
-                  color: "#ef4444",
-                }}
+              <a
+                href="/app/configuracion/cuenta"
+                className="block text-center text-xs text-[#334155] hover:text-[#475569] transition-colors mt-1"
               >
-                {loadingCancel ? "Cancelando..." : "Cancelar suscripción"}
-              </button>
+                Gestionar suscripción →
+              </a>
             )}
           </div>
         )}

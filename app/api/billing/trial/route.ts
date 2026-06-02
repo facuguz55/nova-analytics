@@ -42,7 +42,6 @@ export async function POST(request: Request) {
 
   const service = createServiceClient();
 
-  // Verificar que no haya tenido trial antes
   const { data: existing } = await service
     .from("subscriptions")
     .select("status")
@@ -56,21 +55,30 @@ export async function POST(request: Request) {
     );
   }
 
-  const trialEndsAt = new Date();
+  const now = new Date();
+  const trialEndsAt = new Date(now);
   trialEndsAt.setDate(trialEndsAt.getDate() + 7);
 
-  const { error } = await service.from("subscriptions").insert({
+  // Escribir en subscriptions con trial_ends_at (lo que el middleware chequea)
+  const { error: subError } = await service.from("subscriptions").insert({
     workspace_id: workspaceId,
     status: "trial",
+    trial_ends_at: trialEndsAt.toISOString(),
     next_billing_at: trialEndsAt.toISOString(),
     provider_subscription_id: null,
     cancelled_at: null,
   });
 
-  if (error) {
-    console.error("[billing/trial] error:", error);
+  if (subError) {
+    console.error("[billing/trial] subscriptions error:", subError);
     return NextResponse.json({ error: "No se pudo activar el trial" }, { status: 500 });
   }
+
+  // Actualizar workspaces.plan = "trial" (lo que el layout chequea)
+  await service
+    .from("workspaces")
+    .update({ plan: "trial" })
+    .eq("id", workspaceId);
 
   return NextResponse.json({ ok: true, trialEndsAt: trialEndsAt.toISOString() });
 }
