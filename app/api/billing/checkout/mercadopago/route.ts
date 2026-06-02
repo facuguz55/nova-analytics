@@ -1,13 +1,20 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { createServiceClient } from "@/lib/supabase/service";
+import { createMercadoPagoCheckoutUrl } from "@/lib/mercadopago/client";
+import { rateLimit, getClientIP } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
   workspaceId: z.string().uuid(),
 });
 
 export async function POST(request: Request) {
+  const ip = getClientIP(request);
+  const rl = rateLimit(ip);
+  if (!rl.ok) {
+    return NextResponse.json({ error: rl.error }, { status: 429 });
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -22,37 +29,26 @@ export async function POST(request: Request) {
 
   const { workspaceId } = parsed.data;
 
-  // Verificar que el usuario pertenece al workspace
   const { data: rawUserRow } = await supabase
     .from("users")
-    .select("workspace_id")
+    .select("workspace_id, email")
     .eq("id", user.id)
     .single();
 
-  const userRow = rawUserRow as unknown as { workspace_id: string } | null;
+  const userRow = rawUserRow as unknown as { workspace_id: string; email: string | null } | null;
 
   if (userRow?.workspace_id !== workspaceId) {
     return NextResponse.json({ error: "Acceso denegado" }, { status: 403 });
   }
 
-  const service = createServiceClient();
-  const { data: sub } = await service
-    .from("subscriptions")
-    .select("status")
-    .eq("workspace_id", workspaceId)
-    .maybeSingle();
+  const email = userRow?.email ?? user.email ?? "";
 
-  if (!sub || (sub.status !== "active" && sub.status !== "trial")) {
-    return NextResponse.json({ error: "No hay suscripción activa para cancelar" }, { status: 400 });
+  try {
+    const url = await createMercadoPagoCheckoutUrl(workspaceId, email);
+    return NextResponse.json({ url });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Error interno";
+    console.error("[checkout/mercadopago] error:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  await service
-    .from("subscriptions")
-    .update({
-      status: "cancelled",
-      cancelled_at: new Date().toISOString(),
-    })
-    .eq("workspace_id", workspaceId);
-
-  return NextResponse.json({ ok: true });
 }
