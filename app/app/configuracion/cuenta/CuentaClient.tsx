@@ -52,14 +52,9 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
   const [showPwd, setShowPwd]       = useState(false);
   const [savingPwd, setSavingPwd]   = useState(false);
 
-  const [showDeleteModal, setShowDeleteModal]   = useState(false);
-  const [deleteConfirm, setDeleteConfirm]       = useState("");
-  const [isPending, startTransition]            = useTransition();
-  const [showCancelSection, setShowCancelSection] = useState(false);
-  const [cancelStep, setCancelStep]             = useState(0);
-  const [cancelingSubscription, setCancelingSubscription] = useState(false);
-
-  const hasPaidPlan = ["active", "trial", "pro", "agency"].includes(workspace?.plan ?? "");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm]     = useState("");
+  const [isPending, startTransition]          = useTransition();
 
   const initials = (user.name || user.email).split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "U";
   const planKey  = (workspace?.plan ?? "free").toLowerCase();
@@ -84,25 +79,6 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
     } catch (e) {
       toast.error("Error: " + (e instanceof Error ? e.message : ""));
     } finally { setSaving(false); }
-  }
-
-  async function handleCancelSubscription() {
-    setCancelingSubscription(true);
-    try {
-      const res = await fetch("/api/billing/cancel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ workspaceId }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "No se pudo cancelar");
-      toast.success("Suscripción cancelada.");
-      setTimeout(() => window.location.reload(), 1500);
-    } catch (e) {
-      toast.error("Error: " + (e instanceof Error ? e.message : ""));
-    } finally {
-      setCancelingSubscription(false);
-    }
   }
 
   async function handlePasswordChange() {
@@ -342,61 +318,6 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
           <AlertTriangle size={14} color="#ef4444" strokeWidth={2} />
           <p className="text-sm font-semibold text-[#ef4444]">Zona peligrosa</p>
         </div>
-
-        {/* Cancelar suscripción — solo si tiene plan activo */}
-        {hasPaidPlan && (
-          <div style={{ background: "#111118", borderBottom: "1px solid rgba(239,68,68,0.08)" }}>
-            <div
-              className="px-5 py-4 flex items-center justify-between cursor-pointer"
-              onClick={() => { setShowCancelSection(!showCancelSection); setCancelStep(0); }}
-            >
-              <div>
-                <p className="text-sm font-semibold text-[#F1F5F9]">Cancelar suscripción</p>
-                <p className="text-xs text-[#64748B] mt-0.5">Perdés el acceso al vencer el período.</p>
-              </div>
-              <span className="text-xs text-[#475569]">{showCancelSection ? "▲" : "▼"}</span>
-            </div>
-
-            {showCancelSection && (
-              <div className="px-5 pb-5 space-y-3">
-                {cancelStep === 0 && (
-                  <div className="rounded-xl p-4 space-y-3" style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.15)" }}>
-                    <p className="text-sm text-[#94A3B8]">¿Estás seguro? Perderás acceso a todas las funciones de Nova Analytics.</p>
-                    <button
-                      onClick={() => setCancelStep(1)}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
-                      style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}
-                    >
-                      Sí, quiero continuar →
-                    </button>
-                  </div>
-                )}
-                {cancelStep === 1 && (
-                  <div className="rounded-xl p-4 space-y-3" style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.15)" }}>
-                    <p className="text-sm text-[#94A3B8]">¿Confirmás que querés cancelar? Esta acción no se puede deshacer fácilmente.</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setCancelStep(0)}
-                        className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
-                        style={{ background: "rgba(100,116,139,0.1)", color: "#64748B", border: "1px solid rgba(100,116,139,0.2)" }}
-                      >
-                        No, mantener plan
-                      </button>
-                      <button
-                        onClick={handleCancelSubscription}
-                        disabled={cancelingSubscription}
-                        className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:opacity-80 disabled:opacity-50"
-                        style={{ background: "rgba(239,68,68,0.12)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.25)" }}
-                      >
-                        {cancelingSubscription ? "Cancelando..." : "Cancelar suscripción"}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
 
         <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ background: "#111118" }}>
           <div>
