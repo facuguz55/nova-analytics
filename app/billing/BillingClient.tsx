@@ -79,7 +79,7 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Error al activar prueba");
       toast.success("¡Prueba gratuita activada! Tenés 7 días de acceso completo.");
-      setTimeout(() => window.location.reload(), 1500);
+      setTimeout(() => { window.location.href = "/app/dashboard"; }, 1500);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error al activar la prueba");
     } finally {
@@ -241,7 +241,7 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
 
                 <div>
                   <p className="text-2xl font-black text-[#F1F5F9]">
-                    ARS <span style={{ color: "#009EE3" }}>70.000</span>
+                    ARS <span style={{ color: "#009EE3" }}>77.000</span>
                     <span className="text-sm font-medium text-[#64748B]">/mes</span>
                   </p>
                   <p className="text-xs text-[#64748B] mt-0.5">Pago mensual · Cancela cuando quieras</p>
@@ -286,7 +286,7 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
 
                 <div>
                   <p className="text-2xl font-black text-[#F1F5F9]">
-                    USD <span style={{ color: "#F97316" }}>29</span>
+                    USD <span style={{ color: "#F97316" }}>59</span>
                     <span className="text-sm font-medium text-[#64748B]">/mes</span>
                   </p>
                   <p className="text-xs text-[#64748B] mt-0.5">Coordinamos el pago por WhatsApp</p>

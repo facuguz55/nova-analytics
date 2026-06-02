@@ -17,7 +17,7 @@ export async function createMercadoPagoCheckoutUrl(
           id: "nova-analytics-pro",
           title: "Nova Analytics — Plan Pro",
           quantity: 1,
-          unit_price: 70000,
+          unit_price: 77000,
           currency_id: "ARS",
         },
       ],
