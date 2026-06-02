@@ -52,9 +52,13 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
   const [showPwd, setShowPwd]       = useState(false);
   const [savingPwd, setSavingPwd]   = useState(false);
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteConfirm, setDeleteConfirm]     = useState("");
-  const [isPending, startTransition]          = useTransition();
+  const [showDeleteModal, setShowDeleteModal]   = useState(false);
+  const [deleteConfirm, setDeleteConfirm]       = useState("");
+  const [isPending, startTransition]            = useTransition();
+  const [showCancelModal, setShowCancelModal]   = useState(false);
+  const [cancelStep, setCancelStep]             = useState(0);
+  const [cancelingPlan, setCancelingPlan]       = useState(false);
+  const hasPaidPlan = ["active", "trial", "pro", "agency"].includes(workspace?.plan ?? "");
 
   const initials = (user.name || user.email).split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "U";
   const planKey  = (workspace?.plan ?? "free").toLowerCase();
@@ -378,6 +382,100 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
                 {isPending ? "Eliminando..." : "Eliminar cuenta"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Link casi invisible para cancelar plan */}
+      {hasPaidPlan && (
+        <p className="text-center">
+          <button
+            onClick={() => { setShowCancelModal(true); setCancelStep(0); }}
+            className="text-[11px] transition-colors"
+            style={{ color: "#1e293b" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#475569")}
+            onMouseLeave={e => (e.currentTarget.style.color = "#1e293b")}
+          >
+            gestionar plan
+          </button>
+        </p>
+      )}
+
+      {/* Modal cancelar plan */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}>
+          <div className="rounded-2xl w-full max-w-sm p-6 space-y-4"
+            style={{ background: "#111118", border: "1px solid rgba(100,116,139,0.2)" }}>
+
+            {cancelStep === 0 && (
+              <>
+                <p className="text-sm font-semibold text-[#F1F5F9]">¿Cancelar suscripción?</p>
+                <p className="text-xs text-[#64748B]">
+                  Seguirás teniendo acceso hasta que venza el período actual. Después perdés todas las funciones.
+                </p>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setShowCancelModal(false)}
+                    className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
+                    style={{ background: "rgba(124,58,237,0.1)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.2)" }}
+                  >
+                    No, mantener plan
+                  </button>
+                  <button
+                    onClick={() => setCancelStep(1)}
+                    className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
+                    style={{ background: "rgba(100,116,139,0.08)", color: "#64748B", border: "1px solid rgba(100,116,139,0.15)" }}
+                  >
+                    Continuar →
+                  </button>
+                </div>
+              </>
+            )}
+
+            {cancelStep === 1 && (
+              <>
+                <p className="text-sm font-semibold text-[#F1F5F9]">Última confirmación</p>
+                <p className="text-xs text-[#64748B]">
+                  Esta acción cancelará tu suscripción. ¿Estás completamente seguro?
+                </p>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setShowCancelModal(false)}
+                    className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
+                    style={{ background: "rgba(124,58,237,0.1)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.2)" }}
+                  >
+                    Quedarme
+                  </button>
+                  <button
+                    disabled={cancelingPlan}
+                    onClick={async () => {
+                      setCancelingPlan(true);
+                      try {
+                        const res = await fetch("/api/billing/cancel", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ workspaceId }),
+                        });
+                        const json = await res.json();
+                        if (!res.ok) throw new Error(json.error);
+                        toast.success("Suscripción cancelada.");
+                        setTimeout(() => window.location.href = "/billing", 1500);
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Error");
+                      } finally {
+                        setCancelingPlan(false);
+                      }
+                    }}
+                    className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-80 disabled:opacity-40"
+                    style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}
+                  >
+                    {cancelingPlan ? "Cancelando..." : "Cancelar plan"}
+                  </button>
+                </div>
+              </>
+            )}
+
           </div>
         </div>
       )}

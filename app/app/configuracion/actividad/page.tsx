@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { Activity, Shield, LogIn, LogOut, Settings, Plug, Trash2, UserCog, CreditCard, Zap } from "lucide-react";
-import CancelSubscriptionSection from "./CancelSubscriptionSection";
 
 export const metadata: Metadata = { title: "Actividad de cuenta" };
 
@@ -119,7 +118,6 @@ export default async function ActividadPage() {
         Se conservan los últimos 100 eventos · Los logs se eliminan automáticamente a los 90 días
       </p>
 
-      {workspaceId && <CancelSubscriptionSection workspaceId={workspaceId} />}
     </div>
   );
 }
