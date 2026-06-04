@@ -5,6 +5,7 @@ import {
   Check, Star, Sparkles, Zap,
   Crown, ChevronDown, ChevronUp, CreditCard,
   MessageCircle, ArrowRight, ShoppingCart, BarChart2, TrendingUp,
+  DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,7 +28,8 @@ const PLAN_META: Record<string, { label: string; color: string; bg: string; bord
 };
 
 export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props) {
-  const [loading,     setLoading]     = useState(false);
+  const [loadingLS,  setLoadingLS]  = useState(false);
+  const [loadingMP,  setLoadingMP]  = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   const isFree  = plan === "free";
@@ -35,8 +37,8 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
   const isPro   = plan === "pro" || plan === "agency" || plan === "active";
   const meta    = PLAN_META[plan] ?? PLAN_META.free;
 
-  async function handleCheckout() {
-    setLoading(true);
+  async function handleCheckoutLS() {
+    setLoadingLS(true);
     try {
       const res = await fetch("/api/billing/checkout/lemonsqueezy", {
         method: "POST",
@@ -48,7 +50,24 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
       window.location.href = json.url;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error al conectar con el servidor");
-      setLoading(false);
+      setLoadingLS(false);
+    }
+  }
+
+  async function handleCheckoutMP() {
+    setLoadingMP(true);
+    try {
+      const res = await fetch("/api/billing/checkout/mercadopago", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Error al generar el checkout");
+      window.location.href = json.url;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al conectar con el servidor");
+      setLoadingMP(false);
     }
   }
 
@@ -119,15 +138,19 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
       {/* ── Acción según plan ── */}
       {isFree && (
         <div className="space-y-3">
-          {/* Trial CTA */}
+          {/* MercadoPago — ARS */}
           <div className="rounded-2xl p-5 space-y-4" style={{ background: "rgba(124,58,237,0.06)", border: "2px solid rgba(124,58,237,0.3)" }}>
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(124,58,237,0.15)" }}>
-                <Sparkles size={18} color="#8B5CF6" strokeWidth={2} />
+                <DollarSign size={18} color="#8B5CF6" strokeWidth={2} />
               </div>
-              <div>
-                <p className="text-sm font-bold text-[#F1F5F9]">Probá el Plan Pro gratis por 7 días</p>
-                <p className="text-xs text-[#64748B] mt-0.5">Ingresás tu tarjeta, los primeros 7 días son gratis.</p>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-[#F1F5F9]">Plan Pro — Pago en ARS</p>
+                <p className="text-xs text-[#64748B] mt-0.5">Suscripción mensual vía MercadoPago.</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-lg font-black text-[#F1F5F9]">$77.000</p>
+                <p className="text-[10px] text-[#64748B]">ARS / mes</p>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -139,32 +162,65 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
               ))}
             </div>
             <button
-              onClick={handleCheckout}
-              disabled={loading}
+              onClick={handleCheckoutMP}
+              disabled={loadingMP}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition-all hover:opacity-85 disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
             >
               <CreditCard size={15} strokeWidth={2.5} />
-              {loading ? "Redirigiendo..." : "Iniciar prueba gratis de 7 días"}
+              {loadingMP ? "Redirigiendo..." : "Pagar en ARS con MercadoPago"}
+            </button>
+          </div>
+
+          {/* Trial CTA — tarjeta internacional */}
+          <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(124,58,237,0.08)" }}>
+                <Sparkles size={18} color="#64748B" strokeWidth={2} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[#F1F5F9]">Probá 7 días gratis — tarjeta internacional</p>
+                <p className="text-xs text-[#64748B] mt-0.5">Ingresás tu tarjeta, los primeros 7 días son gratis.</p>
+              </div>
+            </div>
+            <button
+              onClick={handleCheckoutLS}
+              disabled={loadingLS}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+              style={{ background: "rgba(100,116,139,0.1)", color: "#94A3B8", border: "1px solid rgba(100,116,139,0.2)" }}
+            >
+              <CreditCard size={13} strokeWidth={2} />
+              {loadingLS ? "Redirigiendo..." : "Iniciar prueba gratis (USD)"}
             </button>
           </div>
         </div>
       )}
 
       {isTrial && (
-        <div className="rounded-2xl p-5 space-y-3" style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.25)" }}>
-          <p className="text-sm font-bold text-[#F1F5F9]">¿Te gusta lo que ves?</p>
-          <p className="text-xs text-[#94A3B8] leading-relaxed">
-            Contratá el Plan Pro antes de que venza tu prueba para no perder el acceso a tus datos y configuraciones.
-          </p>
+        <div className="rounded-2xl p-5 space-y-4" style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.25)" }}>
+          <div>
+            <p className="text-sm font-bold text-[#F1F5F9]">¿Te gusta lo que ves?</p>
+            <p className="text-xs text-[#94A3B8] leading-relaxed mt-1">
+              Contratá el Plan Pro antes de que venza tu prueba para no perder el acceso a tus datos y configuraciones.
+            </p>
+          </div>
+          <button
+            onClick={handleCheckoutMP}
+            disabled={loadingMP}
+            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition-all hover:opacity-85 disabled:opacity-50"
+            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+          >
+            <DollarSign size={15} strokeWidth={2.5} />
+            {loadingMP ? "Redirigiendo..." : "Contratar Plan Pro — $77.000 ARS/mes"}
+          </button>
           <a
             href="https://wa.me/5491100000000?text=Hola,%20quiero%20contratar%20Nova%20Analytics%20Pro"
             target="_blank" rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full rounded-xl py-3 text-sm font-bold text-white transition-all hover:opacity-85"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+            className="flex items-center justify-center gap-2 w-full rounded-xl py-2.5 text-xs font-semibold transition-all hover:opacity-80"
+            style={{ background: "rgba(100,116,139,0.1)", color: "#94A3B8", border: "1px solid rgba(100,116,139,0.2)" }}
           >
-            <MessageCircle size={15} strokeWidth={2.5} />
-            Contratar Plan Pro
+            <MessageCircle size={13} strokeWidth={2} />
+            Contactar por WhatsApp
           </a>
         </div>
       )}

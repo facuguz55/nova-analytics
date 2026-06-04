@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { createMercadoPagoCheckoutUrl } from "@/lib/mercadopago/client";
+import { createSubscriptionUrl } from "@/lib/mercadopago/client";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
@@ -44,11 +44,14 @@ export async function POST(request: Request) {
   const email = userRow?.email ?? user.email ?? "";
 
   try {
-    const url = await createMercadoPagoCheckoutUrl(workspaceId, email);
+    const url = await createSubscriptionUrl(workspaceId, email);
     return NextResponse.json({ url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error interno";
-    console.error("[checkout/mercadopago] error:", message);
+    console.error("[checkout/mercadopago] error:", message, {
+      hasPlanId: !!process.env.MERCADOPAGO_PLAN_ID,
+      hasToken: !!process.env.MERCADOPAGO_ACCESS_TOKEN,
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

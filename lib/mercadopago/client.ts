@@ -1,38 +1,26 @@
-import { MercadoPagoConfig, Preference } from "mercadopago";
+import { MercadoPagoConfig, PreApproval } from "mercadopago";
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
 });
 
-export async function createMercadoPagoCheckoutUrl(
+export async function createSubscriptionUrl(
   workspaceId: string,
   email: string
 ): Promise<string> {
-  const preference = new Preference(client);
+  const preApproval = new PreApproval(client);
 
-  const result = await preference.create({
+  const result = await preApproval.create({
     body: {
-      items: [
-        {
-          id: "nova-analytics-pro",
-          title: "Nova Analytics — Plan Pro",
-          quantity: 1,
-          unit_price: 77000,
-          currency_id: "ARS",
-        },
-      ],
-      payer: { email },
+      preapproval_plan_id: process.env.MERCADOPAGO_PLAN_ID!,
+      payer_email: email,
       external_reference: workspaceId,
-      back_urls: {
-        success: `${process.env.NEXTAUTH_URL}/app/dashboard?billing=success`,
-        failure: `${process.env.NEXTAUTH_URL}/billing?billing=failed`,
-        pending: `${process.env.NEXTAUTH_URL}/billing?billing=pending`,
-      },
-      auto_return: "approved",
-      notification_url: `${process.env.NEXTAUTH_URL}/api/webhooks/mercadopago`,
+      back_url: "https://analytics.novaagency.info/app/dashboard",
     },
   });
 
   if (!result.init_point) throw new Error("MercadoPago no devolvió URL de pago");
   return result.init_point;
 }
+
+export { client as mpClient };
