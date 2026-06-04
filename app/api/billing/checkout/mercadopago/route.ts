@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error interno";
-    console.error("[checkout/mercadopago] error:", message, {
+    console.error("[checkout/mercadopago] error completo:", JSON.stringify(err, Object.getOwnPropertyNames(err instanceof Error ? err : Object(err))), {
       hasPlanId: !!process.env.MERCADOPAGO_PLAN_ID,
       hasToken: !!process.env.MERCADOPAGO_ACCESS_TOKEN,
     });
