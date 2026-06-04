@@ -25,7 +25,7 @@ function verifySignature(
 ): boolean {
   if (!xSignature || !xRequestId || !dataId) return false;
 
-  const secret = process.env.MERCADOPAGO_CLIENT_SECRET;
+  const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
   if (!secret) return false;
 
   let ts: string | undefined;
