@@ -12,10 +12,16 @@ export async function createSubscriptionUrl(
 
   const result = await preApproval.create({
     body: {
-      preapproval_plan_id: process.env.MERCADOPAGO_PLAN_ID!,
+      reason: "Nova Analytics — Plan Pro",
       payer_email: email,
       external_reference: workspaceId,
       back_url: "https://analytics.novaagency.info/app/dashboard",
+      auto_recurring: {
+        frequency: 1,
+        frequency_type: "months",
+        transaction_amount: 77000,
+        currency_id: "ARS",
+      },
       status: "pending",
     },
   });
