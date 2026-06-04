@@ -13,7 +13,6 @@ export async function createSubscriptionUrl(
   const result = await preApproval.create({
     body: {
       reason: "Nova Analytics — Plan Pro",
-      payer_email: email,
       external_reference: workspaceId,
       back_url: "https://analytics.novaagency.info/app/dashboard",
       auto_recurring: {
