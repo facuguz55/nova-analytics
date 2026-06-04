@@ -16,6 +16,7 @@ export async function createSubscriptionUrl(
       payer_email: email,
       external_reference: workspaceId,
       back_url: "https://analytics.novaagency.info/app/dashboard",
+      status: "pending",
     },
   });
 
