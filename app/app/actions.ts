@@ -343,13 +343,15 @@ export async function completeOnboarding() {
     .select("workspace_id")
     .eq("id", user.id)
     .single();
-  if (!userRow) throw new Error("Sin workspace");
 
-  await (supabase as any).from("workspaces")
+  const workspaceId = (userRow as unknown as { workspace_id: string } | null)?.workspace_id;
+  if (!workspaceId) throw new Error("Sin workspace");
+
+  const { error } = await (supabase as any).from("workspaces")
     .update({ onboarding_completed: true })
-    .eq("id", (userRow as any).workspace_id);
+    .eq("id", workspaceId);
 
-  redirect("/app/dashboard");
+  if (error) throw new Error(error.message);
 }
 
 export async function markAlertRead(alertId: string) {

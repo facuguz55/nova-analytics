@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import { Store, Mail, Target, CheckCircle2, ArrowRight, ChevronRight, Zap, Clock } from "lucide-react";
 import { completeOnboarding } from "@/app/app/actions";
@@ -164,8 +164,10 @@ function StepContent({
 
 function OnboardingInner({ tiendanubeConnected, gmailConnected }: Props) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [step, setStep] = useState(0);
   const [finishing, setFinishing] = useState(false);
+  const [finishError, setFinishError] = useState(false);
 
   const connected = [tiendanubeConnected, gmailConnected, false];
 
@@ -178,7 +180,14 @@ function OnboardingInner({ tiendanubeConnected, gmailConnected }: Props) {
 
   async function handleFinish() {
     setFinishing(true);
-    await completeOnboarding();
+    setFinishError(false);
+    try {
+      await completeOnboarding();
+      router.push("/app/dashboard");
+    } catch {
+      setFinishing(false);
+      setFinishError(true);
+    }
   }
 
   function handleSkip() {
@@ -281,7 +290,18 @@ function OnboardingInner({ tiendanubeConnected, gmailConnected }: Props) {
           className="rounded-2xl p-7"
           style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
         >
-          {finishing ? (
+          {finishError ? (
+            <div className="flex flex-col items-center gap-4 py-6 text-center">
+              <p className="text-sm font-bold text-red-400">Ocurrió un error. Intentá de nuevo.</p>
+              <button
+                onClick={handleFinish}
+                className="flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+              >
+                Reintentar
+              </button>
+            </div>
+          ) : finishing ? (
             <div className="flex flex-col items-center gap-4 py-6 text-center">
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center"
