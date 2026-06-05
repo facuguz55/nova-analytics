@@ -1,12 +1,15 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Suspense } from "react";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
+
+const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!;
 
 function ForgotPassword() {
   const [loading, setLoading] = useState(false);
@@ -22,7 +25,6 @@ function ForgotPassword() {
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
     });
-    // Log en consola para debugging sin exponer al usuario
     if (error) console.error("[reset-password]", error.message);
     setLoading(false);
     setSent(true);
@@ -74,6 +76,8 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   function validate() {
     const e: Record<string, string> = {};
@@ -86,6 +90,7 @@ function LoginForm() {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (!captchaToken) { toast.error("Completá el captcha"); return; }
     setErrors({});
     setLoading(true);
 
@@ -93,7 +98,11 @@ function LoginForm() {
     const { error } = await supabase.auth.signInWithPassword({
       email: form.email,
       password: form.password,
+      options: { captchaToken },
     });
+
+    captchaRef.current?.resetCaptcha();
+    setCaptchaToken(null);
 
     if (error) {
       toast.error("Email o contrasena incorrectos");
@@ -136,7 +145,6 @@ function LoginForm() {
           <h1 className="text-2xl font-black text-[#F1F5F9] mb-1">Bienvenido de vuelta</h1>
           <p className="text-[#94A3B8] text-sm mb-8">Ingresa a tu cuenta para ver tus metricas.</p>
 
-          {/* Google */}
           <button
             type="button"
             onClick={handleGoogle}
@@ -194,9 +202,19 @@ function LoginForm() {
               {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
             </div>
 
+            <div className="flex justify-center">
+              <HCaptcha
+                ref={captchaRef}
+                sitekey={HCAPTCHA_SITE_KEY}
+                onVerify={(token) => setCaptchaToken(token)}
+                onExpire={() => setCaptchaToken(null)}
+                theme="dark"
+              />
+            </div>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !captchaToken}
               className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#7C3AED] to-[#2563EB] hover:opacity-90 disabled:opacity-60 text-white py-3.5 rounded-xl font-semibold transition-all"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}

@@ -1,11 +1,14 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
+
+const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!;
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,6 +18,8 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [emailSent, setEmailSent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   function validate() {
     const e: Record<string, string> = {};
@@ -31,6 +36,7 @@ export default function RegisterPage() {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (!captchaToken) { toast.error("Completá el captcha"); return; }
     setErrors({});
     setLoading(true);
 
@@ -41,8 +47,12 @@ export default function RegisterPage() {
       options: {
         data: { full_name: form.name },
         emailRedirectTo: `${window.location.origin}/auth/callback?next=/app/dashboard`,
+        captchaToken,
       },
     });
+
+    captchaRef.current?.resetCaptcha();
+    setCaptchaToken(null);
 
     if (error) {
       if (
@@ -63,11 +73,8 @@ export default function RegisterPage() {
     const { data } = await supabase.auth.getSession();
 
     if (data.session) {
-      // Confirmación de email desactivada — sesión inmediata.
-      // El callback crea el workspace y redirige al dashboard.
       router.push("/auth/callback?next=/app/dashboard");
     } else {
-      // Confirmación de email activa — mostrar pantalla de espera.
       setEmailSent(true);
       setLoading(false);
     }
@@ -230,9 +237,19 @@ export default function RegisterPage() {
               {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
             </div>
 
+            <div className="flex justify-center">
+              <HCaptcha
+                ref={captchaRef}
+                sitekey={HCAPTCHA_SITE_KEY}
+                onVerify={(token) => setCaptchaToken(token)}
+                onExpire={() => setCaptchaToken(null)}
+                theme="dark"
+              />
+            </div>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !captchaToken}
               className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#7C3AED] to-[#2563EB] hover:opacity-90 disabled:opacity-60 text-white py-3.5 rounded-xl font-semibold transition-all"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
