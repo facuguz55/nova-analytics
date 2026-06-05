@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Zap, CheckCircle2, Loader2, CreditCard, Lock } from "lucide-react";
+import { Zap, CheckCircle2, Loader2, CreditCard, Lock, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const FEATURES = [
@@ -19,13 +18,12 @@ interface Props {
 }
 
 export default function PaywallCard({ workspaceId, userEmail }: Props) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function handleCheckout() {
     setLoading(true);
     try {
-      const res = await fetch("/api/billing/checkout/lemonsqueezy", {
+      const res = await fetch("/api/billing/checkout/mercadopago", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workspaceId }),
@@ -103,20 +101,30 @@ export default function PaywallCard({ workspaceId, userEmail }: Props) {
         {loading ? (
           <>
             <Loader2 size={15} className="animate-spin" />
-            Redirigiendo a pago seguro...
+            Redirigiendo a MercadoPago...
           </>
         ) : (
           <>
             <CreditCard size={15} />
-            Iniciar prueba gratis de 7 días
+            Contratar Plan Pro — $77.000 ARS/mes
           </>
         )}
       </button>
 
-      <div className="flex items-center justify-center gap-1.5 mt-4">
+      <a
+        href="https://wa.me/5491100000000?text=Hola%2C%20quiero%20contratar%20Nova%20Analytics%20Pro"
+        target="_blank" rel="noopener noreferrer"
+        className="relative w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-semibold transition-all hover:opacity-80 mt-2"
+        style={{ background: "rgba(100,116,139,0.1)", color: "#94A3B8", border: "1px solid rgba(100,116,139,0.2)" }}
+      >
+        <MessageCircle size={13} strokeWidth={2} />
+        Pago manual / WhatsApp
+      </a>
+
+      <div className="flex items-center justify-center gap-1.5 mt-3">
         <Lock size={11} color="#64748B" strokeWidth={2} />
         <span className="text-[11px] text-[#64748B]">
-          Pago seguro vía Lemon Squeezy · Cancelás cuando quieras
+          Pago seguro vía MercadoPago · Cancelás cuando quieras
         </span>
       </div>
     </div>

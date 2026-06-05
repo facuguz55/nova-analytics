@@ -28,7 +28,6 @@ const PLAN_META: Record<string, { label: string; color: string; bg: string; bord
 };
 
 export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props) {
-  const [loadingLS,  setLoadingLS]  = useState(false);
   const [loadingMP,  setLoadingMP]  = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
@@ -36,23 +35,6 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
   const isTrial = plan === "trial";
   const isPro   = plan === "pro" || plan === "agency" || plan === "active";
   const meta    = PLAN_META[plan] ?? PLAN_META.free;
-
-  async function handleCheckoutLS() {
-    setLoadingLS(true);
-    try {
-      const res = await fetch("/api/billing/checkout/lemonsqueezy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ workspaceId }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Error al generar el checkout");
-      window.location.href = json.url;
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error al conectar con el servidor");
-      setLoadingLS(false);
-    }
-  }
 
   async function handleCheckoutMP() {
     setLoadingMP(true);
@@ -172,26 +154,26 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
             </button>
           </div>
 
-          {/* Trial CTA — tarjeta internacional */}
+          {/* Manual / WhatsApp */}
           <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(124,58,237,0.08)" }}>
-                <Sparkles size={18} color="#64748B" strokeWidth={2} />
+                <MessageCircle size={18} color="#64748B" strokeWidth={2} />
               </div>
               <div>
-                <p className="text-sm font-bold text-[#F1F5F9]">Probá 7 días gratis — tarjeta internacional</p>
-                <p className="text-xs text-[#64748B] mt-0.5">Ingresás tu tarjeta, los primeros 7 días son gratis.</p>
+                <p className="text-sm font-bold text-[#F1F5F9]">Pago manual</p>
+                <p className="text-xs text-[#64748B] mt-0.5">Transferencia, Naranja X u otro método. Contactanos por WhatsApp.</p>
               </div>
             </div>
-            <button
-              onClick={handleCheckoutLS}
-              disabled={loadingLS}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+            <a
+              href="https://wa.me/5491100000000?text=Hola%2C%20quiero%20contratar%20Nova%20Analytics%20Pro"
+              target="_blank" rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold transition-all hover:opacity-80"
               style={{ background: "rgba(100,116,139,0.1)", color: "#94A3B8", border: "1px solid rgba(100,116,139,0.2)" }}
             >
-              <CreditCard size={13} strokeWidth={2} />
-              {loadingLS ? "Redirigiendo..." : "Iniciar prueba gratis (USD)"}
-            </button>
+              <MessageCircle size={13} strokeWidth={2} />
+              Contactar por WhatsApp
+            </a>
           </div>
         </div>
       )}
