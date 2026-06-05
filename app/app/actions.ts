@@ -338,7 +338,9 @@ export async function completeOnboarding() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const { data: userRow } = await supabase
+  const service = createServiceClient();
+
+  const { data: userRow } = await service
     .from("users")
     .select("workspace_id")
     .eq("id", user.id)
@@ -347,7 +349,7 @@ export async function completeOnboarding() {
   const workspaceId = (userRow as unknown as { workspace_id: string } | null)?.workspace_id;
   if (!workspaceId) throw new Error("Sin workspace");
 
-  const { error } = await (supabase as any).from("workspaces")
+  const { error } = await service.from("workspaces")
     .update({ onboarding_completed: true })
     .eq("id", workspaceId);
 
