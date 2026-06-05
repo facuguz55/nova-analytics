@@ -54,7 +54,9 @@ export async function middleware(request: NextRequest) {
 
   // ── Auth: /login y /register ────────────────────────────────────────────────
   if ((path === "/login" || path === "/register") && user) {
-    return NextResponse.redirect(new URL("/app/dashboard", request.url));
+    const { data: profile } = await service.from("users").select("role").eq("id", user.id).single();
+    const target = profile?.role === "super_admin" ? "/admin/hq" : "/app/dashboard";
+    return NextResponse.redirect(new URL(target, request.url));
   }
 
   // ── Admin: requiere super_admin ─────────────────────────────────────────────

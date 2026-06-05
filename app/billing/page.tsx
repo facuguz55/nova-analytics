@@ -27,6 +27,8 @@ export default async function BillingPage() {
   const row = userRow as unknown as UserRow | null;
   const workspaceId = row?.workspace_id ?? "";
 
+  if (!workspaceId) redirect("/onboarding");
+
   const { data: sub } = await supabase
     .from("subscriptions")
     .select("status, next_billing_at, provider_subscription_id, cancelled_at")

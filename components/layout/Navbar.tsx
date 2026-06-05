@@ -336,7 +336,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
               >
                 <p className="px-4 pt-2 pb-1.5 text-[10px] font-semibold tracking-widest text-[#475569] uppercase">Mi cuenta</p>
                 {[
-                  { href: "/app/configuracion/cuenta",          label: "Perfil",          icon: User },
+                  { href: "/app/configuracion/cuenta",          label: "Configuración",   icon: User },
                   { href: "/app/configuracion/integraciones",   label: "Integraciones",   icon: Plug },
                   { href: "/app/configuracion/financiera",      label: "Finanzas",        icon: DollarSign },
                   { href: "/app/configuracion/notificaciones",  label: "Notificaciones",  icon: BellRing },
