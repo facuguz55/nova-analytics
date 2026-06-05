@@ -28,29 +28,38 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), magnetometer=(), gyroscope=(), accelerometer=(), ambient-light-sensor=(), autoplay=(), encrypted-media=(), picture-in-picture=()",
           },
           {
             key: "X-DNS-Prefetch-Control",
             value: "on",
           },
           {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "same-origin",
+          },
+          {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              // unsafe-eval necesario para Next.js dev mode y algunos bundles;
-              // unsafe-inline necesario para estilos inline de Tailwind/emotion
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' blob: data: https:",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://api.resend.com https://api.tiendanube.com https://gmail.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://accounts.google.com https://www.tiendanube.com",
-              // Restricciones adicionales
-              "frame-src 'none'",        // No iframes externos (el iframe de emails usa srcDoc, no src)
-              "object-src 'none'",       // No plugins (Flash, etc.)
-              "base-uri 'self'",         // Previene base tag injection
-              "form-action 'self'",      // Forms solo al mismo origen
-              "frame-ancestors 'none'",  // La app no puede embeberse en iframes
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://api.resend.com https://api.tiendanube.com https://gmail.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://accounts.google.com https://www.tiendanube.com https://api.mercadopago.com",
+              "frame-src 'none'",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self' https://www.mercadopago.com.ar https://mercadopago.com.ar",
+              "frame-ancestors 'none'",
               "upgrade-insecure-requests",
             ].join("; "),
           },
