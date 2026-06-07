@@ -22,6 +22,8 @@ const STEPS = [
     tagline: "Sincronizá tus órdenes, clientes y productos",
     description:
       "Una vez conectada, Nova importa todos tus datos en tiempo real. Vas a poder ver tus ventas, stock y clientes sin salir de acá.",
+    connectedTitle: "¡Tu tienda ya está conectada!",
+    connectedDesc: "Ya tenemos acceso a tus órdenes, clientes y productos. Todo listo.",
     connectHref: "/api/auth/tiendanube?from=onboarding",
     comingSoon: false,
   },
@@ -35,6 +37,8 @@ const STEPS = [
     tagline: "Respondé emails de clientes sin cambiar de app",
     description:
       "Con Gmail conectado podés leer y responder los correos de tus clientes directo desde el dashboard. Todo en un solo lugar.",
+    connectedTitle: "¡Tu Gmail ya está conectado!",
+    connectedDesc: "Ya podés leer y responder emails de clientes desde el dashboard.",
     connectHref: "/api/auth/gmail?from=onboarding",
     comingSoon: false,
   },
@@ -48,6 +52,8 @@ const STEPS = [
     tagline: "Visualizá ROAS, CPA y todas tus campañas",
     description:
       "La integración con Meta Business API está en desarrollo. Cuando esté lista, podrás conectarla desde Configuración → Integraciones.",
+    connectedTitle: "",
+    connectedDesc: "",
     connectHref: "",
     comingSoon: true,
   },
@@ -98,7 +104,7 @@ function StepContent({
                 style={{ background: "rgba(34,197,94,0.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.25)" }}
               >
                 <CheckCircle2 size={10} strokeWidth={2.5} />
-                CONECTADO
+                YA CONECTADO
               </span>
             )}
           </div>
@@ -130,14 +136,26 @@ function StepContent({
             </button>
           </>
         ) : isConnected ? (
-          <button
-            onClick={onSkip}
-            className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
-          >
-            Continuar
-            <ChevronRight size={15} strokeWidth={2.5} />
-          </button>
+          <div className="flex flex-col gap-3">
+            <div
+              className="flex items-start gap-3 rounded-xl p-4"
+              style={{ background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.2)" }}
+            >
+              <CheckCircle2 size={20} color="#22c55e" strokeWidth={2} className="flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold" style={{ color: "#22c55e" }}>{step.connectedTitle}</p>
+                <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>{step.connectedDesc}</p>
+              </div>
+            </div>
+            <button
+              onClick={onSkip}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+            >
+              {isLast ? "Ir al dashboard" : "Continuar"}
+              <ChevronRight size={15} strokeWidth={2.5} />
+            </button>
+          </div>
         ) : (
           <>
             <a

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import OnboardingClient from "./OnboardingClient";
 
 export default async function OnboardingPage() {
@@ -25,7 +26,9 @@ export default async function OnboardingPage() {
   let gmailConnected = false;
 
   if (workspaceId) {
-    const { data: integrations } = await supabase
+    // Usar service client para evitar falsos negativos por RLS
+    const service = createServiceClient();
+    const { data: integrations } = await service
       .from("integrations")
       .select("provider, status")
       .eq("workspace_id", workspaceId)

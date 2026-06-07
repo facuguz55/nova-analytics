@@ -346,8 +346,40 @@ export async function completeOnboarding() {
     .eq("id", user.id)
     .single();
 
-  const workspaceId = (userRow as unknown as { workspace_id: string } | null)?.workspace_id;
-  if (!workspaceId) throw new Error("Sin workspace");
+  let workspaceId = (userRow as unknown as { workspace_id: string | null } | null)?.workspace_id;
+
+  // Si el usuario no tiene workspace (auth callback falló), crearlo on-the-fly
+  if (!workspaceId) {
+    const email = user.email ?? "";
+    const name = (user.user_metadata?.full_name as string | undefined) || email.split("@")[0] || "Mi Tienda";
+    const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") + "-" + Date.now().toString(36);
+
+    const { data: workspace, error: wsError } = await service
+      .from("workspaces")
+      .insert({ name, slug, plan: "free", status: "active" })
+      .select("id")
+      .single();
+
+    if (wsError || !workspace) throw new Error("No se pudo crear el workspace");
+    workspaceId = workspace.id;
+
+    await service.from("users").upsert({
+      id: user.id,
+      workspace_id: workspaceId,
+      email,
+      role: "client",
+      name,
+      avatar_url: (user.user_metadata?.avatar_url as string | undefined) ?? null,
+    });
+
+    await service.from("financial_config").upsert({
+      workspace_id: workspaceId,
+      usd_rate: 1000,
+      tax_rate: 21,
+      platform_fee: 8,
+      agency_fee: 15,
+    }, { onConflict: "workspace_id" });
+  }
 
   const { error } = await service.from("workspaces")
     .update({ onboarding_completed: true })
