@@ -72,10 +72,15 @@ export default async function LandingPage() {
               {isLoggedIn && (
                 <Link
                   href="/app/dashboard"
-                  className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-base sm:text-lg transition-all hover:scale-[1.02]"
-                  style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.35)", color: "#a78bfa" }}
+                  className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-base sm:text-lg transition-all hover:opacity-80"
+                  style={{
+                    background: "rgba(10,10,15,0.8)",
+                    border: "1.5px dashed rgba(124,58,237,0.7)",
+                    color: "#e2d9f3",
+                    boxShadow: "0 0 16px rgba(124,58,237,0.12)",
+                  }}
                 >
-                  <LayoutDashboard className="w-5 h-5" />
+                  <LayoutDashboard className="w-5 h-5" style={{ color: "#8B5CF6" }} />
                   Ir al dashboard
                 </Link>
               )}
