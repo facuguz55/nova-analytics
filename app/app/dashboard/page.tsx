@@ -18,12 +18,13 @@ async function getDashboardData() {
 
   const { data: rawCfg } = await supabase
     .from("financial_config")
-    .select("usd_rate, tax_rate, platform_fee")
+    .select("usd_rate, tax_rate, platform_fee, agency_fee")
     .eq("workspace_id", userRow?.workspace_id ?? "")
     .single();
-  const cfg = rawCfg as unknown as { usd_rate: number; tax_rate: number; platform_fee: number } | null;
+  const cfg = rawCfg as unknown as { usd_rate: number; tax_rate: number; platform_fee: number; agency_fee: number } | null;
   const taxRate     = cfg?.tax_rate     ?? 10;
   const platformFee = cfg?.platform_fee ?? 2;
+  const agencyFee   = cfg?.agency_fee   ?? 0;
   const usdRate     = cfg?.usd_rate     ?? 1100;
 
   const connection = await getTiendaNubeConnection();
@@ -53,6 +54,7 @@ async function getDashboardData() {
     usdRate,
     taxRate,
     platformFee,
+    agencyFee,
     rawOrders,
     customerCount,
     recurrenteCount,

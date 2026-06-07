@@ -24,6 +24,7 @@ interface DashboardData {
   usdRate: number;
   taxRate: number;
   platformFee: number;
+  agencyFee: number;
   rawOrders: TNOrder[];
   customerCount: number;
   recurrenteCount: number;
@@ -181,16 +182,17 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const prevOrders   = useMemo(() => filterRange(paidOrders, prevFrom, prevTo), [paidOrders, prevFrom, prevTo]);
 
   const { revenue, orders, aov, netRevenue, netProfit, profitPct, cambio } = useMemo(() => {
-    const revenue    = periodOrders.reduce((a, o) => a + parseFloat(o.total), 0);
-    const orders     = periodOrders.length;
-    const aov        = orders > 0 ? revenue / orders : 0;
-    const netRevenue = revenue / (1 + data.taxRate / 100);
-    const netProfit  = netRevenue * (1 - data.platformFee / 100);
-    const profitPct  = revenue > 0 ? (netProfit / revenue) * 100 : 0;
+    const revenue     = periodOrders.reduce((a, o) => a + parseFloat(o.total), 0);
+    const orders      = periodOrders.length;
+    const aov         = orders > 0 ? revenue / orders : 0;
+    // Mismo cálculo que rentabilidad: quitar IVA, luego fee plataforma y fee agencia
+    const netRevenue  = revenue / (1 + data.taxRate / 100);
+    const netProfit   = netRevenue * (1 - data.platformFee / 100 - (data.agencyFee ?? 0) / 100);
+    const profitPct   = revenue > 0 ? (netProfit / revenue) * 100 : 0;
     const prevRevenue = prevOrders.reduce((a, o) => a + parseFloat(o.total), 0);
-    const cambio     = calcPct(revenue, prevRevenue);
+    const cambio      = calcPct(revenue, prevRevenue);
     return { revenue, orders, aov, netRevenue, netProfit, profitPct, cambio };
-  }, [periodOrders, prevOrders, data.taxRate, data.platformFee]);
+  }, [periodOrders, prevOrders, data.taxRate, data.platformFee, data.agencyFee]);
 
   // Chart: últimos 30 días siempre (contexto de tendencia)
   const chartData = useMemo(() => {
@@ -201,7 +203,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       const de  = new Date(ds.getTime() + 86_400_000);
       const dayOrders  = paidOrders.filter((o) => { const d = new Date(o.created_at); return d >= ds && d < de; });
       const dayRevenue = dayOrders.reduce((a, o) => a + parseFloat(o.total), 0);
-      const dayProfit  = (dayRevenue / (1 + data.taxRate / 100)) * (1 - data.platformFee / 100);
+      const dayProfit  = (dayRevenue / (1 + data.taxRate / 100)) * (1 - data.platformFee / 100 - (data.agencyFee ?? 0) / 100);
       return {
         date: `${String(ds.getDate()).padStart(2,"0")}/${String(ds.getMonth()+1).padStart(2,"0")}`,
         revenue: dayRevenue,
@@ -271,8 +273,8 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       label: modoSimple ? "Ganancia neta"   : "Net Profit",
       rawValue: netProfit, format: fmtC,
       icon: BarChart2,   color: "#22c55e",
-      tip: "Net Revenue × (1 − fee de plataforma). Lo que queda después de impuestos y comisiones.",
-      tipSimple: "La plata real que te queda después de pagar impuestos y comisiones.",
+      tip: "Ingresos sin IVA, descontando fee de plataforma y fee de agencia (según tu configuración de rentabilidad).",
+      tipSimple: "La plata real que te queda después de pagar impuestos, la plataforma y la agencia.",
     },
     {
       label: modoSimple ? "% Ganancia"      : "Profit %",
