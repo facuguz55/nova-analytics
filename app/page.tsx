@@ -2,10 +2,14 @@ import Link from "next/link";
 import {
   ArrowRight, BarChart3, Bell, Brain,
   Mail, Megaphone, ShoppingCart, TrendingUp, Zap,
-  CheckCircle, Store,
+  CheckCircle, Store, LayoutDashboard,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isLoggedIn = !!user;
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-[#F1F5F9]">
 
@@ -57,13 +61,25 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col items-center gap-3 sm:gap-4">
-            <Link
-              href="/register"
-              className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#7C3AED] to-[#2563EB] hover:opacity-90 text-white w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-base sm:text-lg transition-all hover:scale-[1.02] shadow-lg shadow-[rgba(124,58,237,0.35)]"
-            >
-              Empezar ahora
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <Link
+                href="/register"
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#7C3AED] to-[#2563EB] hover:opacity-90 text-white w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-base sm:text-lg transition-all hover:scale-[1.02] shadow-lg shadow-[rgba(124,58,237,0.35)]"
+              >
+                Empezar ahora
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              {isLoggedIn && (
+                <Link
+                  href="/app/dashboard"
+                  className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-base sm:text-lg transition-all hover:scale-[1.02]"
+                  style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.35)", color: "#a78bfa" }}
+                >
+                  <LayoutDashboard className="w-5 h-5" />
+                  Ir al dashboard
+                </Link>
+              )}
+            </div>
             <span className="text-[#64748B] text-xs sm:text-sm">Sin tarjeta de crédito para probar</span>
           </div>
 
