@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   User, Mail, Shield, Calendar, Building2, Save,
   Lock, Eye, EyeOff, Trash2, AlertTriangle,
-  Camera, CheckCircle, X, Crown, Sparkles, Star,
+  CheckCircle, X, Crown, Sparkles, Star, KeyRound,
 } from "lucide-react";
 import { updateProfile, changePassword, deleteAccount } from "@/app/app/actions";
 import { toast } from "sonner";
@@ -25,12 +25,12 @@ const PROVIDER_LABELS: Record<string, string> = {
   facebook: "Facebook", apple: "Apple", email: "Email + contraseña",
 };
 
-const PLAN_META: Record<string, { label: string; color: string; bg: string; border: string; icon: React.ElementType }> = {
-  free:   { label: "Plan Gratuito",   color: "#94A3B8", bg: "rgba(100,116,139,0.1)", border: "rgba(100,116,139,0.3)", icon: Star },
-  trial:  { label: "Prueba Gratuita", color: "#f59e0b", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.3)",  icon: Sparkles },
-  pro:    { label: "Plan Pro",        color: "#a78bfa", bg: "rgba(139,92,246,0.1)",  border: "rgba(139,92,246,0.3)",  icon: Crown },
-  active: { label: "Plan Pro",        color: "#a78bfa", bg: "rgba(139,92,246,0.1)",  border: "rgba(139,92,246,0.3)",  icon: Crown },
-  agency: { label: "Plan Agency",     color: "#c084fc", bg: "rgba(192,132,252,0.1)",  border: "rgba(192,132,252,0.3)",  icon: Crown },
+const PLAN_META: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+  free:   { label: "Plan Gratuito",   color: "#94A3B8", icon: Star },
+  trial:  { label: "Prueba Gratuita", color: "#f59e0b", icon: Sparkles },
+  pro:    { label: "Plan Pro",        color: "#a78bfa", icon: Crown },
+  active: { label: "Plan Pro",        color: "#a78bfa", icon: Crown },
+  agency: { label: "Plan Agency",     color: "#c084fc", icon: Crown },
 };
 
 interface Props {
@@ -42,9 +42,7 @@ interface Props {
 export default function CuentaClient({ user, workspaceId, workspace }: Props) {
   const [saving, setSaving]         = useState(false);
   const [name, setName]             = useState(user.name);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(user.avatar_url);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const avatarPreview = user.avatar_url;
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [newPwd, setNewPwd]         = useState("");
@@ -65,21 +63,11 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
   const planMeta = PLAN_META[planKey] ?? PLAN_META.free;
   const PlanIcon = planMeta.icon;
 
-  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { toast.error("La imagen no puede superar 2 MB"); return; }
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
-  }
-
   async function handleSubmit(formData: FormData) {
     setSaving(true);
     try {
-      if (avatarFile) formData.set("avatar", avatarFile);
       await updateProfile(formData);
       toast.success("Perfil actualizado");
-      setAvatarFile(null);
     } catch (e) {
       toast.error("Error: " + (e instanceof Error ? e.message : ""));
     } finally { setSaving(false); }
@@ -99,72 +87,108 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
     } finally { setSavingPwd(false); }
   }
 
+  const memberSince = new Date(user.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" });
+
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-3xl">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Mi Cuenta</h1>
-        <p className="text-sm text-[#94A3B8] mt-1">Perfil, seguridad y workspace.</p>
-      </div>
+    <div className="p-4 sm:p-6 space-y-5 max-w-3xl">
 
-      {/* ── Fila superior: Avatar + Plan ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* ── Hero: banner gradiente + avatar con anillo neon ── */}
+      <div className="anim-up rounded-2xl overflow-hidden"
+        style={{ background: "#111118", border: "1px solid rgba(168,85,247,0.25)", boxShadow: "0 0 32px rgba(168,85,247,0.08)" }}>
 
-        {/* Avatar card */}
-        <div className="rounded-2xl p-5 flex items-center gap-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
-          <div className="relative flex-shrink-0">
+        {/* Banner */}
+        <div className="relative h-24 sm:h-28 overflow-hidden"
+          style={{ background: "linear-gradient(120deg, rgba(139,92,246,0.35), rgba(192,38,211,0.25), rgba(34,211,238,0.12))" }}>
+          <div className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+              maskImage: "radial-gradient(ellipse at 30% 0%, black 0%, transparent 75%)",
+              WebkitMaskImage: "radial-gradient(ellipse at 30% 0%, black 0%, transparent 75%)",
+            }} />
+          <div className="absolute -bottom-16 -right-8 w-56 h-56 rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(192,132,252,0.25) 0%, transparent 70%)", filter: "blur(20px)" }} />
+        </div>
+
+        {/* Avatar + datos */}
+        <div className="px-5 sm:px-6 pb-5 -mt-10 flex flex-col sm:flex-row sm:items-end gap-4">
+          <div className="relative flex-shrink-0 w-fit">
             <div
-              className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center text-white text-xl font-black"
-              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
+              className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center text-white text-2xl font-black"
+              style={{
+                background: "linear-gradient(135deg, #8b5cf6, #c026d3)",
+                border: "3px solid #111118",
+                boxShadow: "0 0 0 2px rgba(168,85,247,0.6), 0 0 24px rgba(168,85,247,0.4)",
+              }}
             >
               {avatarPreview
                 // eslint-disable-next-line @next/next/no-img-element
                 ? <img src={avatarPreview} alt={user.name} className="w-full h-full object-cover" />
                 : initials}
             </div>
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110"
-              style={{ background: "#8b5cf6", border: "2px solid #0a0a0f" }}
-            >
-              <Camera size={12} color="white" strokeWidth={2.5} />
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           </div>
-          <div>
-            <p className="font-bold text-[#F1F5F9]">{user.name || "Sin nombre"}</p>
-            <p className="text-xs text-[#64748B] mt-0.5">{user.email}</p>
-            <p className="text-[11px] text-[#475569] mt-1 capitalize">{user.role}</p>
+
+          <div className="flex-1 min-w-0 sm:pb-1">
+            <h1 className="text-xl font-black text-[#F1F5F9] truncate" style={{ letterSpacing: "-0.02em" }}>
+              {user.name || "Sin nombre"}
+            </h1>
+            <p className="text-xs text-[#94A3B8] truncate mt-0.5">{user.email}</p>
+          </div>
+
+          <div className="flex items-center gap-2 sm:pb-1 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full"
+              style={{
+                background: `${planMeta.color}18`,
+                color: planMeta.color,
+                border: `1px solid ${planMeta.color}45`,
+                boxShadow: `0 0 12px ${planMeta.color}25`,
+              }}>
+              <PlanIcon size={11} strokeWidth={2.5} />
+              {planMeta.label}
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full capitalize"
+              style={{ background: "rgba(139,92,246,0.08)", color: "#94A3B8", border: "1px solid rgba(139,92,246,0.18)" }}>
+              <Shield size={11} strokeWidth={2} />
+              {user.role === "super_admin" ? "Admin" : "Cliente"}
+            </span>
           </div>
         </div>
 
-        {/* Plan card */}
-        <div className="rounded-2xl p-5 flex items-center gap-4"
-          style={{ background: planMeta.bg, border: `1px solid ${planMeta.border}` }}>
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: `${planMeta.color}20` }}>
-            <PlanIcon size={20} color={planMeta.color} strokeWidth={2} />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-[#F1F5F9]">{planMeta.label}</p>
-            <p className="text-xs mt-0.5" style={{ color: planMeta.color }}>
-              {workspace?.status === "active" ? "Activo" : workspace?.status ?? "—"}
-            </p>
-            {workspace && (
-              <p className="text-xs text-[#64748B] mt-1">{workspace.name}</p>
-            )}
-          </div>
+        {/* Chips de info */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-px" style={{ background: "rgba(139,92,246,0.1)", borderTop: "1px solid rgba(139,92,246,0.1)" }}>
+          {[
+            { icon: Building2, label: "Workspace",     value: workspace?.name ?? "—" },
+            { icon: KeyRound,  label: "Acceso",        value: user.isOAuthUser ? (PROVIDER_LABELS[user.authProvider] ?? user.authProvider) : "Email + contraseña" },
+            { icon: Calendar,  label: "Miembro desde", value: memberSince },
+          ].map((chip) => (
+            <div key={chip.label} className="flex items-center gap-3 px-5 py-3.5" style={{ background: "#111118" }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: "rgba(168,85,247,0.1)" }}>
+                <chip.icon size={13} color="#a78bfa" strokeWidth={2} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest">{chip.label}</p>
+                <p className="text-xs font-semibold text-[#F1F5F9] truncate mt-0.5">{chip.value}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* ── Información personal ── */}
       <form action={handleSubmit}>
-        <div className="rounded-2xl p-5 space-y-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
-          <p className="text-sm font-semibold text-[#F1F5F9]">Información personal</p>
+        <div className="anim-up rounded-2xl p-5 space-y-4"
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: "0.08s" }}>
+          <div className="flex items-center gap-2">
+            <User size={14} color="#a78bfa" strokeWidth={2.5} />
+            <p className="text-sm font-semibold text-[#F1F5F9]">Información personal</p>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-bold text-[#64748B] uppercase tracking-widest mb-1.5">Nombre</label>
-              <div className="flex items-center gap-2 rounded-xl px-4 py-3"
+              <div className="flex items-center gap-2 rounded-xl px-4 py-3 transition-all focus-within:shadow-[0_0_12px_rgba(168,85,247,0.2)]"
                 style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}>
                 <User size={14} color="#64748B" strokeWidth={2} />
                 <input type="text" name="name" value={name} onChange={(e) => setName(e.target.value)}
@@ -183,24 +207,22 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-xs text-[#475569]">
-              <Calendar size={12} strokeWidth={2} />
-              Miembro desde {new Date(user.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })}
-            </div>
+          <div className="flex justify-end">
             <button type="submit" disabled={saving}
-              className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-80 disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}>
+              className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-85 hover:scale-[1.02] disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)", boxShadow: "0 0 16px rgba(168,85,247,0.3)" }}>
               <Save size={13} strokeWidth={2.5} />
-              {saving ? "Guardando..." : "Guardar"}
+              {saving ? "Guardando..." : "Guardar cambios"}
             </button>
           </div>
         </div>
       </form>
 
       {/* ── Seguridad ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
-        <div className="px-5 py-3.5" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
+      <div className="anim-up rounded-2xl overflow-hidden"
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: "0.14s" }}>
+        <div className="px-5 py-3.5 flex items-center gap-2" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
+          <Shield size={14} color="#a78bfa" strokeWidth={2.5} />
           <p className="text-sm font-semibold text-[#F1F5F9]">Seguridad</p>
         </div>
 
@@ -245,14 +267,14 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
               </p>
             </div>
             {!user.isOAuthUser && (
-              <span className="text-xs font-semibold" style={{ color: "#8b5cf6" }}>
+              <span className="text-xs font-semibold neon-text">
                 {showPasswordForm ? "Cancelar" : "Cambiar"}
               </span>
             )}
           </div>
 
           {showPasswordForm && !user.isOAuthUser && (
-            <div className="px-5 pb-5 space-y-3" style={{ borderTop: "1px solid rgba(139,92,246,0.1)" }}>
+            <div className="px-5 pb-5 space-y-3 anim-up" style={{ borderTop: "1px solid rgba(139,92,246,0.1)" }}>
               <div className="pt-4 space-y-3">
                 {[
                   { label: "Nueva contraseña", value: newPwd, onChange: setNewPwd, placeholder: "Mínimo 8 caracteres" },
@@ -260,7 +282,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
                 ].map((field, i) => (
                   <div key={i} className="space-y-1.5">
                     <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest">{field.label}</label>
-                    <div className="flex items-center gap-2 rounded-xl px-4 py-3"
+                    <div className="flex items-center gap-2 rounded-xl px-4 py-3 transition-all focus-within:shadow-[0_0_12px_rgba(168,85,247,0.2)]"
                       style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}>
                       <Lock size={13} color="#64748B" strokeWidth={2} />
                       <input type={showPwd ? "text" : "password"} value={field.value}
@@ -281,8 +303,8 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
                   </div>
                 ))}
                 <button onClick={handlePasswordChange} disabled={savingPwd}
-                  className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-80 disabled:opacity-50"
-                  style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}>
+                  className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-85 disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)", boxShadow: "0 0 16px rgba(168,85,247,0.25)" }}>
                   <Shield size={13} strokeWidth={2.5} />
                   {savingPwd ? "Guardando..." : "Actualizar contraseña"}
                 </button>
@@ -292,31 +314,8 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
         </div>
       </div>
 
-      {/* ── Workspace ── */}
-      {workspace && (
-        <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
-          <p className="text-sm font-semibold text-[#F1F5F9]">Workspace</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { icon: Building2, label: "Nombre",        value: workspace.name },
-              { icon: Shield,    label: "Plan",           value: planMeta.label },
-              { icon: Calendar,  label: "Cuenta creada", value: new Date(user.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" }) },
-            ].map((row) => (
-              <div key={row.label} className="rounded-xl px-4 py-3"
-                style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)" }}>
-                <div className="flex items-center gap-2 mb-1">
-                  <row.icon size={12} color="#64748B" strokeWidth={2} />
-                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest">{row.label}</span>
-                </div>
-                <p className="text-sm font-semibold text-[#F1F5F9]">{row.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* ── Zona peligrosa ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(239,68,68,0.2)" }}>
+      <div className="anim-up rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(239,68,68,0.2)", animationDelay: "0.20s" }}>
         <div className="px-5 py-3 flex items-center gap-2"
           style={{ background: "rgba(239,68,68,0.06)", borderBottom: "1px solid rgba(239,68,68,0.12)" }}>
           <AlertTriangle size={14} color="#ef4444" strokeWidth={2} />
@@ -340,7 +339,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(4px)" }}>
-          <div className="rounded-2xl w-full max-w-md p-6 space-y-5"
+          <div className="anim-scale rounded-2xl w-full max-w-md p-6 space-y-5"
             style={{ background: "#111118", border: "1px solid rgba(239,68,68,0.3)" }}>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "rgba(239,68,68,0.12)" }}>
@@ -405,7 +404,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
       {showCancelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}>
-          <div className="rounded-2xl w-full max-w-sm p-6 space-y-4"
+          <div className="anim-scale rounded-2xl w-full max-w-sm p-6 space-y-4"
             style={{ background: "#111118", border: "1px solid rgba(100,116,139,0.2)" }}>
 
             {cancelStep === 0 && (

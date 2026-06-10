@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, BarChart, Bar,
+  ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell,
 } from "recharts";
 import Link from "next/link";
 import InfoTooltip from "@/components/ui/InfoTooltip";
@@ -121,6 +121,27 @@ function StatusDot({ status }: { status: string }) {
   return <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />;
 }
 
+// Mini sparkline para las tarjetas KPI — sin ejes, con gradiente neon
+function Sparkline({ data, color, id }: { data: number[]; color: string; id: string }) {
+  const points = data.map((v, i) => ({ i, v }));
+  return (
+    <div className="h-8 -mx-1 mt-1 neon-chart" style={{ opacity: 0.9 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={points} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"  stopColor={color} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.5}
+            fill={`url(#spark-${id})`} dot={false} animationDuration={1200} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 // ── Componente principal ─────────────────────────────────────────────────────
 
 export default function DashboardClient({ data }: { data: DashboardData }) {
@@ -213,6 +234,48 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
     });
   }, [paidOrders, data.taxRate, data.platformFee]);
 
+  // Ventas por día de semana (últimos 30 días)
+  const weekdayData = useMemo(() => {
+    const days = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+    const acc = days.map((d) => ({ day: d, revenue: 0, orders: 0 }));
+    const cutoff = Date.now() - 30 * 86_400_000;
+    for (const o of paidOrders) {
+      const d = new Date(o.created_at);
+      if (d.getTime() < cutoff) continue;
+      const idx = d.getDay();
+      acc[idx].revenue += parseFloat(o.total);
+      acc[idx].orders += 1;
+    }
+    // Semana empezando en lunes
+    return [...acc.slice(1), acc[0]];
+  }, [paidOrders]);
+
+  // Revenue acumulado de los últimos 30 días
+  const cumulativeData = useMemo(() => {
+    let sum = 0;
+    return chartData.map((d) => {
+      sum += d.revenue;
+      return { date: d.date, acumulado: sum };
+    });
+  }, [chartData]);
+
+  // Distribución de estados de órdenes (todas las cargadas)
+  const statusData = useMemo(() => {
+    let paid = 0, pending = 0, cancelled = 0;
+    for (const o of data.rawOrders) {
+      if (o.payment_status === "paid" || o.status === "closed") paid++;
+      else if (o.status === "cancelled") cancelled++;
+      else pending++;
+    }
+    return [
+      { name: "Pagadas",    value: paid,      color: "#22c55e" },
+      { name: "Pendientes", value: pending,   color: "#f59e0b" },
+      { name: "Canceladas", value: cancelled, color: "#ef4444" },
+    ].filter((s) => s.value > 0);
+  }, [data.rawOrders]);
+
+  const totalStatusOrders = statusData.reduce((a, s) => a + s.value, 0);
+
   const recentOrders = useMemo(() => data.rawOrders.slice(0, 8).map((o) => ({
     id:             String(o.id),
     number:         String(o.number ?? o.id),
@@ -247,46 +310,53 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
   // ── KPIs ─────────────────────────────────────────────────────────────────────
 
+  const sparkRevenue = chartData.map((d) => d.revenue);
+  const sparkOrders  = chartData.map((d) => d.orders);
+  const sparkProfit  = chartData.map((d) => d.profit);
+  const sparkAov     = chartData.map((d) => (d.orders > 0 ? d.revenue / d.orders : 0));
+  const sparkNetRev  = chartData.map((d) => d.revenue / (1 + data.taxRate / 100));
+  const sparkPct     = chartData.map((d) => (d.revenue > 0 ? (d.profit / d.revenue) * 100 : 0));
+
   const TIENDA_METRICS = [
     {
       label: modoSimple ? "Pedidos"         : "Orders",
       rawValue: orders, format: (n: number) => String(Math.round(n)),
-      icon: ShoppingCart, color: "#c026d3",
+      icon: ShoppingCart, color: "#c026d3", spark: sparkOrders,
       tip: "Cantidad total de órdenes pagas en el período seleccionado.",
       tipSimple: "Cuántos pedidos te hicieron en total.",
     },
     {
       label: modoSimple ? "Ventas"          : "Revenue",
       rawValue: revenue, format: fmtC,
-      icon: DollarSign,  color: "#8b5cf6",
+      icon: DollarSign,  color: "#8b5cf6", spark: sparkRevenue,
       tip: "Facturación bruta de las órdenes pagas (antes de impuestos y comisiones).",
       tipSimple: "Plata total que entró por tus ventas.",
     },
     {
       label: modoSimple ? "Ticket promedio" : "AOV",
       rawValue: aov, format: fmtC,
-      icon: TrendingUp,  color: "#a78bfa",
+      icon: TrendingUp,  color: "#a78bfa", spark: sparkAov,
       tip: "Revenue ÷ órdenes. Cuánto gasta un cliente por compra.",
       tipSimple: "Cuánto te gasta en promedio cada cliente.",
     },
     {
       label: modoSimple ? "Ganancia neta"   : "Net Profit",
       rawValue: netProfit, format: fmtC,
-      icon: BarChart2,   color: "#22c55e",
+      icon: BarChart2,   color: "#22c55e", spark: sparkProfit,
       tip: "Ingresos sin IVA, descontando fee de plataforma y fee de agencia (según tu configuración de rentabilidad).",
       tipSimple: "La plata real que te queda después de pagar impuestos, la plataforma y la agencia.",
     },
     {
       label: modoSimple ? "% Ganancia"      : "Profit %",
       rawValue: profitPct, format: (n: number) => `${n.toFixed(1)}%`,
-      icon: Target,      color: "#f59e0b",
+      icon: Target,      color: "#f59e0b", spark: sparkPct,
       tip: "Net Profit ÷ Revenue × 100. Margen porcentual sobre tu facturación.",
       tipSimple: "Qué porcentaje de tus ventas se convierte en ganancia.",
     },
     {
       label: modoSimple ? "Sin impuestos"   : "Net Rev.",
       rawValue: netRevenue, format: fmtC,
-      icon: DollarSign,  color: "#c084fc",
+      icon: DollarSign,  color: "#c084fc", spark: sparkNetRev,
       tip: "Revenue ÷ (1 + IVA). Tu facturación sin impuestos.",
       tipSimple: "Lo que ganaste sin contar el IVA.",
     },
@@ -430,6 +500,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                   </div>
                 </div>
                 <AnimatedNumber value={m.rawValue} format={m.format} duration={900} className="text-xl font-black text-[#F1F5F9] leading-none" />
+                <Sparkline data={m.spark} color={m.color} id={`m${i}`} />
               </div>
             );
           })}
@@ -519,6 +590,111 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
               </AreaChart>
             )}
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* GRÁFICOS secundarios ───────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* Ventas por día de semana */}
+        <div className="anim-up metric-card rounded-2xl overflow-hidden neon-chart-fuchsia"
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)", animationDelay: "0.28s" }}>
+          <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
+            <p className="text-sm font-semibold text-[#F1F5F9]">Ventas por día de semana</p>
+            <p className="text-[11px] text-[#64748B] mt-0.5">Últimos 30 días</p>
+          </div>
+          <div className="p-3">
+            <ResponsiveContainer width="100%" height={170}>
+              <BarChart data={weekdayData} margin={{ top: 8, right: 5, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="weekdayGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"  stopColor="#d946ef" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.55} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.07)" vertical={false} />
+                <XAxis dataKey="day" tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} width={38}
+                  tickFormatter={(v) => `${curSymbol}${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
+                <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(217,70,239,0.3)", borderRadius: "10px", color: "#F1F5F9" }}
+                  cursor={{ fill: "rgba(139,92,246,0.05)" }}
+                  formatter={(v) => [fmt(Number(v)), "Ventas"]} />
+                <Bar dataKey="revenue" fill="url(#weekdayGrad)" radius={[4, 4, 0, 0]} animationDuration={1100} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Acumulado 30 días */}
+        <div className="anim-up metric-card rounded-2xl overflow-hidden neon-chart"
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)", animationDelay: "0.34s" }}>
+          <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
+            <p className="text-sm font-semibold text-[#F1F5F9]">Revenue acumulado</p>
+            <p className="text-[11px] text-[#64748B] mt-0.5">Suma progresiva · 30 días</p>
+          </div>
+          <div className="p-3">
+            <ResponsiveContainer width="100%" height={170}>
+              <AreaChart data={cumulativeData} margin={{ top: 8, right: 5, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="cumGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"  stopColor="#a855f7" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#a855f7" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.07)" vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} interval={6} />
+                <YAxis tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} width={42}
+                  tickFormatter={(v) => `${curSymbol}${v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
+                <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(168,85,247,0.3)", borderRadius: "10px", color: "#F1F5F9" }}
+                  formatter={(v) => [fmt(Number(v)), "Acumulado"]} />
+                <Area type="monotone" dataKey="acumulado" stroke="#a855f7" strokeWidth={2}
+                  fill="url(#cumGrad)" dot={false} activeDot={{ r: 4, fill: "#c084fc" }} animationDuration={1400} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Estado de órdenes (dona) */}
+        <div className="anim-up metric-card rounded-2xl overflow-hidden"
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)", animationDelay: "0.40s" }}>
+          <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
+            <p className="text-sm font-semibold text-[#F1F5F9]">Estado de órdenes</p>
+            <p className="text-[11px] text-[#64748B] mt-0.5">{totalStatusOrders} órdenes cargadas</p>
+          </div>
+          <div className="p-3 flex items-center gap-4">
+            <div className="relative" style={{ width: 150, height: 150, flexShrink: 0 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={statusData} dataKey="value" nameKey="name"
+                    innerRadius={48} outerRadius={68} paddingAngle={3}
+                    stroke="none" animationDuration={1200}>
+                    {statusData.map((s) => (
+                      <Cell key={s.name} fill={s.color}
+                        style={{ filter: `drop-shadow(0 0 5px ${s.color}66)` }} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "10px", color: "#F1F5F9" }}
+                    formatter={(v, n) => [`${v} órdenes`, n]} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-xl font-black text-[#F1F5F9] leading-none">{totalStatusOrders}</p>
+                <p className="text-[9px] text-[#64748B] uppercase tracking-widest mt-0.5">total</p>
+              </div>
+            </div>
+            <div className="flex-1 space-y-2.5 min-w-0">
+              {statusData.map((s) => (
+                <div key={s.name} className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }} />
+                  <span className="text-xs text-[#94A3B8] flex-1 truncate">{s.name}</span>
+                  <span className="text-xs font-bold text-[#F1F5F9]">
+                    {totalStatusOrders > 0 ? `${((s.value / totalStatusOrders) * 100).toFixed(0)}%` : "0%"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
