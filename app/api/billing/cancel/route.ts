@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { PreApproval } from "mercadopago";
+import { mpClient } from "@/lib/mercadopago/client";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -38,7 +40,7 @@ export async function POST(request: Request) {
   const service = createServiceClient();
   const { data: sub } = await service
     .from("subscriptions")
-    .select("status")
+    .select("status, provider_subscription_id")
     .eq("workspace_id", workspaceId)
     .maybeSingle();
 
@@ -46,6 +48,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No hay suscripción activa para cancelar" }, { status: 400 });
   }
 
+  // Frenar el cobro recurrente en MercadoPago (best-effort: si falla, igual
+  // marcamos cancelada en la DB y el webhook eventualmente reconcilia).
+  const providerSubId = (sub as { provider_subscription_id: string | null }).provider_subscription_id;
+  if (providerSubId) {
+    try {
+      await new PreApproval(mpClient).update({
+        id: providerSubId,
+        body: { status: "cancelled" },
+      });
+    } catch (err) {
+      console.error("[billing/cancel] no se pudo cancelar el preapproval en MP:", err);
+    }
+  }
+
+  // Marcar cancelada pero CONSERVAR next_billing_at: el usuario mantiene
+  // acceso hasta el fin del período que ya pagó (lo resuelve hasActiveAccess).
+  // No se toca workspaces.plan todavía — sigue activo hasta esa fecha.
   await service
     .from("subscriptions")
     .update({
@@ -53,12 +72,6 @@ export async function POST(request: Request) {
       cancelled_at: new Date().toISOString(),
     })
     .eq("workspace_id", workspaceId);
-
-  // Mantener sincronizado el plan del workspace (lo lee el layout)
-  await service
-    .from("workspaces")
-    .update({ plan: "free" })
-    .eq("id", workspaceId);
 
   return NextResponse.json({ ok: true });
 }

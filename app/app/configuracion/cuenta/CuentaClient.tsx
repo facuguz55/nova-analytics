@@ -411,7 +411,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
               <>
                 <p className="text-sm font-semibold text-[#F1F5F9]">¿Cancelar suscripción?</p>
                 <p className="text-xs text-[#64748B]">
-                  Seguirás teniendo acceso hasta que venza el período actual. Después perdés todas las funciones.
+                  No se te cobra más. Seguís con acceso completo hasta el fin del período que ya pagaste, y recién ahí se corta.
                 </p>
                 <div className="flex gap-2 pt-1">
                   <button

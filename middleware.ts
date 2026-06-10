@@ -34,6 +34,15 @@ function hasActiveAccess(sub: SubRow | null): boolean {
     const endsAt = sub.trial_ends_at ? new Date(sub.trial_ends_at) : null;
     return !!endsAt && endsAt.getTime() > Date.now();
   }
+
+  // Cancelada: el usuario ya pagó el período en curso → conserva acceso
+  // hasta next_billing_at exacto (sin gracia extra), después se corta.
+  if (sub.status === "cancelled") {
+    if (!sub.next_billing_at) return false;
+    const due = new Date(sub.next_billing_at).getTime();
+    return Number.isFinite(due) && Date.now() < due;
+  }
+
   return false;
 }
 

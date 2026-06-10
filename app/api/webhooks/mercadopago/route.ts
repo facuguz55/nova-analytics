@@ -148,12 +148,14 @@ export async function POST(request: Request) {
 
       case "cancelled":
       case "paused": {
+        // No tocamos next_billing_at ni el plan: el usuario conserva acceso
+        // hasta el fin del período que ya pagó. Cuando MP mande 'expired'
+        // (o venza next_billing_at) se corta. hasActiveAccess lo resuelve.
         await upsertSubscription(workspaceId, {
           status: "cancelled",
           provider_subscription_id: preapprovalId,
           cancelled_at: new Date().toISOString(),
         });
-        await updateWorkspacePlan(workspaceId, "free");
         break;
       }
 
