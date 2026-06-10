@@ -46,12 +46,12 @@ export default async function ClientesPage({
 
       {!connection && (
         <div className="rounded-2xl p-8 text-center"
-          style={{ background: "#111118", border: "1px dashed rgba(124,58,237,0.3)" }}>
-          <Store size={40} color="#7C3AED" className="mx-auto mb-3" />
+          style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}>
+          <Store size={40} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conectá tu TiendaNube</p>
           <Link href="/app/configuracion/integraciones"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white mt-2"
-            style={{ background: "#7C3AED" }}>
+            style={{ background: "#8b5cf6" }}>
             Ir a Integraciones <ArrowRight size={14} />
           </Link>
         </div>

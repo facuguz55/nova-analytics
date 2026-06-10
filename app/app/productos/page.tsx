@@ -59,12 +59,12 @@ export default async function ProductosPage({
       </div>
 
       {!connection && (
-        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(124,58,237,0.3)" }}>
-          <Store size={40} color="#7C3AED" className="mx-auto mb-3" />
+        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}>
+          <Store size={40} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conecta tu TiendaNube</p>
           <Link href="/app/configuracion/integraciones"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white mt-2"
-            style={{ background: "#7C3AED" }}
+            style={{ background: "#8b5cf6" }}
           >Ir a Integraciones <ArrowRight size={14} /></Link>
         </div>
       )}
@@ -80,12 +80,12 @@ export default async function ProductosPage({
         <>
           <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {[
-              { label: "Total productos", value: String(products.length), icon: Package, color: "#7C3AED" },
+              { label: "Total productos", value: String(products.length), icon: Package, color: "#8b5cf6" },
               { label: "Stock bajo (<=5)", value: String(lowStock.length), icon: AlertTriangle, color: "#f59e0b" },
               { label: "Sin stock", value: String(outOfStock.length), icon: AlertTriangle, color: "#ef4444" },
               { label: "Valor inventario", value: formatCurrency(totalValue), icon: DollarSign, color: "#22c55e" },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+              <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${s.color}18` }}>
                   <s.icon size={18} color={s.color} strokeWidth={2} />
                 </div>
@@ -106,20 +106,20 @@ export default async function ProductosPage({
               <Link key={f.value} href={`?stock=${f.value}${q ? `&q=${q}` : ""}`}
                 className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
                 style={{
-                  background: stockFilter === f.value ? "#7C3AED" : "rgba(124,58,237,0.1)",
+                  background: stockFilter === f.value ? "#8b5cf6" : "rgba(139,92,246,0.1)",
                   color: stockFilter === f.value ? "#fff" : "#94A3B8",
-                  border: "1px solid rgba(124,58,237,0.2)",
+                  border: "1px solid rgba(139,92,246,0.2)",
                 }}
               >{f.label}</Link>
             ))}
           </div>
 
-          <div className="rounded-2xl overflow-x-auto" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
-            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(124,58,237,0.15)" }}>
+          <div className="rounded-2xl overflow-x-auto" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
+            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(139,92,246,0.15)" }}>
               <span className="text-sm text-[#94A3B8]">{filtered.length} producto{filtered.length !== 1 ? "s" : ""}</span>
               {avgMargin > 0 && <span className="text-xs text-[#64748B]">Margen prom: {avgMargin.toFixed(1)}%</span>}
             </div>
-            <div className="divide-y" style={{ borderColor: "rgba(124,58,237,0.08)" }}>
+            <div className="divide-y" style={{ borderColor: "rgba(139,92,246,0.08)" }}>
               {filtered.length === 0 ? (
                 <div className="p-8 text-center text-sm text-[#64748B]">Sin productos que coincidan</div>
               ) : (
@@ -137,9 +137,9 @@ export default async function ProductosPage({
                   const stockColor = totalStock <= 0 ? "#ef4444" : totalStock <= 5 ? "#f59e0b" : "#22c55e";
                   const marginColor = marginNum === null ? "#64748B" : marginNum >= 40 ? "#22c55e" : marginNum >= 20 ? "#f59e0b" : "#ef4444";
                   return (
-                    <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[rgba(124,58,237,0.04)] transition-colors">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(124,58,237,0.1)" }}>
-                        <Package size={14} color="#7C3AED" />
+                    <div key={p.id} className="flex items-center gap-3 p-3 hover:bg-[rgba(139,92,246,0.04)] transition-colors">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(139,92,246,0.1)" }}>
+                        <Package size={14} color="#8b5cf6" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-[#F1F5F9] truncate">{name}</p>

@@ -240,7 +240,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   });
 
   const chartKey   = chartMode === "orders" ? "orders" : chartMode === "profit" ? "profit" : "revenue";
-  const chartColor = chartMode === "orders" ? "#2563EB" : chartMode === "profit" ? "#22c55e" : "#7C3AED";
+  const chartColor = chartMode === "orders" ? "#c026d3" : chartMode === "profit" ? "#22c55e" : "#8b5cf6";
   const isOrders   = chartMode === "orders";
 
   const curSymbol  = CURRENCIES.find((c) => c.code === currency)?.symbol ?? "$";
@@ -251,21 +251,21 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
     {
       label: modoSimple ? "Pedidos"         : "Orders",
       rawValue: orders, format: (n: number) => String(Math.round(n)),
-      icon: ShoppingCart, color: "#2563EB",
+      icon: ShoppingCart, color: "#c026d3",
       tip: "Cantidad total de órdenes pagas en el período seleccionado.",
       tipSimple: "Cuántos pedidos te hicieron en total.",
     },
     {
       label: modoSimple ? "Ventas"          : "Revenue",
       rawValue: revenue, format: fmtC,
-      icon: DollarSign,  color: "#7C3AED",
+      icon: DollarSign,  color: "#8b5cf6",
       tip: "Facturación bruta de las órdenes pagas (antes de impuestos y comisiones).",
       tipSimple: "Plata total que entró por tus ventas.",
     },
     {
       label: modoSimple ? "Ticket promedio" : "AOV",
       rawValue: aov, format: fmtC,
-      icon: TrendingUp,  color: "#8B5CF6",
+      icon: TrendingUp,  color: "#a78bfa",
       tip: "Revenue ÷ órdenes. Cuánto gasta un cliente por compra.",
       tipSimple: "Cuánto te gasta en promedio cada cliente.",
     },
@@ -286,7 +286,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
     {
       label: modoSimple ? "Sin impuestos"   : "Net Rev.",
       rawValue: netRevenue, format: fmtC,
-      icon: DollarSign,  color: "#e1691e",
+      icon: DollarSign,  color: "#c084fc",
       tip: "Revenue ÷ (1 + IVA). Tu facturación sin impuestos.",
       tipSimple: "Lo que ganaste sin contar el IVA.",
     },
@@ -297,13 +297,13 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       tip: "Cuánto gastaste en publicidad de Meta en el período.", tipSimple: "Plata invertida en publicidad de Facebook e Instagram." },
     { label: "MER",       value: "—", icon: BarChart2,  color: "#22c55e",
       tip: "Marketing Efficiency Ratio: Revenue ÷ Ad Spend.", tipSimple: "Cuántas veces te volvió la plata invertida en publicidad." },
-    { label: "ROAS",      value: "—", icon: TrendingUp, color: "#8B5CF6",
+    { label: "ROAS",      value: "—", icon: TrendingUp, color: "#a78bfa",
       tip: "Return on Ad Spend: Revenue atribuible a ads ÷ Ad Spend.", tipSimple: "Por cada peso en ads, cuántos te vuelven en ventas." },
     { label: modoSimple ? "Costo x venta" : "CPA", value: "—", icon: Target, color: "#f59e0b",
       tip: "Cost Per Acquisition: Ad Spend ÷ órdenes de ads.", tipSimple: "Cuánto te cuesta conseguir un cliente nuevo desde los anuncios." },
-    { label: "Net AOV",   value: "—", icon: DollarSign, color: "#e1691e",
+    { label: "Net AOV",   value: "—", icon: DollarSign, color: "#c084fc",
       tip: "Ticket promedio neto de ventas que vinieron de ads.", tipSimple: "Ticket promedio real de clientes que vienen por publicidad." },
-    { label: "True CPA",  value: "—", icon: Zap,        color: "#2563EB",
+    { label: "True CPA",  value: "—", icon: Zap,        color: "#c026d3",
       tip: "CPA ajustado a Net Profit.", tipSimple: "El costo real de cada cliente nuevo considerando la ganancia que deja." },
   ];
 
@@ -340,25 +340,25 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
             <button
               onClick={() => setShowCurr(!showCurr)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-              style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", color: "#F1F5F9" }}
+              style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.25)", color: "#F1F5F9" }}
             >
               {curSymbol} {currency} <ChevronDown size={13} color="#64748B" />
             </button>
             {showCurr && (
               <div
                 className="absolute right-0 top-full mt-1 z-50 rounded-xl py-1 min-w-[140px]"
-                style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}
+                style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.25)", boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}
               >
                 {CURRENCIES.map((c) => (
                   <button
                     key={c.code}
                     onClick={() => handleCurrencyChange(c.code)}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm transition-all hover:bg-[rgba(124,58,237,0.08)] text-left"
-                    style={{ color: currency === c.code ? "#8B5CF6" : "#CBD5E1" }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm transition-all hover:bg-[rgba(139,92,246,0.08)] text-left"
+                    style={{ color: currency === c.code ? "#a78bfa" : "#CBD5E1" }}
                   >
                     <span className="w-5 font-bold">{c.symbol}</span>
                     <span>{c.label}</span>
-                    {currency === c.code && <Check size={12} className="ml-auto" color="#8B5CF6" />}
+                    {currency === c.code && <Check size={12} className="ml-auto" color="#a78bfa" />}
                   </button>
                 ))}
               </div>
@@ -367,13 +367,13 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
           {/* Presets fecha */}
           <div className="flex items-center gap-0.5 rounded-xl p-1 flex-wrap"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
             {DATE_PRESETS.map(({ key, label }) => {
               const active = preset === key;
               return (
                 <button key={key} onClick={() => setPreset(key)}
                   className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
-                  style={{ background: active ? "#7C3AED" : "transparent", color: active ? "white" : "#94A3B8" }}>
+                  style={{ background: active ? "#8b5cf6" : "transparent", color: active ? "white" : "#94A3B8" }}>
                   {label}
                 </button>
               );
@@ -382,13 +382,13 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
           {/* Tabs de meses */}
           <div className="hidden md:flex items-center gap-0.5 rounded-xl p-1"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
             {monthTabs.map(({ key, label }) => {
               const active = preset === key;
               return (
                 <button key={key} onClick={() => setPreset(key)}
                   className="rounded-lg px-3 py-1.5 text-xs transition-all"
-                  style={{ fontWeight: active ? 700 : 400, color: active ? "white" : "#94A3B8", background: active ? "#7C3AED" : "transparent" }}>
+                  style={{ fontWeight: active ? 700 : 400, color: active ? "white" : "#94A3B8", background: active ? "#8b5cf6" : "transparent" }}>
                   {label}
                 </button>
               );
@@ -408,18 +408,18 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       )}
 
       {/* TIENDA ─────────────────────────────────────────────────────────────── */}
-      <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)", animationDelay: "0.05s" }}>
+      <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: "0.05s" }}>
         <div className="flex items-center gap-2 px-5 py-3"
-          style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}>
-          <Store size={14} color="#7C3AED" strokeWidth={2.5} />
+          style={{ borderBottom: "1px solid rgba(139,92,246,0.12)", background: "rgba(139,92,246,0.04)" }}>
+          <Store size={14} color="#8b5cf6" strokeWidth={2.5} />
           <p className="text-xs font-bold tracking-widest text-[#94A3B8] uppercase">Tienda</p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 divide-x-0 sm:divide-x" style={{ borderColor: "rgba(124,58,237,0.1)" }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 divide-x-0 sm:divide-x" style={{ borderColor: "rgba(139,92,246,0.1)" }}>
           {TIENDA_METRICS.map((m, i) => {
             const Icon = m.icon;
             return (
               <div key={m.label} className="metric-card p-3 sm:p-4 flex flex-col gap-1 anim-up"
-                style={{ borderBottom: i < TIENDA_METRICS.length - 2 ? "1px solid rgba(124,58,237,0.1)" : undefined, animationDelay: `${0.08 + i * 0.06}s` }}>
+                style={{ borderBottom: i < TIENDA_METRICS.length - 2 ? "1px solid rgba(139,92,246,0.1)" : undefined, animationDelay: `${0.08 + i * 0.06}s` }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     <p className="text-[11px] text-[#64748B] font-medium">{m.label}</p>
@@ -470,19 +470,19 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       </div>
 
       {/* GRÁFICO últimos 30 días ─────────────────────────────────────────────── */}
-      <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)", animationDelay: "0.25s" }}>
+      <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)", animationDelay: "0.25s" }}>
         <div className="flex items-center justify-between px-5 py-3"
-          style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+          style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Últimos 30 días</p>
           <div className="flex items-center gap-0.5 rounded-lg p-1"
-            style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)" }}>
+            style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)" }}>
             {(["profit","revenue","orders"] as ChartMode[]).map((mode) => {
               const labels = { profit: "Profit", revenue: "Revenue", orders: "Orders" };
               const active = chartMode === mode;
               return (
                 <button key={mode} onClick={() => setChartMode(mode)}
                   className="rounded-md px-3 py-1 text-xs font-semibold transition-all"
-                  style={{ background: active ? "#7C3AED" : "transparent", color: active ? "white" : "#64748B" }}>
+                  style={{ background: active ? "#8b5cf6" : "transparent", color: active ? "white" : "#64748B" }}>
                   {labels[mode]}
                 </button>
               );
@@ -493,11 +493,11 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           <ResponsiveContainer width="100%" height={200}>
             {isOrders ? (
               <BarChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.07)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.07)" />
                 <XAxis dataKey="date" tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
                 <YAxis tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
-                <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)", borderRadius: "10px", color: "#F1F5F9" }}
-                  cursor={{ fill: "rgba(124,58,237,0.05)" }} />
+                <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "10px", color: "#F1F5F9" }}
+                  cursor={{ fill: "rgba(139,92,246,0.05)" }} />
                 <Bar dataKey="orders" fill={chartColor} radius={[3,3,0,0]} />
               </BarChart>
             ) : (
@@ -508,11 +508,11 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                     <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.07)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.07)" />
                 <XAxis dataKey="date" tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
                 <YAxis tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} width={42}
                   tickFormatter={(v) => redondeo ? `${curSymbol}${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}` : `${curSymbol}${v}`} />
-                <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)", borderRadius: "10px", color: "#F1F5F9" }}
+                <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "10px", color: "#F1F5F9" }}
                   formatter={(v) => [fmt(Number(v)), chartMode === "profit" ? "Profit" : "Revenue"]} />
                 <Area type="monotone" dataKey={chartKey} stroke={chartColor} strokeWidth={2}
                   fill="url(#areaGrad)" dot={false} activeDot={{ r: 4, fill: chartColor }} />
@@ -524,11 +524,11 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
       {/* Insight IA ─────────────────────────────────────────────────────────── */}
       <div className="anim-up flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 rounded-2xl p-4 sm:p-5"
-        style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(37,99,235,0.05))", border: "1px solid rgba(124,58,237,0.25)", animationDelay: "0.32s" }}>
+        style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(37,99,235,0.05))", border: "1px solid rgba(139,92,246,0.25)", animationDelay: "0.32s" }}>
         <div className="flex items-center gap-3 flex-1">
           <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(124,58,237,0.15)" }}>
-            <Brain size={20} color="#8B5CF6" strokeWidth={2} />
+            style={{ background: "rgba(139,92,246,0.15)" }}>
+            <Brain size={20} color="#a78bfa" strokeWidth={2} />
           </div>
           <div className="flex-1">
             <p className="font-bold text-[#F1F5F9] text-sm mb-1">Insight IA del día</p>
@@ -541,7 +541,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
         </div>
         <Link href="/app/ia"
           className="w-full sm:w-auto flex-shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-          style={{ color: "#8B5CF6", background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)" }}>
+          style={{ color: "#a78bfa", background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)" }}>
           Ver análisis <ArrowRight size={14} />
         </Link>
       </div>
@@ -551,13 +551,13 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
         {recentOrders.length > 0 && (
           <div className="anim-up xl:col-span-2 rounded-2xl overflow-hidden"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)", animationDelay: "0.38s" }}>
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)", animationDelay: "0.38s" }}>
             <div className="px-5 py-3 flex items-center justify-between"
-              style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+              style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
               <p className="text-sm font-semibold text-[#F1F5F9]">Últimas órdenes</p>
-              <Link href="/app/ordenes" className="text-xs text-[#7C3AED] hover:text-[#8B5CF6] transition-colors">Ver todas →</Link>
+              <Link href="/app/ordenes" className="text-xs text-[#8b5cf6] hover:text-[#a78bfa] transition-colors">Ver todas →</Link>
             </div>
-            <div className="divide-y" style={{ borderColor: "rgba(124,58,237,0.07)" }}>
+            <div className="divide-y" style={{ borderColor: "rgba(139,92,246,0.07)" }}>
               {recentOrders.map((o) => (
                 <div key={o.id} className="flex items-center gap-3 px-5 py-2.5">
                   <StatusDot status={o.status} />
@@ -577,14 +577,14 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           </div>
         )}
 
-        <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
-          <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
+          <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
             <p className="text-sm font-semibold text-[#F1F5F9]">Clientes</p>
           </div>
           <div className="p-5 space-y-4">
             {[
               { label: "Recurrentes", value: data.recurrenteCount, color: "#22c55e" },
-              { label: "Nuevos",      value: data.customerCount - data.recurrenteCount, color: "#7C3AED" },
+              { label: "Nuevos",      value: data.customerCount - data.recurrenteCount, color: "#8b5cf6" },
             ].map((c) => (
               <div key={c.label} className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${c.color}12` }}>
@@ -597,8 +597,8 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
               </div>
             ))}
             <Link href="/app/clientes"
-              className="flex items-center gap-1.5 text-xs font-semibold transition-colors hover:text-[#8B5CF6]"
-              style={{ color: "#7C3AED" }}>
+              className="flex items-center gap-1.5 text-xs font-semibold transition-colors hover:text-[#a78bfa]"
+              style={{ color: "#8b5cf6" }}>
               Ver todos los clientes <ArrowRight size={12} />
             </Link>
           </div>

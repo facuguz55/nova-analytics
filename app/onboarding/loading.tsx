@@ -20,7 +20,7 @@ export default function OnboardingLoading() {
           ))}
         </div>
 
-        <div className="rounded-2xl p-7 space-y-6" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+        <div className="rounded-2xl p-7 space-y-6" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
           <div className="flex items-center gap-4">
             <div className="sk w-16 h-16 rounded-2xl flex-shrink-0" />
             <div className="space-y-2">

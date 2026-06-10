@@ -75,7 +75,7 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
 
       {/* Fondo con glow */}
       <div className="fixed inset-0 pointer-events-none" style={{
-        background: "radial-gradient(ellipse 70% 50% at 50% -10%, rgba(124,58,237,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 80%, rgba(6,182,212,0.06) 0%, transparent 60%)"
+        background: "radial-gradient(ellipse 70% 50% at 50% -10%, rgba(139,92,246,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 80%, rgba(6,182,212,0.06) 0%, transparent 60%)"
       }} />
 
       {/* Top nav */}
@@ -85,7 +85,7 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
         <a href={hasAnyPlan ? "/app/dashboard" : "/"}
           className="flex items-center gap-1.5 text-xs font-medium transition-colors"
           style={{ color: "#475569" }}
-          onMouseEnter={e => (e.currentTarget.style.color = "#8B5CF6")}
+          onMouseEnter={e => (e.currentTarget.style.color = "#a78bfa")}
           onMouseLeave={e => (e.currentTarget.style.color = "#475569")}
         >
           <ArrowLeft size={13} strokeWidth={2.5} />
@@ -122,7 +122,7 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
 
           {/* Header */}
           <div className="text-center space-y-1 mb-6">
-            <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: "#7C3AED" }}>Nova Analytics</p>
+            <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: "#8b5cf6" }}>Nova Analytics</p>
             <h1 className="text-2xl sm:text-3xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.03em" }}>
               {hasAnyPlan ? "Tu plan" : "Elegí tu plan"}
             </h1>
@@ -132,16 +132,16 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
           {/* Plan activo */}
           {hasAnyPlan && (
             <div className="rounded-2xl p-5 space-y-4" style={{
-              background: "rgba(124,58,237,0.05)",
-              border: `1px solid ${isTrial ? "rgba(6,182,212,0.2)" : "rgba(124,58,237,0.25)"}`,
-              boxShadow: `0 0 40px ${isTrial ? "rgba(6,182,212,0.04)" : "rgba(124,58,237,0.06)"}`,
+              background: "rgba(139,92,246,0.05)",
+              border: `1px solid ${isTrial ? "rgba(6,182,212,0.2)" : "rgba(139,92,246,0.25)"}`,
+              boxShadow: `0 0 40px ${isTrial ? "rgba(6,182,212,0.04)" : "rgba(139,92,246,0.06)"}`,
             }}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={{ background: isTrial ? "rgba(6,182,212,0.12)" : "rgba(124,58,237,0.15)" }}>
+                  style={{ background: isTrial ? "rgba(6,182,212,0.12)" : "rgba(139,92,246,0.15)" }}>
                   {isTrial
                     ? <Gift size={15} color="#06B6D4" strokeWidth={2} />
-                    : <CheckCircle2 size={15} color="#8B5CF6" strokeWidth={2} />}
+                    : <CheckCircle2 size={15} color="#a78bfa" strokeWidth={2} />}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-bold text-[#F1F5F9]">{isTrial ? "Prueba gratuita" : "Plan Pro"}</p>
@@ -244,22 +244,22 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
                 {/* Exterior */}
                 <div className="rounded-2xl p-5 flex flex-col gap-4" style={{
                   background: "rgba(255,255,255,0.02)",
-                  border: "1px solid rgba(124,58,237,0.15)",
+                  border: "1px solid rgba(139,92,246,0.15)",
                   transition: "border-color 0.2s, box-shadow 0.2s",
                 }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(124,58,237,0.35)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 30px rgba(124,58,237,0.06)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(124,58,237,0.15)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(139,92,246,0.35)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 30px rgba(139,92,246,0.06)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(139,92,246,0.15)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; }}
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                      style={{ background: "rgba(124,58,237,0.12)" }}>
-                      <MessageCircle size={14} color="#8B5CF6" strokeWidth={2} />
+                      style={{ background: "rgba(139,92,246,0.12)" }}>
+                      <MessageCircle size={14} color="#a78bfa" strokeWidth={2} />
                     </div>
                     <p className="text-xs font-semibold text-[#94A3B8]">WhatsApp · Exterior</p>
                   </div>
 
                   <div>
-                    <p className="text-3xl font-black" style={{ color: "#8B5CF6", letterSpacing: "-0.04em" }}>
+                    <p className="text-3xl font-black" style={{ color: "#a78bfa", letterSpacing: "-0.04em" }}>
                       USD 59
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: "#334155" }}>/ mes · coordinamos el pago</p>
@@ -268,7 +268,7 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
                   <ul className="space-y-1.5 flex-1">
                     {FEATURES.map((f) => (
                       <li key={f} className="flex items-center gap-2 text-xs" style={{ color: "#475569" }}>
-                        <Zap size={10} color="#8B5CF6" strokeWidth={2.5} />
+                        <Zap size={10} color="#a78bfa" strokeWidth={2.5} />
                         {f}
                       </li>
                     ))}
@@ -276,9 +276,9 @@ export default function BillingClient({ workspaceId, userEmail, subscription }: 
 
                   <a href={WA_URL} target="_blank" rel="noopener noreferrer"
                     className="w-full py-2.5 rounded-xl text-xs font-bold text-center transition-all block"
-                    style={{ background: "rgba(124,58,237,0.12)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.25)" }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(124,58,237,0.2)")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "rgba(124,58,237,0.12)")}
+                    style={{ background: "rgba(139,92,246,0.12)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(139,92,246,0.2)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "rgba(139,92,246,0.12)")}
                   >
                     Contactar por WhatsApp
                   </a>

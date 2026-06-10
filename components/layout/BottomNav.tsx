@@ -62,7 +62,7 @@ export default function BottomNav() {
   const [showMore, setShowMore] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const activeColor = "#e1691e";
+  const activeColor = "#c084fc";
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -88,16 +88,16 @@ export default function BottomNav() {
         >
           <div
             className="absolute bottom-16 left-0 right-0 rounded-t-3xl overflow-hidden"
-            style={{ background: "#0d0d14", border: "1px solid rgba(124,58,237,0.2)", borderBottom: "none" }}
+            style={{ background: "#0d0d14", border: "1px solid rgba(139,92,246,0.2)", borderBottom: "none" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(124,58,237,0.3)" }} />
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(139,92,246,0.3)" }} />
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid rgba(124,58,237,0.12)" }}>
+            <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.12)" }}>
               <p className="text-sm font-bold text-[#F1F5F9]">Menú</p>
               <button onClick={() => setShowMore(false)} style={{ color: "#64748B" }}>
                 <X size={18} strokeWidth={2} />
@@ -122,8 +122,8 @@ export default function BottomNav() {
                           onClick={() => setShowMore(false)}
                           className="flex items-center gap-2.5 rounded-xl px-3 py-2.5"
                           style={{
-                            background: active ? "rgba(124,58,237,0.12)" : "rgba(124,58,237,0.05)",
-                            border: `1px solid ${active ? "rgba(124,58,237,0.3)" : "rgba(124,58,237,0.1)"}`,
+                            background: active ? "rgba(139,92,246,0.12)" : "rgba(139,92,246,0.05)",
+                            border: `1px solid ${active ? "rgba(139,92,246,0.3)" : "rgba(139,92,246,0.1)"}`,
                             color: active ? activeColor : "#94A3B8",
                           }}
                         >
@@ -159,7 +159,7 @@ export default function BottomNav() {
         style={{
           height: "64px",
           background: "#0d0d14",
-          borderTop: "1px solid rgba(124,58,237,0.2)",
+          borderTop: "1px solid rgba(139,92,246,0.2)",
         }}
       >
         {[...BOTTOM_ITEMS, { href: "__more__", label: "Más", icon: LayoutGrid }].map((item) => {

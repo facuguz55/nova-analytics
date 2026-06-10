@@ -42,7 +42,7 @@ export default function UpdatePasswordPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-6">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.12)_0%,transparent_70%)] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.12)_0%,transparent_70%)] pointer-events-none" />
 
       <div className="w-full max-w-md relative">
         <div className="flex justify-center mb-8">
@@ -56,7 +56,7 @@ export default function UpdatePasswordPage() {
           </Link>
         </div>
 
-        <div className="bg-[#111118] border border-[rgba(124,58,237,0.2)] rounded-2xl p-8">
+        <div className="bg-[#111118] border border-[rgba(139,92,246,0.2)] rounded-2xl p-8">
           {done ? (
             <div className="flex flex-col items-center gap-4 py-6">
               <div className="w-14 h-14 rounded-full bg-[rgba(34,197,94,0.1)] flex items-center justify-center">
@@ -79,7 +79,7 @@ export default function UpdatePasswordPage() {
                       placeholder="Mínimo 8 caracteres"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-3 pr-11 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.25)] rounded-xl px-4 py-3 pr-11 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#8b5cf6] transition-colors"
                     />
                     <button
                       type="button"
@@ -98,14 +98,14 @@ export default function UpdatePasswordPage() {
                     placeholder="Repetí la contraseña"
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
-                    className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.25)] rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#8b5cf6] transition-colors"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#7C3AED] to-[#2563EB] hover:opacity-90 disabled:opacity-60 text-white py-3.5 rounded-xl font-semibold transition-all"
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#8b5cf6] to-[#c026d3] hover:opacity-90 disabled:opacity-60 text-white py-3.5 rounded-xl font-semibold transition-all"
                 >
                   {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                   {loading ? "Guardando..." : "Guardar contraseña"}

@@ -95,12 +95,12 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-6">
         <div className="w-full max-w-md">
-          <div className="bg-[#111118] border border-[rgba(124,58,237,0.2)] rounded-2xl p-8 text-center space-y-5">
+          <div className="bg-[#111118] border border-[rgba(139,92,246,0.2)] rounded-2xl p-8 text-center space-y-5">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto"
-              style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)" }}>
+              style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)" }}>
               <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
                 <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
 
@@ -152,7 +152,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-6">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.12)_0%,transparent_70%)] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.12)_0%,transparent_70%)] pointer-events-none" />
 
       <div className="w-full max-w-md relative">
         <div className="flex justify-center mb-8">
@@ -166,7 +166,7 @@ export default function RegisterPage() {
           </Link>
         </div>
 
-        <div className="bg-[#111118] border border-[rgba(124,58,237,0.2)] rounded-2xl p-8">
+        <div className="bg-[#111118] border border-[rgba(139,92,246,0.2)] rounded-2xl p-8">
           <h1 className="text-2xl font-black text-[#F1F5F9] mb-1">Crear cuenta</h1>
           <p className="text-[#94A3B8] text-sm mb-8">Empieza a centralizar tu negocio hoy.</p>
 
@@ -188,9 +188,9 @@ export default function RegisterPage() {
           </button>
 
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-[rgba(124,58,237,0.15)]" />
+            <div className="flex-1 h-px bg-[rgba(139,92,246,0.15)]" />
             <span className="text-xs text-[#94A3B8]">o con email</span>
-            <div className="flex-1 h-px bg-[rgba(124,58,237,0.15)]" />
+            <div className="flex-1 h-px bg-[rgba(139,92,246,0.15)]" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -201,7 +201,7 @@ export default function RegisterPage() {
                 placeholder="Tu nombre"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.25)] rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#8b5cf6] transition-colors"
               />
               {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
             </div>
@@ -212,7 +212,7 @@ export default function RegisterPage() {
                 placeholder="tu@email.com"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.25)] rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#8b5cf6] transition-colors"
               />
               {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
             </div>
@@ -224,7 +224,7 @@ export default function RegisterPage() {
                   placeholder="Mínimo 8 caracteres"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-3 pr-11 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  className="w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.25)] rounded-xl px-4 py-3 pr-11 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#8b5cf6] transition-colors"
                 />
                 <button
                   type="button"
@@ -250,7 +250,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || !captchaToken}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#7C3AED] to-[#2563EB] hover:opacity-90 disabled:opacity-60 text-white py-3.5 rounded-xl font-semibold transition-all"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#8b5cf6] to-[#c026d3] hover:opacity-90 disabled:opacity-60 text-white py-3.5 rounded-xl font-semibold transition-all"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {loading ? "Creando cuenta..." : "Crear cuenta"}
@@ -259,7 +259,7 @@ export default function RegisterPage() {
 
           <p className="text-center text-sm text-[#94A3B8] mt-6">
             Ya tenes cuenta?{" "}
-            <Link href="/login" className="text-[#8B5CF6] hover:text-white font-medium transition-colors">
+            <Link href="/login" className="text-[#a78bfa] hover:text-white font-medium transition-colors">
               Iniciar sesion
             </Link>
           </p>

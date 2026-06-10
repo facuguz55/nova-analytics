@@ -40,13 +40,13 @@ export default function PaywallCard({ workspaceId, userEmail }: Props) {
   return (
     <div
       className="w-full max-w-md mx-4 rounded-3xl p-8 shadow-2xl relative overflow-hidden"
-      style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.45)" }}
+      style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.45)" }}
     >
       {/* Animación sutil de glow de fondo */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.18) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(139,92,246,0.18) 0%, transparent 70%)",
           animation: "paywall-pulse 4s ease-in-out infinite",
         }}
       />
@@ -59,9 +59,9 @@ export default function PaywallCard({ workspaceId, userEmail }: Props) {
 
       <div className="relative flex justify-center mb-6">
         <div
-          className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#7C3AED] to-[#2563EB] flex items-center justify-center"
+          className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#8b5cf6] to-[#c026d3] flex items-center justify-center"
           style={{
-            boxShadow: "0 0 32px rgba(124,58,237,0.5), 0 4px 16px rgba(124,58,237,0.3)",
+            boxShadow: "0 0 32px rgba(139,92,246,0.5), 0 4px 16px rgba(139,92,246,0.3)",
             animation: "paywall-icon 4s ease-in-out infinite",
           }}
         >
@@ -69,8 +69,8 @@ export default function PaywallCard({ workspaceId, userEmail }: Props) {
         </div>
         <style>{`
           @keyframes paywall-icon {
-            0%, 100% { box-shadow: 0 0 24px rgba(124,58,237,0.4), 0 4px 16px rgba(124,58,237,0.25); }
-            50% { box-shadow: 0 0 48px rgba(124,58,237,0.65), 0 4px 20px rgba(124,58,237,0.4); }
+            0%, 100% { box-shadow: 0 0 24px rgba(139,92,246,0.4), 0 4px 16px rgba(139,92,246,0.25); }
+            50% { box-shadow: 0 0 48px rgba(139,92,246,0.65), 0 4px 20px rgba(139,92,246,0.4); }
           }
         `}</style>
       </div>
@@ -96,7 +96,7 @@ export default function PaywallCard({ workspaceId, userEmail }: Props) {
         onClick={handleCheckout}
         disabled={loading}
         className="relative w-full flex items-center justify-center gap-2 rounded-xl py-4 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60"
-        style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)", boxShadow: "0 4px 24px rgba(124,58,237,0.4)" }}
+        style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)", boxShadow: "0 4px 24px rgba(139,92,246,0.4)" }}
       >
         {loading ? (
           <>

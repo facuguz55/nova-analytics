@@ -104,9 +104,9 @@ export default async function ClientePerfilPage({
 
       {/* Header */}
       <div className="rounded-2xl p-4 sm:p-5 flex items-start gap-4"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
-        <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-black text-[#7C3AED] flex-shrink-0"
-          style={{ background: "rgba(124,58,237,0.15)" }}>
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
+        <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-black text-[#8b5cf6] flex-shrink-0"
+          style={{ background: "rgba(139,92,246,0.15)" }}>
           {customer.name?.charAt(0)?.toUpperCase() ?? "?"}
         </div>
         <div className="flex-1 min-w-0">
@@ -116,7 +116,7 @@ export default async function ClientePerfilPage({
             </h1>
             {isVIP && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
-                style={{ background: "rgba(225,105,30,0.15)", color: "#e1691e" }}>
+                style={{ background: "rgba(192,132,252,0.15)", color: "#c084fc" }}>
                 <Crown size={10} strokeWidth={2.5} />
                 VIP
               </span>
@@ -153,13 +153,13 @@ export default async function ClientePerfilPage({
       {/* Métricas */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total gastado",  value: formatCurrency(totalSpent), icon: DollarSign,   color: "#7C3AED" },
+          { label: "Total gastado",  value: formatCurrency(totalSpent), icon: DollarSign,   color: "#8b5cf6" },
           { label: "Órdenes pagas",  value: String(paidCount),          icon: ShoppingCart,  color: "#22c55e" },
-          { label: "Ticket promedio",value: formatCurrency(avgTicket),  icon: TrendingUp,    color: "#2563EB" },
-          { label: "Total órdenes",  value: String(customerOrders.length), icon: Calendar,  color: "#e1691e" },
+          { label: "Ticket promedio",value: formatCurrency(avgTicket),  icon: TrendingUp,    color: "#c026d3" },
+          { label: "Total órdenes",  value: String(customerOrders.length), icon: Calendar,  color: "#c084fc" },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl p-4 flex flex-col gap-2"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.18)" }}>
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.18)" }}>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center"
               style={{ background: `${s.color}18` }}>
               <s.icon size={15} color={s.color} strokeWidth={2} />
@@ -176,16 +176,16 @@ export default async function ClientePerfilPage({
         {/* Productos más comprados */}
         {topProducts.length > 0 && (
           <div className="rounded-2xl p-5"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.18)" }}>
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.18)" }}>
             <div className="flex items-center gap-2 mb-4">
-              <Package size={14} color="#8B5CF6" strokeWidth={2} />
+              <Package size={14} color="#a78bfa" strokeWidth={2} />
               <p className="text-sm font-semibold text-[#F1F5F9]">Productos más comprados</p>
             </div>
             <div className="space-y-2.5">
               {topProducts.map(([name, qty], i) => (
                 <div key={i} className="flex items-center justify-between gap-3">
                   <p className="text-xs text-[#CBD5E1] truncate flex-1">{name}</p>
-                  <span className="text-xs font-bold text-[#8B5CF6] flex-shrink-0">{qty}x</span>
+                  <span className="text-xs font-bold text-[#a78bfa] flex-shrink-0">{qty}x</span>
                 </div>
               ))}
             </div>
@@ -194,9 +194,9 @@ export default async function ClientePerfilPage({
 
         {/* Fechas importantes */}
         <div className="rounded-2xl p-5"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.18)" }}>
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.18)" }}>
           <div className="flex items-center gap-2 mb-4">
-            <Calendar size={14} color="#8B5CF6" strokeWidth={2} />
+            <Calendar size={14} color="#a78bfa" strokeWidth={2} />
             <p className="text-sm font-semibold text-[#F1F5F9]">Historial</p>
           </div>
           <div className="space-y-3">
@@ -236,8 +236,8 @@ export default async function ClientePerfilPage({
 
       {/* Historial de órdenes */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.18)" }}>
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.12)" }}>
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.18)" }}>
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.12)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">
             Historial de órdenes ({customerOrders.length})
           </p>
@@ -254,10 +254,10 @@ export default async function ClientePerfilPage({
                 <div
                   key={o.id}
                   className="flex items-center gap-3 px-5 py-3"
-                  style={{ borderBottom: i < customerOrders.length - 1 ? "1px solid rgba(124,58,237,0.07)" : "none" }}
+                  style={{ borderBottom: i < customerOrders.length - 1 ? "1px solid rgba(139,92,246,0.07)" : "none" }}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#8B5CF6]">#{o.number ?? o.id}</p>
+                    <p className="text-sm font-semibold text-[#a78bfa]">#{o.number ?? o.id}</p>
                     {o.products?.length > 0 && (
                       <p className="text-xs text-[#64748B] truncate mt-0.5">
                         {o.products.slice(0, 2).map((p) => p.name).join(", ")}

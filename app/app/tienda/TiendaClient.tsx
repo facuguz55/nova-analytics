@@ -98,9 +98,9 @@ export default function TiendaClient({
     .slice(0, 5);
 
   const statCards: StatCard[] = [
-    { label: `Ingresos (${selectedDays}d)`, value: fmt(totalRevenue), icon: DollarSign, color: "#7C3AED", sub: `${paidOrders.length} órdenes pagas` },
+    { label: `Ingresos (${selectedDays}d)`, value: fmt(totalRevenue), icon: DollarSign, color: "#8b5cf6", sub: `${paidOrders.length} órdenes pagas` },
     { label: "Ticket promedio",             value: fmt(avgTicket),     icon: ShoppingCart, color: "#22c55e" },
-    { label: "Clientes",                    value: String(customers.length), icon: Users, color: "#2563EB", sub: `${recurrentes.length} recurrentes` },
+    { label: "Clientes",                    value: String(customers.length), icon: Users, color: "#c026d3", sub: `${recurrentes.length} recurrentes` },
     { label: "Conversión",                  value: `${convRate}%`,     icon: TrendingUp, color: "#f59e0b", sub: `${allOrders.length} órdenes` },
   ];
 
@@ -123,8 +123,8 @@ export default function TiendaClient({
           <div className="relative">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all hover:bg-[rgba(124,58,237,0.15)]"
-              style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.25)", color: "#8B5CF6" }}
+              className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all hover:bg-[rgba(139,92,246,0.15)]"
+              style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.25)", color: "#a78bfa" }}
             >
               {currency}
               <ChevronDown size={11} strokeWidth={2.5} className={`transition-transform ${showDropdown ? "rotate-180" : ""}`} />
@@ -132,21 +132,21 @@ export default function TiendaClient({
             {showDropdown && (
               <div
                 className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-20 py-1"
-                style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)", minWidth: "150px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
+                style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)", minWidth: "150px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
               >
                 {CURRENCIES.map((c) => (
                   <button
                     key={c.code}
                     onClick={() => { setCurrency(c.code); setShowDropdown(false); }}
-                    className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold transition-colors hover:bg-[rgba(124,58,237,0.08)]"
-                    style={{ color: c.code === currency ? "#8B5CF6" : "#94A3B8" }}
+                    className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold transition-colors hover:bg-[rgba(139,92,246,0.08)]"
+                    style={{ color: c.code === currency ? "#a78bfa" : "#94A3B8" }}
                   >
                     <span>{c.code} — {c.label}</span>
-                    {c.code === currency && <Check size={11} strokeWidth={2.5} color="#7C3AED" />}
+                    {c.code === currency && <Check size={11} strokeWidth={2.5} color="#8b5cf6" />}
                   </button>
                 ))}
                 {currency !== "ARS" && (
-                  <p className="px-4 py-1.5 text-[10px] text-[#475569] border-t" style={{ borderColor: "rgba(124,58,237,0.12)" }}>
+                  <p className="px-4 py-1.5 text-[10px] text-[#475569] border-t" style={{ borderColor: "rgba(139,92,246,0.12)" }}>
                     {currency === "USD" ? `1 USD = ${usdRate.toLocaleString("es-AR")} ARS` : `Tasa aprox. vs USD`}
                   </p>
                 )}
@@ -155,14 +155,14 @@ export default function TiendaClient({
           </div>
 
           {/* Days selector */}
-          <div className="flex gap-1 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}>
+          <div className="flex gap-1 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(139,92,246,0.2)" }}>
             {([30, 60, 90] as const).map((d) => (
               <Link
                 key={d}
                 href={`?days=${d}`}
                 onClick={() => setSelectedDays(d)}
                 className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-                style={{ background: selectedDays === d ? "#7C3AED" : "transparent", color: selectedDays === d ? "#fff" : "#64748B" }}
+                style={{ background: selectedDays === d ? "#8b5cf6" : "transparent", color: selectedDays === d ? "#fff" : "#64748B" }}
               >
                 {d}d
               </Link>
@@ -173,13 +173,13 @@ export default function TiendaClient({
 
       {/* Sin conexión */}
       {!isConnected && (
-        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(124,58,237,0.3)" }}>
-          <Store size={40} color="#7C3AED" className="mx-auto mb-3" />
+        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}>
+          <Store size={40} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conecta tu TiendaNube</p>
           <p className="text-sm text-[#64748B] mb-4">Para ver tus ventas, productos y clientes en tiempo real</p>
           <Link href="/app/configuracion/integraciones"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white"
-            style={{ background: "#7C3AED" }}
+            style={{ background: "#8b5cf6" }}
           >
             Ir a Integraciones <ArrowRight size={14} />
           </Link>
@@ -200,7 +200,7 @@ export default function TiendaClient({
           {/* Stat cards */}
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             {statCards.map((s) => (
-              <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+              <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${s.color}18` }}>
                   <s.icon size={18} color={s.color} strokeWidth={2} />
                 </div>
@@ -239,7 +239,7 @@ export default function TiendaClient({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Top productos */}
-            <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+            <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
               <h2 className="text-sm font-semibold text-[#F1F5F9]">Top Productos</h2>
               {topProducts.length === 0 ? (
                 <p className="text-sm text-[#64748B]">Sin datos de productos</p>
@@ -252,8 +252,8 @@ export default function TiendaClient({
                     return (
                       <div key={p.id} className="flex items-center justify-between py-1.5">
                         <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(124,58,237,0.1)" }}>
-                            <Package size={14} color="#7C3AED" />
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(139,92,246,0.1)" }}>
+                            <Package size={14} color="#8b5cf6" />
                           </div>
                           <span className="text-sm text-[#CBD5E1] truncate max-w-[120px] sm:max-w-[160px]">{name}</span>
                         </div>
@@ -266,13 +266,13 @@ export default function TiendaClient({
                   })}
                 </div>
               )}
-              <Link href="/app/productos" className="flex items-center gap-1 text-xs text-[#7C3AED] font-medium">
+              <Link href="/app/productos" className="flex items-center gap-1 text-xs text-[#8b5cf6] font-medium">
                 Ver todos <ArrowRight size={12} />
               </Link>
             </div>
 
             {/* Órdenes recientes */}
-            <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+            <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
               <h2 className="text-sm font-semibold text-[#F1F5F9]">Órdenes Recientes</h2>
               {allOrders.length === 0 ? (
                 <p className="text-sm text-[#64748B]">Sin órdenes en el periodo</p>
@@ -298,7 +298,7 @@ export default function TiendaClient({
                   })}
                 </div>
               )}
-              <Link href="/app/ordenes" className="flex items-center gap-1 text-xs text-[#7C3AED] font-medium">
+              <Link href="/app/ordenes" className="flex items-center gap-1 text-xs text-[#8b5cf6] font-medium">
                 Ver todas <ArrowRight size={12} />
               </Link>
             </div>

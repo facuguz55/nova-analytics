@@ -26,10 +26,10 @@ interface RatesData {
 
 const USD_TYPES = [
   { key: "oficial", label: "Oficial",    color: "#22c55e" },
-  { key: "blue",    label: "Blue",       color: "#8B5CF6" },
-  { key: "bolsa",   label: "Bolsa/MEP",  color: "#2563EB" },
+  { key: "blue",    label: "Blue",       color: "#a78bfa" },
+  { key: "bolsa",   label: "Bolsa/MEP",  color: "#c026d3" },
   { key: "ccl",     label: "CCL",        color: "#f59e0b" },
-  { key: "cripto",  label: "Cripto",     color: "#e1691e" },
+  { key: "cripto",  label: "Cripto",     color: "#c084fc" },
 ];
 
 function pct(current: number, prev: number | null): string | null {
@@ -70,7 +70,7 @@ export default function CotizacionesClient({
   const avg30 = getPastAvg([...historical].reverse(), 30);
   const avgYear = avg30 ? Math.round(avg30 * 0.97) : null;
 
-  const typeColor = USD_TYPES.find((t) => t.key === usdType)?.color ?? "#7C3AED";
+  const typeColor = USD_TYPES.find((t) => t.key === usdType)?.color ?? "#8b5cf6";
 
   const chartData = historical.map((h) => ({
     date: h.date.slice(5), // MM-DD
@@ -115,7 +115,7 @@ export default function CotizacionesClient({
       </div>
 
       {/* Config card */}
-      <div className="rounded-2xl p-4 sm:p-6 space-y-5" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+      <div className="rounded-2xl p-4 sm:p-6 space-y-5" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
         <p className="text-sm font-semibold text-[#F1F5F9]">Cotización activa de la cuenta</p>
 
         {/* Tipo de dólar */}
@@ -133,8 +133,8 @@ export default function CotizacionesClient({
                   onClick={() => setUsdType(t.key)}
                   className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all"
                   style={{
-                    background: active ? `${t.color}18` : "rgba(124,58,237,0.04)",
-                    border: active ? `1px solid ${t.color}60` : "1px solid rgba(124,58,237,0.15)",
+                    background: active ? `${t.color}18` : "rgba(139,92,246,0.04)",
+                    border: active ? `1px solid ${t.color}60` : "1px solid rgba(139,92,246,0.15)",
                     color: active ? t.color : "#64748B",
                   }}
                 >
@@ -163,7 +163,7 @@ export default function CotizacionesClient({
           </div>
           <div
             className="flex items-center gap-2 rounded-xl px-4 py-3 w-full sm:w-48"
-            style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+            style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
           >
             <span className="text-sm text-[#64748B]">%</span>
             <input
@@ -190,7 +190,7 @@ export default function CotizacionesClient({
           onClick={handleSave}
           disabled={saving}
           className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-80 disabled:opacity-50"
-          style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+          style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
         >
           <Save size={14} strokeWidth={2.5} />
           {saving ? "Guardando..." : "Guardar Cotización"}
@@ -212,7 +212,7 @@ export default function CotizacionesClient({
               <div
                 key={s.label}
                 className="rounded-2xl p-5"
-                style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}
+                style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}
               >
                 <p className="text-xs text-[#64748B] mb-2">{s.label}</p>
                 <p className="text-2xl font-black" style={{ color: s.color }}>
@@ -235,7 +235,7 @@ export default function CotizacionesClient({
       {chartData.length > 0 && (
         <div
           className="rounded-2xl p-5"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}
         >
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm font-semibold text-[#F1F5F9]">
@@ -245,7 +245,7 @@ export default function CotizacionesClient({
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.08)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.08)" />
               <XAxis
                 dataKey="date"
                 tick={{ fill: "#64748B", fontSize: 11 }}
@@ -281,9 +281,9 @@ export default function CotizacionesClient({
       {!ratesData && (
         <div
           className="rounded-2xl p-8 text-center"
-          style={{ background: "#111118", border: "1px dashed rgba(124,58,237,0.3)" }}
+          style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}
         >
-          <DollarSign size={36} color="#7C3AED" className="mx-auto mb-3" />
+          <DollarSign size={36} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">No se pudo cargar la cotización</p>
           <p className="text-sm text-[#64748B]">Verificá tu conexión a internet e intentá de nuevo</p>
         </div>

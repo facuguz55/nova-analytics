@@ -20,7 +20,7 @@ const PLANS = ["free", "trial", "active", "pro", "agency"] as const;
 const ROLES = ["owner", "admin", "member"] as const;
 
 const PLAN_COLORS: Record<string, string> = {
-  free: "#64748B", pro: "#7C3AED", agency: "#e1691e", trial: "#22c55e", active: "#2563EB",
+  free: "#64748B", pro: "#8b5cf6", agency: "#c084fc", trial: "#22c55e", active: "#c026d3",
 };
 const STATUS_COLORS: Record<string, string> = {
   active: "#22c55e", inactive: "#ef4444", suspended: "#f59e0b",
@@ -130,12 +130,12 @@ export default function WorkspacesClient({
       {/* Tabla */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+              <tr style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
                 {["", "WORKSPACE", "PLAN", "ESTADO", "USUARIOS", "REVENUE", "ACCIONES"].map((col) => (
                   <th key={col} className="text-left px-4 py-3 text-[10px] font-semibold tracking-widest text-[#94A3B8] uppercase whitespace-nowrap">
                     {col}
@@ -157,8 +157,8 @@ export default function WorkspacesClient({
                   <>
                     <tr
                       key={ws.id}
-                      className="hover:bg-[rgba(124,58,237,0.03)] transition-colors"
-                      style={{ borderBottom: (!isExpanded || ws.users.length === 0) && !lastRow ? "1px solid rgba(124,58,237,0.08)" : "none" }}
+                      className="hover:bg-[rgba(139,92,246,0.03)] transition-colors"
+                      style={{ borderBottom: (!isExpanded || ws.users.length === 0) && !lastRow ? "1px solid rgba(139,92,246,0.08)" : "none" }}
                     >
                       {/* Expand toggle */}
                       <td className="px-4 py-3 w-8">
@@ -218,7 +218,7 @@ export default function WorkspacesClient({
 
                       {/* Revenue */}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-sm font-bold" style={{ color: ws.revenue > 0 ? "#e1691e" : "#64748B" }}>
+                        <span className="text-sm font-bold" style={{ color: ws.revenue > 0 ? "#c084fc" : "#64748B" }}>
                           {ws.revenue > 0 ? formatCurrency(ws.revenue) : "—"}
                         </span>
                       </td>
@@ -250,27 +250,27 @@ export default function WorkspacesClient({
                     {isExpanded && ws.users.length > 0 && (
                       <tr
                         key={ws.id + "-users"}
-                        style={{ borderBottom: !lastRow ? "1px solid rgba(124,58,237,0.08)" : "none" }}
+                        style={{ borderBottom: !lastRow ? "1px solid rgba(139,92,246,0.08)" : "none" }}
                       >
                         <td />
                         <td colSpan={6} className="px-4 pb-3">
                           <div
                             className="rounded-xl overflow-hidden"
-                            style={{ border: "1px solid rgba(124,58,237,0.12)", background: "#0d0d14" }}
+                            style={{ border: "1px solid rgba(139,92,246,0.12)", background: "#0d0d14" }}
                           >
-                            <div className="px-4 py-2" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+                            <div className="px-4 py-2" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
                               <p className="text-[10px] font-semibold tracking-widest text-[#64748B] uppercase">Usuarios del workspace</p>
                             </div>
                             {ws.users.map((u, j) => (
                               <div
                                 key={u.id}
                                 className="flex items-center justify-between px-4 py-2.5"
-                                style={{ borderBottom: j < ws.users.length - 1 ? "1px solid rgba(124,58,237,0.08)" : "none" }}
+                                style={{ borderBottom: j < ws.users.length - 1 ? "1px solid rgba(139,92,246,0.08)" : "none" }}
                               >
                                 <div className="flex items-center gap-3">
                                   <div
                                     className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0"
-                                    style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+                                    style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
                                   >
                                     {(u.email ?? u.name ?? "?")[0]?.toUpperCase()}
                                   </div>
@@ -286,7 +286,7 @@ export default function WorkspacesClient({
                                     disabled={loadingId?.startsWith(u.id) || isPending}
                                     onChange={(e) => handleRoleChange(u.id, e.target.value)}
                                     className="text-[10px] font-semibold px-2 py-1 rounded-lg cursor-pointer disabled:opacity-60"
-                                    style={{ background: "rgba(124,58,237,0.1)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.2)" }}
+                                    style={{ background: "rgba(139,92,246,0.1)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.2)" }}
                                   >
                                     {ROLES.map((r) => (
                                       <option key={r} value={r} style={{ background: "#111118", color: "#F1F5F9" }}>{r}</option>
@@ -311,7 +311,7 @@ export default function WorkspacesClient({
                     )}
 
                     {isExpanded && ws.users.length === 0 && (
-                      <tr key={ws.id + "-empty"} style={{ borderBottom: !lastRow ? "1px solid rgba(124,58,237,0.08)" : "none" }}>
+                      <tr key={ws.id + "-empty"} style={{ borderBottom: !lastRow ? "1px solid rgba(139,92,246,0.08)" : "none" }}>
                         <td />
                         <td colSpan={6} className="px-4 pb-3">
                           <p className="text-xs text-[#64748B] py-2">Sin usuarios en este workspace</p>
@@ -352,7 +352,7 @@ export default function WorkspacesClient({
               <button
                 onClick={() => setConfirm(null)}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-[#94A3B8] transition-colors hover:text-[#F1F5F9]"
-                style={{ border: "1px solid rgba(124,58,237,0.2)" }}
+                style={{ border: "1px solid rgba(139,92,246,0.2)" }}
               >
                 Cancelar
               </button>
@@ -393,7 +393,7 @@ export default function WorkspacesClient({
                   placeholder="Ej: 15000"
                   value={orderForm.total}
                   onChange={(e) => setOrderForm({ ...orderForm, total: e.target.value })}
-                  className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#64748B] focus:outline-none focus:border-[#7C3AED]"
+                  className="w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.25)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#64748B] focus:outline-none focus:border-[#8b5cf6]"
                 />
               </div>
               <div>
@@ -403,7 +403,7 @@ export default function WorkspacesClient({
                   placeholder="Cliente manual"
                   value={orderForm.customerName}
                   onChange={(e) => setOrderForm({ ...orderForm, customerName: e.target.value })}
-                  className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#64748B] focus:outline-none focus:border-[#7C3AED]"
+                  className="w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.25)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#64748B] focus:outline-none focus:border-[#8b5cf6]"
                 />
               </div>
             </div>
@@ -412,7 +412,7 @@ export default function WorkspacesClient({
               <button
                 onClick={() => { setOrderModal(null); setOrderForm({ total: "", customerName: "" }); }}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-[#94A3B8] transition-colors hover:text-[#F1F5F9]"
-                style={{ border: "1px solid rgba(124,58,237,0.2)" }}
+                style={{ border: "1px solid rgba(139,92,246,0.2)" }}
               >
                 Cancelar
               </button>

@@ -8,7 +8,7 @@ export default function PlanesLoading() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-2xl p-6 space-y-5" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+          <div key={i} className="rounded-2xl p-6 space-y-5" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
             <div className="space-y-2">
               <div className="sk h-5 w-24 rounded-lg" />
               <div className="sk h-8 w-32 rounded" />

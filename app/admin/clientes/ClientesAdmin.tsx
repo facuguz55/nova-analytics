@@ -26,8 +26,8 @@ const PLAN_COLOR: Record<string, { text: string; bg: string }> = {
   free:   { text: "#94A3B8", bg: "rgba(100,116,139,0.12)" },
   trial:  { text: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
   active: { text: "#22c55e", bg: "rgba(34,197,94,0.12)" },
-  pro:    { text: "#8B5CF6", bg: "rgba(139,92,246,0.12)" },
-  agency: { text: "#e1691e", bg: "rgba(225,105,30,0.12)" },
+  pro:    { text: "#a78bfa", bg: "rgba(139,92,246,0.12)" },
+  agency: { text: "#c084fc", bg: "rgba(192,132,252,0.12)" },
 };
 
 function PlanBadge({ plan }: { plan: string }) {
@@ -90,11 +90,11 @@ function CreateModal({ onClose }: { onClose: () => void }) {
     });
   }
 
-  const inputCls = "w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.2)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none focus:border-[#7C3AED] transition-colors";
+  const inputCls = "w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.2)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none focus:border-[#8b5cf6] transition-colors";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
-      <div className="w-full max-w-md rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)" }}>
+      <div className="w-full max-w-md rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)" }}>
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-black text-[#F1F5F9]">Crear cliente</h2>
           <button onClick={onClose}><X size={16} color="#64748B" /></button>
@@ -137,7 +137,7 @@ function CreateModal({ onClose }: { onClose: () => void }) {
           </button>
           <button onClick={handleCreate} disabled={pending}
             className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg,#7C3AED,#2563EB)" }}>
+            style={{ background: "linear-gradient(135deg,#8b5cf6,#c026d3)" }}>
             {pending ? "Creando..." : "Crear cliente"}
           </button>
         </div>
@@ -152,7 +152,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.75)" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)" }}>
+      <div className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)" }}>
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-[#F1F5F9]">{title}</h3>
           <button onClick={onClose}><X size={15} color="#64748B" /></button>
@@ -202,15 +202,15 @@ function ClientRow({ client }: { client: Client }) {
     });
   }
 
-  const inputCls = "w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.2)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none";
+  const inputCls = "w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.2)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none";
   const btnRow   = "flex gap-2 pt-1";
   const btnCancel = "flex-1 py-2.5 rounded-xl text-sm text-[#64748B] border border-[rgba(255,255,255,0.08)] hover:text-[#94A3B8] transition-colors";
   const btnSave   = "flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 hover:opacity-90";
 
   return (
     <>
-      <tr className="border-b transition-colors hover:bg-[rgba(124,58,237,0.03)]"
-        style={{ borderColor: "rgba(124,58,237,0.08)" }}>
+      <tr className="border-b transition-colors hover:bg-[rgba(139,92,246,0.03)]"
+        style={{ borderColor: "rgba(139,92,246,0.08)" }}>
         <td className="px-4 py-3">
           <p className="text-sm font-semibold text-[#F1F5F9]">{ws.name}</p>
           <p className="text-xs text-[#64748B]">{fmt(ws.created_at)}</p>
@@ -245,7 +245,7 @@ function ClientRow({ client }: { client: Client }) {
         </td>
         <td className="px-4 py-3">
           <button ref={btnRef} onClick={openMenu}
-            className="p-1.5 rounded-lg transition-colors hover:bg-[rgba(124,58,237,0.1)]">
+            className="p-1.5 rounded-lg transition-colors hover:bg-[rgba(139,92,246,0.1)]">
             <MoreHorizontal size={15} color="#64748B" />
           </button>
 
@@ -253,7 +253,7 @@ function ClientRow({ client }: { client: Client }) {
             <>
               <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
               <div className="fixed z-50 rounded-xl py-1 min-w-[200px]"
-                style={{ top: menuPos.top, right: menuPos.right, background: "#111118", border: "1px solid rgba(124,58,237,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}>
+                style={{ top: menuPos.top, right: menuPos.right, background: "#111118", border: "1px solid rgba(139,92,246,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}>
 
                 <div className="px-3 py-2">
                   <p className="text-[10px] text-[#475569] uppercase tracking-wider mb-1.5">Plan</p>
@@ -263,15 +263,15 @@ function ClientRow({ client }: { client: Client }) {
                         disabled={pending}
                         className="text-[10px] font-bold px-2 py-0.5 rounded-full transition-all hover:opacity-80 disabled:opacity-40"
                         style={ws.plan === p
-                          ? { background: "#7C3AED", color: "white" }
-                          : { background: "rgba(124,58,237,0.1)", color: "#8B5CF6" }}>
+                          ? { background: "#8b5cf6", color: "white" }
+                          : { background: "rgba(139,92,246,0.1)", color: "#a78bfa" }}>
                         {p}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="my-1" style={{ borderTop: "1px solid rgba(124,58,237,0.1)" }} />
+                <div className="my-1" style={{ borderTop: "1px solid rgba(139,92,246,0.1)" }} />
                 <MenuItem icon={Pencil}   label="Editar usuario"    onClick={() => { setOpen(false); setShowEdit(true); }} />
                 <MenuItem icon={KeyRound} label="Reset contraseña"  onClick={() => { setOpen(false); setShowReset(true); }} />
                 <MenuItem
@@ -312,7 +312,7 @@ function ClientRow({ client }: { client: Client }) {
             <button onClick={() => { setShowReset(false); setNewPwd(""); }} className={btnCancel}>Cancelar</button>
             <button disabled={pending || newPwd.length < 8}
               onClick={() => { act(() => resetClientPassword(user.id, newPwd), "Contraseña actualizada"); setShowReset(false); setNewPwd(""); }}
-              className={btnSave} style={{ background: "#7C3AED" }}>
+              className={btnSave} style={{ background: "#8b5cf6" }}>
               {pending ? "Guardando..." : "Guardar"}
             </button>
           </div>
@@ -334,7 +334,7 @@ function ClientRow({ client }: { client: Client }) {
             <button onClick={() => setShowEdit(false)} className={btnCancel}>Cancelar</button>
             <button disabled={pending}
               onClick={() => act(() => updateClientInfo(user.id, editName, editEmail), "Usuario actualizado")}
-              className={btnSave} style={{ background: "#7C3AED" }}>
+              className={btnSave} style={{ background: "#8b5cf6" }}>
               {pending ? "Guardando..." : "Guardar"}
             </button>
           </div>
@@ -347,7 +347,7 @@ function ClientRow({ client }: { client: Client }) {
 function MenuItem({ icon: Icon, label, onClick, danger }: { icon: React.ElementType; label: string; onClick: () => void; danger?: boolean }) {
   return (
     <button onClick={onClick}
-      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-[rgba(124,58,237,0.06)] text-left"
+      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-[rgba(139,92,246,0.06)] text-left"
       style={{ color: danger ? "#ef4444" : "#CBD5E1" }}>
       <Icon size={13} strokeWidth={2} />
       {label}
@@ -390,7 +390,7 @@ export default function ClientesAdmin({ clients }: { clients: Client[] }) {
         </div>
         <button onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-          style={{ background: "linear-gradient(135deg,#7C3AED,#2563EB)" }}>
+          style={{ background: "linear-gradient(135deg,#8b5cf6,#c026d3)" }}>
           <UserPlus size={15} />
           Crear cliente
         </button>
@@ -399,13 +399,13 @@ export default function ClientesAdmin({ clients }: { clients: Client[] }) {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total", value: stats.total, icon: Store, color: "#7C3AED" },
+          { label: "Total", value: stats.total, icon: Store, color: "#8b5cf6" },
           { label: "Activos",  value: stats.active,  icon: Crown,  color: "#22c55e" },
           { label: "Trial",    value: stats.trial,   icon: Clock,  color: "#f59e0b" },
           { label: "Free",     value: stats.free,    icon: Users,  color: "#64748B" },
         ].map((s) => (
           <div key={s.label} className="rounded-xl p-4 flex items-center gap-3"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.12)" }}>
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.12)" }}>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${s.color}15` }}>
               <s.icon size={15} color={s.color} strokeWidth={2} />
             </div>
@@ -425,22 +425,22 @@ export default function ClientesAdmin({ clients }: { clients: Client[] }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre o email..."
-            className="w-full bg-[#111118] border border-[rgba(124,58,237,0.15)] rounded-xl pl-9 pr-4 py-2 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none"
+            className="w-full bg-[#111118] border border-[rgba(139,92,246,0.15)] rounded-xl pl-9 pr-4 py-2 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none"
           />
         </div>
         <select value={filterPlan} onChange={(e) => setFilterPlan(e.target.value)}
-          className="bg-[#111118] border border-[rgba(124,58,237,0.15)] rounded-xl px-3 py-2 text-sm text-[#F1F5F9] outline-none">
+          className="bg-[#111118] border border-[rgba(139,92,246,0.15)] rounded-xl px-3 py-2 text-sm text-[#F1F5F9] outline-none">
           <option value="all">Todos los planes</option>
           {PLANS.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
       </div>
 
       {/* Tabla */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
         <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}>
+            <tr style={{ borderBottom: "1px solid rgba(139,92,246,0.12)", background: "rgba(139,92,246,0.04)" }}>
               {["Workspace", "Usuario", "Plan", "Estado", "Próximo cobro", ""].map((h) => (
                 <th key={h} className="px-4 py-3 text-left text-[10px] font-bold text-[#64748B] uppercase tracking-wider">{h}</th>
               ))}

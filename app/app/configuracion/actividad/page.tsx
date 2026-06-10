@@ -7,12 +7,12 @@ export const metadata: Metadata = { title: "Actividad de cuenta" };
 const ACTION_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   integration_disconnected: { label: "Integración desconectada",  icon: Plug,     color: "#ef4444" },
   trial_started:            { label: "Trial iniciado",             icon: Zap,      color: "#22c55e" },
-  sign_in:                  { label: "Inicio de sesión",           icon: LogIn,    color: "#2563EB" },
+  sign_in:                  { label: "Inicio de sesión",           icon: LogIn,    color: "#c026d3" },
   sign_out:                 { label: "Cierre de sesión",           icon: LogOut,   color: "#64748B" },
   settings_updated:         { label: "Configuración actualizada",  icon: Settings, color: "#f59e0b" },
   account_deleted:          { label: "Cuenta eliminada",           icon: Trash2,   color: "#ef4444" },
-  password_changed:         { label: "Contraseña cambiada",        icon: UserCog,  color: "#8B5CF6" },
-  billing_event:            { label: "Evento de billing",          icon: CreditCard, color: "#e1691e" },
+  password_changed:         { label: "Contraseña cambiada",        icon: UserCog,  color: "#a78bfa" },
+  billing_event:            { label: "Evento de billing",          icon: CreditCard, color: "#c084fc" },
 };
 
 function getActionMeta(action: string) {
@@ -54,7 +54,7 @@ export default async function ActividadPage() {
     <div className="p-4 sm:p-6 space-y-5 max-w-2xl">
       <div>
         <div className="flex items-center gap-2">
-          <Shield size={18} color="#8B5CF6" strokeWidth={2} />
+          <Shield size={18} color="#a78bfa" strokeWidth={2} />
           <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
             Registro de actividad
           </h1>
@@ -65,7 +65,7 @@ export default async function ActividadPage() {
       </div>
 
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
         {logs.length === 0 ? (
           <div className="p-10 text-center">
             <Activity size={32} color="#475569" className="mx-auto mb-3" />
@@ -80,7 +80,7 @@ export default async function ActividadPage() {
                 <div
                   key={log.id}
                   className="flex items-start gap-3 px-4 sm:px-5 py-3"
-                  style={{ borderBottom: i < logs.length - 1 ? "1px solid rgba(124,58,237,0.07)" : "none" }}
+                  style={{ borderBottom: i < logs.length - 1 ? "1px solid rgba(139,92,246,0.07)" : "none" }}
                 >
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                     style={{ background: `${meta.color}15` }}>

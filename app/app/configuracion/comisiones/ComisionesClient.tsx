@@ -62,15 +62,15 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
       {/* TiendaNube automático */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div
           className="px-6 py-4 flex flex-wrap items-center justify-between gap-2"
-          style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}
+          style={{ borderBottom: "1px solid rgba(139,92,246,0.12)", background: "rgba(139,92,246,0.04)" }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(124,58,237,0.15)" }}>
-              <CreditCard size={18} color="#8B5CF6" strokeWidth={2} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(139,92,246,0.15)" }}>
+              <CreditCard size={18} color="#a78bfa" strokeWidth={2} />
             </div>
             <div>
               <p className="font-bold text-[#F1F5F9] text-sm">Comisiones de pago de TiendaNube</p>
@@ -86,8 +86,8 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
         </div>
 
         <div className="p-5 space-y-3">
-          <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}>
-            <Info size={14} color="#7C3AED" strokeWidth={2} className="mt-0.5 flex-shrink-0" />
+          <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)" }}>
+            <Info size={14} color="#8b5cf6" strokeWidth={2} className="mt-0.5 flex-shrink-0" />
             <p className="text-xs text-[#94A3B8] leading-relaxed">
               Las comisiones de las pasarelas de TiendaNube se detectan automáticamente desde la API de cada orden.
               No necesitás configurarlas manualmente — ya se aplican en los cálculos de rentabilidad.
@@ -99,14 +99,14 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
               <div
                 key={g.name}
                 className="flex items-center justify-between rounded-xl px-3 py-2.5"
-                style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}
+                style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)" }}
               >
                 <div className="flex items-center gap-2">
                   <CheckCircle size={13} color="#22c55e" strokeWidth={2.5} />
                   <span className="text-xs font-semibold text-[#F1F5F9]">{g.name}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-black text-[#8B5CF6]">{g.fee}</span>
+                  <span className="text-xs font-black text-[#a78bfa]">{g.fee}</span>
                   <span className="text-[10px] text-[#64748B] ml-1">{g.extra}</span>
                 </div>
               </div>
@@ -118,11 +118,11 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
       {/* Impuestos de la tienda */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div
           className="px-6 py-4 flex flex-wrap items-center justify-between gap-2"
-          style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}
+          style={{ borderBottom: "1px solid rgba(139,92,246,0.12)", background: "rgba(139,92,246,0.04)" }}
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(245,158,11,0.12)" }}>
@@ -147,7 +147,7 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
               </label>
               <div
                 className="flex items-center gap-2 rounded-xl px-4 py-3 w-full sm:w-40"
-                style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
               >
                 <Percent size={14} color="#64748B" strokeWidth={2} />
                 <input
@@ -171,7 +171,7 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
             onClick={() => handleSave("impuestos")}
             disabled={saving}
             className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-80 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+            style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
           >
             <Save size={14} strokeWidth={2.5} />
             {saving ? "Guardando..." : "Guardar"}
@@ -182,15 +182,15 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
       {/* Pagos personalizados */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div
           className="px-6 py-4 flex flex-wrap items-center justify-between gap-2"
-          style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", background: "rgba(124,58,237,0.04)" }}
+          style={{ borderBottom: "1px solid rgba(139,92,246,0.12)", background: "rgba(139,92,246,0.04)" }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(225,105,30,0.12)" }}>
-              <CreditCard size={18} color="#e1691e" strokeWidth={2} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(192,132,252,0.12)" }}>
+              <CreditCard size={18} color="#c084fc" strokeWidth={2} />
             </div>
             <div>
               <p className="font-bold text-[#F1F5F9] text-sm">Pagos Personalizados</p>
@@ -215,7 +215,7 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
               </label>
               <div
                 className="flex items-center gap-2 rounded-xl px-4 py-3 w-full sm:w-36"
-                style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
               >
                 <span className="text-sm text-[#64748B]">%</span>
                 <input
@@ -237,7 +237,7 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
               </label>
               <div
                 className="flex items-center gap-2 rounded-xl px-4 py-3 w-full sm:w-36"
-                style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
               >
                 <span className="text-sm text-[#64748B]">%</span>
                 <input
@@ -258,7 +258,7 @@ export default function ComisionesClient({ config, workspaceId }: { config: Conf
             onClick={() => handleSave("personalizado")}
             disabled={saving}
             className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-80 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+            style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
           >
             <Save size={14} strokeWidth={2.5} />
             {saving ? "Guardando..." : "Guardar"}

@@ -11,7 +11,7 @@ export default function DashboardLoading() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+          <div key={i} className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
             <div className="flex items-center justify-between">
               <div className="sk h-3 w-24 rounded" />
               <div className="sk w-8 h-8 rounded-lg" />
@@ -22,14 +22,14 @@ export default function DashboardLoading() {
         ))}
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
-        <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
+        <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
           <div className="sk h-3 w-32 rounded" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="p-5 space-y-3"
-              style={{ borderRight: i < 2 ? "1px solid rgba(124,58,237,0.1)" : "none" }}>
+              style={{ borderRight: i < 2 ? "1px solid rgba(139,92,246,0.1)" : "none" }}>
               <div className="sk h-3 w-28 rounded" />
               <div className="sk h-8 w-20 rounded-lg" />
               <div className="sk h-3 w-16 rounded" />
@@ -38,19 +38,19 @@ export default function DashboardLoading() {
         </div>
       </div>
 
-      <div className="rounded-2xl p-5" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+      <div className="rounded-2xl p-5" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
         <div className="sk h-4 w-40 rounded mb-4" />
         <div className="sk h-52 w-full rounded-xl" />
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.1)" }}>
-        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.1)" }}>
+        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
           <div className="sk h-4 w-32 rounded" />
           <div className="sk h-3 w-16 rounded" />
         </div>
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 px-5 py-3"
-            style={{ borderBottom: i < 4 ? "1px solid rgba(124,58,237,0.06)" : "none" }}>
+            style={{ borderBottom: i < 4 ? "1px solid rgba(139,92,246,0.06)" : "none" }}>
             <div className="sk w-2 h-2 rounded-full flex-shrink-0" />
             <div className="flex-1 space-y-1.5">
               <div className="sk h-3 w-36 rounded" />

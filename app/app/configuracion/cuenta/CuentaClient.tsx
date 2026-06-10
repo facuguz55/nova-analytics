@@ -28,9 +28,9 @@ const PROVIDER_LABELS: Record<string, string> = {
 const PLAN_META: Record<string, { label: string; color: string; bg: string; border: string; icon: React.ElementType }> = {
   free:   { label: "Plan Gratuito",   color: "#94A3B8", bg: "rgba(100,116,139,0.1)", border: "rgba(100,116,139,0.3)", icon: Star },
   trial:  { label: "Prueba Gratuita", color: "#f59e0b", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.3)",  icon: Sparkles },
-  pro:    { label: "Plan Pro",        color: "#8B5CF6", bg: "rgba(124,58,237,0.1)",  border: "rgba(124,58,237,0.3)",  icon: Crown },
-  active: { label: "Plan Pro",        color: "#8B5CF6", bg: "rgba(124,58,237,0.1)",  border: "rgba(124,58,237,0.3)",  icon: Crown },
-  agency: { label: "Plan Agency",     color: "#e1691e", bg: "rgba(225,105,30,0.1)",  border: "rgba(225,105,30,0.3)",  icon: Crown },
+  pro:    { label: "Plan Pro",        color: "#a78bfa", bg: "rgba(139,92,246,0.1)",  border: "rgba(139,92,246,0.3)",  icon: Crown },
+  active: { label: "Plan Pro",        color: "#a78bfa", bg: "rgba(139,92,246,0.1)",  border: "rgba(139,92,246,0.3)",  icon: Crown },
+  agency: { label: "Plan Agency",     color: "#c084fc", bg: "rgba(192,132,252,0.1)",  border: "rgba(192,132,252,0.3)",  icon: Crown },
 };
 
 interface Props {
@@ -110,11 +110,11 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         {/* Avatar card */}
-        <div className="rounded-2xl p-5 flex items-center gap-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+        <div className="rounded-2xl p-5 flex items-center gap-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
           <div className="relative flex-shrink-0">
             <div
               className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center text-white text-xl font-black"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
             >
               {avatarPreview
                 // eslint-disable-next-line @next/next/no-img-element
@@ -124,7 +124,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
             <button
               onClick={() => fileRef.current?.click()}
               className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110"
-              style={{ background: "#7C3AED", border: "2px solid #0a0a0f" }}
+              style={{ background: "#8b5cf6", border: "2px solid #0a0a0f" }}
             >
               <Camera size={12} color="white" strokeWidth={2.5} />
             </button>
@@ -158,14 +158,14 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
 
       {/* ── Información personal ── */}
       <form action={handleSubmit}>
-        <div className="rounded-2xl p-5 space-y-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+        <div className="rounded-2xl p-5 space-y-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Información personal</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-bold text-[#64748B] uppercase tracking-widest mb-1.5">Nombre</label>
               <div className="flex items-center gap-2 rounded-xl px-4 py-3"
-                style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}>
+                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}>
                 <User size={14} color="#64748B" strokeWidth={2} />
                 <input type="text" name="name" value={name} onChange={(e) => setName(e.target.value)}
                   className="flex-1 bg-transparent text-sm text-[#F1F5F9] outline-none"
@@ -190,7 +190,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
             </div>
             <button type="submit" disabled={saving}
               className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-80 disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}>
+              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}>
               <Save size={13} strokeWidth={2.5} />
               {saving ? "Guardando..." : "Guardar"}
             </button>
@@ -199,14 +199,14 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
       </form>
 
       {/* ── Seguridad ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
-        <div className="px-5 py-3.5" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
+        <div className="px-5 py-3.5" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Seguridad</p>
         </div>
 
         {/* Auth provider */}
         <div className="px-5 py-4 flex items-center gap-3"
-          style={{ borderBottom: "1px solid rgba(124,58,237,0.08)" }}>
+          style={{ borderBottom: "1px solid rgba(139,92,246,0.08)" }}>
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ background: "rgba(34,197,94,0.1)" }}>
             <Shield size={15} color="#22c55e" strokeWidth={2} />
@@ -233,8 +233,8 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
             onClick={() => { if (!user.isOAuthUser) setShowPasswordForm(!showPasswordForm); }}
           >
             <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "rgba(124,58,237,0.1)" }}>
-              <Lock size={15} color="#8B5CF6" strokeWidth={2} />
+              style={{ background: "rgba(139,92,246,0.1)" }}>
+              <Lock size={15} color="#a78bfa" strokeWidth={2} />
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-[#F1F5F9]">Contraseña</p>
@@ -245,14 +245,14 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
               </p>
             </div>
             {!user.isOAuthUser && (
-              <span className="text-xs font-semibold" style={{ color: "#7C3AED" }}>
+              <span className="text-xs font-semibold" style={{ color: "#8b5cf6" }}>
                 {showPasswordForm ? "Cancelar" : "Cambiar"}
               </span>
             )}
           </div>
 
           {showPasswordForm && !user.isOAuthUser && (
-            <div className="px-5 pb-5 space-y-3" style={{ borderTop: "1px solid rgba(124,58,237,0.1)" }}>
+            <div className="px-5 pb-5 space-y-3" style={{ borderTop: "1px solid rgba(139,92,246,0.1)" }}>
               <div className="pt-4 space-y-3">
                 {[
                   { label: "Nueva contraseña", value: newPwd, onChange: setNewPwd, placeholder: "Mínimo 8 caracteres" },
@@ -261,7 +261,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
                   <div key={i} className="space-y-1.5">
                     <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest">{field.label}</label>
                     <div className="flex items-center gap-2 rounded-xl px-4 py-3"
-                      style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}>
+                      style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}>
                       <Lock size={13} color="#64748B" strokeWidth={2} />
                       <input type={showPwd ? "text" : "password"} value={field.value}
                         onChange={(e) => field.onChange(e.target.value)}
@@ -282,7 +282,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
                 ))}
                 <button onClick={handlePasswordChange} disabled={savingPwd}
                   className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-80 disabled:opacity-50"
-                  style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}>
+                  style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}>
                   <Shield size={13} strokeWidth={2.5} />
                   {savingPwd ? "Guardando..." : "Actualizar contraseña"}
                 </button>
@@ -294,7 +294,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
 
       {/* ── Workspace ── */}
       {workspace && (
-        <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+        <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Workspace</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
@@ -303,7 +303,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
               { icon: Calendar,  label: "Cuenta creada", value: new Date(user.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" }) },
             ].map((row) => (
               <div key={row.label} className="rounded-xl px-4 py-3"
-                style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}>
+                style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)" }}>
                 <div className="flex items-center gap-2 mb-1">
                   <row.icon size={12} color="#64748B" strokeWidth={2} />
                   <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest">{row.label}</span>
@@ -368,7 +368,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
             <div className="flex gap-3">
               <button onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); }}
                 className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-[#64748B] transition-all hover:text-[#F1F5F9]"
-                style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)" }}>
+                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)" }}>
                 Cancelar
               </button>
               <button
@@ -418,7 +418,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
                   <button
                     onClick={() => setShowCancelModal(false)}
                     className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
-                    style={{ background: "rgba(124,58,237,0.1)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.2)" }}
+                    style={{ background: "rgba(139,92,246,0.1)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.2)" }}
                   >
                     No, mantener plan
                   </button>
@@ -443,7 +443,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
                   <button
                     onClick={() => setShowCancelModal(false)}
                     className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
-                    style={{ background: "rgba(124,58,237,0.1)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.2)" }}
+                    style={{ background: "rgba(139,92,246,0.1)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.2)" }}
                   >
                     Quedarme
                   </button>

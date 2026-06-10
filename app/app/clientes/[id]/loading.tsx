@@ -6,7 +6,7 @@ export default function ClienteDetalleLoading() {
         <div className="sk h-4 w-24 rounded" />
       </div>
 
-      <div className="rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+      <div className="rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
         <div className="flex items-center gap-4">
           <div className="sk w-14 h-14 rounded-full flex-shrink-0" />
           <div className="space-y-2">
@@ -24,13 +24,13 @@ export default function ClienteDetalleLoading() {
         </div>
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
-        <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
+        <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
           <div className="sk h-4 w-32 rounded" />
         </div>
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 px-5 py-3.5"
-            style={{ borderBottom: i < 5 ? "1px solid rgba(124,58,237,0.06)" : "none" }}>
+            style={{ borderBottom: i < 5 ? "1px solid rgba(139,92,246,0.06)" : "none" }}>
             <div className="sk h-3 w-20 rounded" />
             <div className="flex-1 space-y-1">
               <div className="sk h-3 rounded" style={{ width: `${50 + (i % 3) * 15}%` }} />

@@ -83,7 +83,7 @@ export default function CostosAdicionalesClient({ costs: initialCosts, workspace
     return (
       <div
         className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors group"
-        style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.12)" }}
+        style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.12)" }}
       >
         <div
           className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -178,11 +178,11 @@ export default function CostosAdicionalesClient({ costs: initialCosts, workspace
         {/* Costos fijos */}
         <div
           className="rounded-2xl overflow-hidden"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}
         >
           <div
             className="px-5 py-3.5 flex items-center justify-between"
-            style={{ borderBottom: "1px solid rgba(124,58,237,0.1)", background: "rgba(124,58,237,0.04)" }}
+            style={{ borderBottom: "1px solid rgba(139,92,246,0.1)", background: "rgba(139,92,246,0.04)" }}
           >
             <div className="flex items-center gap-2">
               <DollarSign size={14} color="#22c55e" strokeWidth={2.5} />
@@ -215,11 +215,11 @@ export default function CostosAdicionalesClient({ costs: initialCosts, workspace
         {/* Costos variables */}
         <div
           className="rounded-2xl overflow-hidden"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}
         >
           <div
             className="px-5 py-3.5 flex items-center justify-between"
-            style={{ borderBottom: "1px solid rgba(124,58,237,0.1)", background: "rgba(124,58,237,0.04)" }}
+            style={{ borderBottom: "1px solid rgba(139,92,246,0.1)", background: "rgba(139,92,246,0.04)" }}
           >
             <div className="flex items-center gap-2">
               <Percent size={14} color="#f59e0b" strokeWidth={2.5} />
@@ -259,7 +259,7 @@ export default function CostosAdicionalesClient({ costs: initialCosts, workspace
         >
           <div
             className="rounded-2xl w-full max-w-md p-6 space-y-5"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)" }}
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)" }}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -286,7 +286,7 @@ export default function CostosAdicionalesClient({ costs: initialCosts, workspace
                 <label className="text-xs font-semibold text-[#94A3B8] uppercase tracking-widest">Nombre</label>
                 <div
                   className="flex items-center gap-2 rounded-xl px-4 py-3"
-                  style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+                  style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
                 >
                   <input
                     type="text"
@@ -305,7 +305,7 @@ export default function CostosAdicionalesClient({ costs: initialCosts, workspace
                 </label>
                 <div
                   className="flex items-center gap-2 rounded-xl px-4 py-3"
-                  style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+                  style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
                 >
                   <span className="text-sm text-[#64748B]">{showModal === "fixed" ? "$" : "%"}</span>
                   <input
@@ -322,7 +322,7 @@ export default function CostosAdicionalesClient({ costs: initialCosts, workspace
               </div>
 
               {showModal === "fixed" && (
-                <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}>
+                <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)" }}>
                   <AlertTriangle size={13} color="#f59e0b" strokeWidth={2} className="mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-[#94A3B8]">
                     El costo fijo mensual se divide por el volumen de órdenes del período para calcular el impacto por venta.
@@ -335,7 +335,7 @@ export default function CostosAdicionalesClient({ costs: initialCosts, workspace
               <button
                 onClick={() => setShowModal(null)}
                 className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-[#64748B] transition-all hover:text-[#F1F5F9]"
-                style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)" }}
+                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)" }}
               >
                 Cancelar
               </button>

@@ -148,12 +148,12 @@ export default async function OrdenesPage({
       </Suspense>
 
       {!connection && (
-        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(124,58,237,0.3)" }}>
-          <Store size={40} color="#7C3AED" className="mx-auto mb-3" />
+        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}>
+          <Store size={40} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conectá tu TiendaNube</p>
           <Link href="/app/configuracion/integraciones"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white mt-2"
-            style={{ background: "#7C3AED" }}
+            style={{ background: "#8b5cf6" }}
           >
             Ir a Integraciones <ArrowRight size={14} />
           </Link>
@@ -172,13 +172,13 @@ export default async function OrdenesPage({
           {/* Stats */}
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             {[
-              { label: "Ingresos periodo", value: formatCurrency(totalRevenue), icon: DollarSign,    color: "#7C3AED" },
+              { label: "Ingresos periodo", value: formatCurrency(totalRevenue), icon: DollarSign,    color: "#8b5cf6" },
               { label: "Órdenes pagas",    value: String(paid.length),           icon: ShoppingCart,  color: "#22c55e" },
-              { label: "Ticket promedio",  value: formatCurrency(avgTicket),     icon: TrendingUp,    color: "#2563EB" },
+              { label: "Ticket promedio",  value: formatCurrency(avgTicket),     icon: TrendingUp,    color: "#c026d3" },
               { label: "Pendientes",       value: String(pendingCount),           icon: AlertTriangle, color: "#f59e0b" },
             ].map((s) => (
               <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3"
-                style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+                style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: `${s.color}18` }}>
                   <s.icon size={18} color={s.color} strokeWidth={2} />
@@ -195,14 +195,14 @@ export default async function OrdenesPage({
           <div className="flex flex-wrap items-center gap-3">
             {/* Status tabs */}
             <div className="flex items-center gap-0.5 rounded-xl p-1"
-              style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+              style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
               {STATUS_FILTERS.map((f) => {
                 const active = statusFilter === f.value;
                 return (
                   <Link key={f.value} href={statusHref(f.value)}
                     className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
                     style={{
-                      background: active ? "#7C3AED" : "transparent",
+                      background: active ? "#8b5cf6" : "transparent",
                       color: active ? "white" : "#94A3B8",
                     }}>
                     {f.label}
@@ -223,7 +223,7 @@ export default async function OrdenesPage({
               <input type="hidden" name="until" value={until} />
               {statusFilter !== "all" && <input type="hidden" name="status" value={statusFilter} />}
               <div className="flex items-center gap-2 rounded-xl px-3 py-2"
-                style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)", minWidth: "220px" }}>
+                style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", minWidth: "220px" }}>
                 <ShoppingCart size={12} color="#64748B" strokeWidth={2} />
                 <input
                   type="text"
@@ -235,7 +235,7 @@ export default async function OrdenesPage({
               </div>
               <button type="submit"
                 className="rounded-xl px-3 py-2 text-xs font-semibold text-white"
-                style={{ background: "#7C3AED" }}>
+                style={{ background: "#8b5cf6" }}>
                 Buscar
               </button>
             </form>
@@ -246,7 +246,7 @@ export default async function OrdenesPage({
 
           {/* Tabla de órdenes */}
           <div className="rounded-2xl overflow-hidden"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
             {filtered.length === 0 ? (
               <div className="p-10 text-center">
                 <p className="text-sm text-[#64748B]">
@@ -259,12 +259,12 @@ export default async function OrdenesPage({
                 return (
                   <div
                     key={o.id}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(124,58,237,0.04)] transition-colors"
-                    style={{ borderBottom: i < filtered.length - 1 ? "1px solid rgba(124,58,237,0.07)" : "none" }}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(139,92,246,0.04)] transition-colors"
+                    style={{ borderBottom: i < filtered.length - 1 ? "1px solid rgba(139,92,246,0.07)" : "none" }}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-[#8B5CF6]">#{o.number ?? o.id}</span>
+                        <span className="text-sm font-semibold text-[#a78bfa]">#{o.number ?? o.id}</span>
                         <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color, background: bg }}>
                           {label}
                         </span>

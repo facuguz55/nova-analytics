@@ -99,13 +99,13 @@ export default function Sidebar({
       style={{
         width: collapsed ? "64px" : "220px",
         background: "#0d0d14",
-        borderRight: "1px solid rgba(124,58,237,0.15)",
+        borderRight: "1px solid rgba(139,92,246,0.15)",
       }}
     >
       {/* Logo */}
       <div
         className={`flex items-center flex-shrink-0 ${collapsed ? "justify-center px-2 py-4" : "gap-3 px-4 py-4"}`}
-        style={{ borderBottom: "1px solid rgba(124,58,237,0.15)", minHeight: "68px" }}
+        style={{ borderBottom: "1px solid rgba(139,92,246,0.15)", minHeight: "68px" }}
       >
         <img
           src="https://xfientejntectnwbqmdr.supabase.co/storage/v1/object/public/Logo%20Nova/Gemini_Generated_Image_mq47ltmq47ltmq47-removebg-preview.png"
@@ -133,14 +133,14 @@ export default function Sidebar({
               </p>
             )}
             {!collapsed && !section.label && <div className="mb-1" />}
-            {collapsed && <div className="mx-3 mb-2 h-px bg-[rgba(124,58,237,0.15)]" />}
+            {collapsed && <div className="mx-3 mb-2 h-px bg-[rgba(139,92,246,0.15)]" />}
             <ul className="space-y-0.5">
               {section.items.map((item) => {
                 const isActive =
                   pathname === item.href ||
                   (item.href !== "/app/dashboard" && pathname.startsWith(item.href));
                 const Icon = item.icon;
-                const activeColor = "#e1691e";
+                const activeColor = "#c084fc";
 
                 return (
                   <li key={item.href}>
@@ -152,12 +152,12 @@ export default function Sidebar({
                         collapsed ? "justify-center px-2 py-2.5" : "px-3 py-2"
                       )}
                       style={{
-                        background: isActive ? "rgba(124,58,237,0.1)" : "transparent",
+                        background: isActive ? "rgba(139,92,246,0.1)" : "transparent",
                         color: isActive ? activeColor : "#94A3B8",
                       }}
                       onMouseEnter={(e) => {
                         if (!isActive) {
-                          (e.currentTarget as HTMLAnchorElement).style.background = "rgba(124,58,237,0.06)";
+                          (e.currentTarget as HTMLAnchorElement).style.background = "rgba(139,92,246,0.06)";
                           (e.currentTarget as HTMLAnchorElement).style.color = "#F1F5F9";
                         }
                       }}
@@ -181,7 +181,7 @@ export default function Sidebar({
                             {item.label}
                           </span>
                           {item.href === "/app/alertas" && alertCount > 0 && (
-                            <span className="flex-shrink-0 text-white rounded-full flex items-center justify-center bg-[#7C3AED] text-[10px] font-bold px-1 min-w-[18px] h-[18px]">
+                            <span className="flex-shrink-0 text-white rounded-full flex items-center justify-center bg-[#8b5cf6] text-[10px] font-bold px-1 min-w-[18px] h-[18px]">
                               {alertCount > 9 ? "9+" : alertCount}
                             </span>
                           )}
@@ -202,22 +202,22 @@ export default function Sidebar({
           <Link href="/app/planes" className="text-[11px] text-[#475569] hover:text-[#22c55e] transition-colors flex items-center gap-1">
             <Sparkles size={11} /> Planes
           </Link>
-          <Link href="/app/changelog" className="text-[11px] text-[#475569] hover:text-[#e1691e] transition-colors flex items-center gap-1">
+          <Link href="/app/changelog" className="text-[11px] text-[#475569] hover:text-[#c084fc] transition-colors flex items-center gap-1">
             <Megaphone size={11} /> Novedades
           </Link>
         </div>
       )}
 
       {/* User info + Config panel */}
-      <div className="flex-shrink-0 p-3 relative" style={{ borderTop: "1px solid rgba(124,58,237,0.15)" }}>
+      <div className="flex-shrink-0 p-3 relative" style={{ borderTop: "1px solid rgba(139,92,246,0.15)" }}>
 
         {/* Config panel (popover hacia arriba) */}
         {showConfig && !collapsed && (
           <div
             className="absolute bottom-full left-2 right-2 mb-2 rounded-xl overflow-hidden z-50"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", boxShadow: "0 -8px 32px rgba(0,0,0,0.5)" }}
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.25)", boxShadow: "0 -8px 32px rgba(0,0,0,0.5)" }}
           >
-            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
               <p className="text-xs font-semibold text-[#F1F5F9]">Configuración</p>
               <button onClick={() => setShowConfig(false)} className="text-[#64748B] hover:text-white transition-colors">
                 <X size={13} strokeWidth={2} />
@@ -233,9 +233,9 @@ export default function Sidebar({
                     href={item.href}
                     onClick={() => setShowConfig(false)}
                     className="flex items-center gap-3 px-4 py-2.5 transition-colors"
-                    style={{ color: isActive ? "#e1691e" : "#94A3B8" }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(124,58,237,0.06)"; (e.currentTarget as HTMLAnchorElement).style.color = "#F1F5F9"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; (e.currentTarget as HTMLAnchorElement).style.color = isActive ? "#e1691e" : "#94A3B8"; }}
+                    style={{ color: isActive ? "#c084fc" : "#94A3B8" }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(139,92,246,0.06)"; (e.currentTarget as HTMLAnchorElement).style.color = "#F1F5F9"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; (e.currentTarget as HTMLAnchorElement).style.color = isActive ? "#c084fc" : "#94A3B8"; }}
                   >
                     <Icon size={14} strokeWidth={2} className="flex-shrink-0" />
                     <span className="text-sm">{item.label}</span>
@@ -243,7 +243,7 @@ export default function Sidebar({
                 );
               })}
             </div>
-            <div className="px-3 pb-2 pt-1" style={{ borderTop: "1px solid rgba(124,58,237,0.1)" }}>
+            <div className="px-3 pb-2 pt-1" style={{ borderTop: "1px solid rgba(139,92,246,0.1)" }}>
               <button
                 onClick={handleLogout}
                 disabled={loggingOut}
@@ -266,11 +266,11 @@ export default function Sidebar({
             "flex items-center gap-3 rounded-xl p-2.5 transition-colors w-full group",
             collapsed && "justify-center"
           )}
-          style={{ background: showConfig ? "rgba(124,58,237,0.12)" : "rgba(124,58,237,0.06)" }}
+          style={{ background: showConfig ? "rgba(139,92,246,0.12)" : "rgba(139,92,246,0.06)" }}
         >
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-xs"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+            style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
           >
             {initials}
           </div>
@@ -294,7 +294,7 @@ export default function Sidebar({
                 size={14}
                 strokeWidth={2}
                 className="flex-shrink-0 transition-colors"
-                color={showConfig ? "#e1691e" : "#475569"}
+                color={showConfig ? "#c084fc" : "#475569"}
               />
             </>
           )}
@@ -313,7 +313,7 @@ export default function Sidebar({
           width: "24px",
           height: "24px",
           background: "#111118",
-          border: "1px solid rgba(124,58,237,0.3)",
+          border: "1px solid rgba(139,92,246,0.3)",
           color: "#94A3B8",
           cursor: "pointer",
         }}

@@ -129,7 +129,7 @@ function StepContent({
             <button
               onClick={onFinish}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
             >
               Ir al dashboard
               <ArrowRight size={15} strokeWidth={2.5} />
@@ -150,7 +150,7 @@ function StepContent({
             <button
               onClick={onSkip}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
             >
               {isLast ? "Ir al dashboard" : "Continuar"}
               <ChevronRight size={15} strokeWidth={2.5} />
@@ -161,7 +161,7 @@ function StepContent({
             <a
               href={step.connectHref}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
             >
               <Zap size={14} strokeWidth={2.5} />
               Conectar {step.name}
@@ -226,7 +226,7 @@ function OnboardingInner({ tiendanubeConnected, gmailConnected }: Props) {
       {/* Halo de fondo */}
       <div
         className="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at center, rgba(124,58,237,0.1) 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(ellipse at center, rgba(139,92,246,0.1) 0%, transparent 70%)" }}
       />
 
       <div className="w-full max-w-lg relative z-10 flex flex-col gap-8">
@@ -265,12 +265,12 @@ function OnboardingInner({ tiendanubeConnected, gmailConnected }: Props) {
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all"
                   style={{
                     background: isCurrent
-                      ? "rgba(124,58,237,0.15)"
+                      ? "rgba(139,92,246,0.15)"
                       : isDone
                       ? "rgba(34,197,94,0.1)"
                       : "rgba(100,116,139,0.08)",
                     border: isCurrent
-                      ? "1px solid rgba(124,58,237,0.3)"
+                      ? "1px solid rgba(139,92,246,0.3)"
                       : isDone
                       ? "1px solid rgba(34,197,94,0.2)"
                       : "1px solid rgba(100,116,139,0.15)",
@@ -281,13 +281,13 @@ function OnboardingInner({ tiendanubeConnected, gmailConnected }: Props) {
                   ) : (
                     <StepIcon
                       size={12}
-                      color={isCurrent ? "#8B5CF6" : "#475569"}
+                      color={isCurrent ? "#a78bfa" : "#475569"}
                       strokeWidth={2}
                     />
                   )}
                   <span
                     className="text-xs font-semibold"
-                    style={{ color: isCurrent ? "#8B5CF6" : isDone ? "#22c55e" : "#475569" }}
+                    style={{ color: isCurrent ? "#a78bfa" : isDone ? "#22c55e" : "#475569" }}
                   >
                     {s.name}
                   </span>
@@ -306,7 +306,7 @@ function OnboardingInner({ tiendanubeConnected, gmailConnected }: Props) {
         {/* Card del paso actual */}
         <div
           className="rounded-2xl p-7"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
         >
           {finishError ? (
             <div className="flex flex-col items-center gap-4 py-6 text-center">
@@ -314,7 +314,7 @@ function OnboardingInner({ tiendanubeConnected, gmailConnected }: Props) {
               <button
                 onClick={handleFinish}
                 className="flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+                style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
               >
                 Reintentar
               </button>
@@ -323,9 +323,9 @@ function OnboardingInner({ tiendanubeConnected, gmailConnected }: Props) {
             <div className="flex flex-col items-center gap-4 py-6 text-center">
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                style={{ background: "rgba(124,58,237,0.15)" }}
+                style={{ background: "rgba(139,92,246,0.15)" }}
               >
-                <Zap size={24} color="#8B5CF6" strokeWidth={1.5} />
+                <Zap size={24} color="#a78bfa" strokeWidth={1.5} />
               </div>
               <p className="text-base font-bold text-[#F1F5F9]">Preparando tu dashboard...</p>
               <p className="text-sm text-[#64748B]">Un momento.</p>

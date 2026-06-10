@@ -56,7 +56,7 @@ export default function DateRangeSelector({ activePreset, since, until }: Props)
       {/* Presets */}
       <div
         className="flex items-center gap-0.5 rounded-xl p-1 flex-wrap"
-        style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#0D0D12", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         {PRESETS.map((p) => {
           const active = activePreset === p.key;
@@ -66,7 +66,7 @@ export default function DateRangeSelector({ activePreset, since, until }: Props)
               onClick={() => handlePreset(p.key)}
               className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap"
               style={{
-                background: active ? "#7C3AED" : "transparent",
+                background: active ? "#8b5cf6" : "transparent",
                 color: active ? "#fff" : "#64748B",
               }}
             >
@@ -80,8 +80,8 @@ export default function DateRangeSelector({ activePreset, since, until }: Props)
           onClick={() => { setShowCustom(!showCustom); }}
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap"
           style={{
-            background: activePreset === "custom" ? "#7C3AED" : "transparent",
-            color: activePreset === "custom" ? "#fff" : "#8B5CF6",
+            background: activePreset === "custom" ? "#8b5cf6" : "transparent",
+            color: activePreset === "custom" ? "#fff" : "#a78bfa",
           }}
         >
           <Calendar size={11} strokeWidth={2.5} />
@@ -94,7 +94,7 @@ export default function DateRangeSelector({ activePreset, since, until }: Props)
       {showCustom && (
         <div
           className="flex items-center gap-2 rounded-xl px-3 py-2 flex-wrap"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)" }}
         >
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-[#64748B]">Desde</span>
@@ -104,7 +104,7 @@ export default function DateRangeSelector({ activePreset, since, until }: Props)
               max={customUntil || undefined}
               onChange={(e) => setCustomFrom(e.target.value)}
               className="rounded-lg px-2 py-1 text-xs text-[#F1F5F9] outline-none"
-              style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.25)", colorScheme: "dark" }}
+              style={{ background: "#0D0D12", border: "1px solid rgba(139,92,246,0.25)", colorScheme: "dark" }}
             />
           </div>
           <div className="flex items-center gap-1.5">
@@ -116,14 +116,14 @@ export default function DateRangeSelector({ activePreset, since, until }: Props)
               max={new Date().toISOString().split("T")[0]}
               onChange={(e) => setCustomUntil(e.target.value)}
               className="rounded-lg px-2 py-1 text-xs text-[#F1F5F9] outline-none"
-              style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.25)", colorScheme: "dark" }}
+              style={{ background: "#0D0D12", border: "1px solid rgba(139,92,246,0.25)", colorScheme: "dark" }}
             />
           </div>
           <button
             onClick={handleApplyCustom}
             disabled={!customFrom || !customUntil}
             className="rounded-lg px-3 py-1.5 text-xs font-bold text-white transition-all disabled:opacity-40"
-            style={{ background: "#7C3AED" }}
+            style={{ background: "#8b5cf6" }}
           >
             Aplicar
           </button>

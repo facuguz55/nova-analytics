@@ -76,7 +76,7 @@ export default function FinancieraHub({
       {/* Tab bar */}
       <div
         className="flex items-center gap-1 px-6 flex-shrink-0 overflow-x-auto"
-        style={{ borderBottom: "1px solid rgba(124,58,237,0.15)", background: "#0a0a0f", height: "52px" }}
+        style={{ borderBottom: "1px solid rgba(139,92,246,0.15)", background: "#0a0a0f", height: "52px" }}
       >
         <span className="text-xs font-black text-[#F1F5F9] mr-4 whitespace-nowrap" style={{ letterSpacing: "-0.01em" }}>
           Configuración Financiera
@@ -95,13 +95,13 @@ export default function FinancieraHub({
                 <Icon
                   size={12}
                   strokeWidth={active ? 2.5 : 2}
-                  color={active ? "#8B5CF6" : undefined}
+                  color={active ? "#a78bfa" : undefined}
                 />
                 {t.label}
                 {active && (
                   <span
                     className="absolute bottom-0 left-0 right-0 rounded-t-full"
-                    style={{ height: "2px", background: "#7C3AED" }}
+                    style={{ height: "2px", background: "#8b5cf6" }}
                   />
                 )}
               </button>

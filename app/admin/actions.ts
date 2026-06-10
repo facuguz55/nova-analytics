@@ -1,7 +1,28 @@
 ﻿"use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+
+// Las server actions son invocables vía POST desde cualquier ruta de la app,
+// no solo desde /admin — el middleware NO alcanza para protegerlas.
+// Cada action DEBE verificar el rol acá adentro.
+async function requireSuperAdmin(): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("No autorizado");
+
+  const service = createServiceClient();
+  const { data: profile } = await service
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if ((profile as { role: string } | null)?.role !== "super_admin") {
+    throw new Error("No autorizado");
+  }
+}
 
 function revalidateAdmin() {
   revalidatePath("/admin/hq");
@@ -11,6 +32,7 @@ function revalidateAdmin() {
 }
 
 export async function changeWorkspacePlan(workspaceId: string, plan: string) {
+  await requireSuperAdmin();
   const service = createServiceClient();
 
   const { error } = await service.from("workspaces").update({ plan }).eq("id", workspaceId);
@@ -40,18 +62,18 @@ export async function changeWorkspacePlan(workspaceId: string, plan: string) {
 }
 
 export async function changeWorkspaceStatus(workspaceId: string, status: string) {
+  await requireSuperAdmin();
   const service = createServiceClient();
-  const { error, data } = await service
+  const { error } = await service
     .from("workspaces")
     .update({ status })
-    .eq("id", workspaceId)
-    .select("id, status");
-  console.log("[changeWorkspaceStatus]", { workspaceId, status, data, error });
+    .eq("id", workspaceId);
   if (error) throw new Error(error.message);
   revalidateAdmin();
 }
 
 export async function deleteWorkspace(workspaceId: string) {
+  await requireSuperAdmin();
   const service = createServiceClient();
 
   // 1. Obtener todos los usuarios del workspace
@@ -78,6 +100,7 @@ export async function deleteWorkspace(workspaceId: string) {
 }
 
 export async function deleteUser(userId: string) {
+  await requireSuperAdmin();
   const service = createServiceClient();
 
   // 1. Eliminar de la tabla users
@@ -91,6 +114,7 @@ export async function deleteUser(userId: string) {
 }
 
 export async function changeUserRole(userId: string, role: string) {
+  await requireSuperAdmin();
   const service = createServiceClient();
   const { error } = await service.from("users").update({ role }).eq("id", userId);
   if (error) throw new Error(error.message);
@@ -105,6 +129,7 @@ export async function createClientAccount(
   workspaceName: string,
   plan: string
 ) {
+  await requireSuperAdmin();
   const service = createServiceClient();
 
   // 1. Crear usuario en Supabase Auth (confirmado directamente)
@@ -165,6 +190,7 @@ export async function createClientAccount(
 
 /** Resetear la contraseña de un usuario */
 export async function resetClientPassword(userId: string, newPassword: string) {
+  await requireSuperAdmin();
   if (newPassword.length < 8) throw new Error("Mínimo 8 caracteres");
   const service = createServiceClient();
   const { error } = await service.auth.admin.updateUserById(userId, { password: newPassword });
@@ -173,6 +199,7 @@ export async function resetClientPassword(userId: string, newPassword: string) {
 
 /** Actualizar nombre o email de un usuario */
 export async function updateClientInfo(userId: string, name: string, email: string) {
+  await requireSuperAdmin();
   const service = createServiceClient();
   const [dbRes, authRes] = await Promise.allSettled([
     service.from("users").update({ name, email }).eq("id", userId),
@@ -185,6 +212,7 @@ export async function updateClientInfo(userId: string, name: string, email: stri
 
 /** Agregar un credito de pago manual al workspace en la tabla billing */
 export async function addManualPayment(workspaceId: string, amount: number, note: string) {
+  await requireSuperAdmin();
   const service = createServiceClient();
   const { error } = await service.from("billing").insert({
     workspace_id: workspaceId,

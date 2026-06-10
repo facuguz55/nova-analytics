@@ -75,7 +75,7 @@ export default async function AdminAnalyticsPage() {
   const maxRevenue = Math.max(...days.map((d) => d.revenue), 1);
 
   const PLAN_COLORS: Record<string, string> = {
-    free: "#64748B", pro: "#7C3AED", agency: "#e1691e", trial: "#22c55e", active: "#2563EB",
+    free: "#64748B", pro: "#8b5cf6", agency: "#c084fc", trial: "#22c55e", active: "#c026d3",
   };
 
   return (
@@ -87,12 +87,12 @@ export default async function AdminAnalyticsPage() {
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
-          { label: "MRR acumulado", value: formatCurrency(totalRevenue), icon: DollarSign, color: "#e1691e" },
+          { label: "MRR acumulado", value: formatCurrency(totalRevenue), icon: DollarSign, color: "#c084fc" },
           { label: "Revenue este mes", value: formatCurrency(monthRevenue), sub: pctChange !== 0 ? `${pctChange > 0 ? "+" : ""}${pctChange}% vs anterior` : undefined, icon: TrendingUp, color: "#22c55e" },
-          { label: "Pagos este mes", value: String(monthBilling.length), icon: CreditCard, color: "#7C3AED" },
-          { label: "Nuevos usuarios mes", value: String(newUsersMonth), icon: Users, color: "#2563EB" },
+          { label: "Pagos este mes", value: String(monthBilling.length), icon: CreditCard, color: "#8b5cf6" },
+          { label: "Nuevos usuarios mes", value: String(newUsersMonth), icon: Users, color: "#c026d3" },
         ].map((s) => (
-          <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+          <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${s.color}18` }}>
               <s.icon size={18} color={s.color} strokeWidth={2} />
             </div>
@@ -105,28 +105,28 @@ export default async function AdminAnalyticsPage() {
         ))}
       </div>
 
-      <div className="rounded-2xl p-5" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+      <div className="rounded-2xl p-5" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
         <p className="text-sm font-semibold text-[#F1F5F9] mb-4">Billing global - ultimos 30 dias</p>
         <div className="flex items-end gap-1 h-32">
           {days.map((d, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
               <div className="w-full rounded-t"
-                style={{ height: `${Math.max(4, (d.revenue / maxRevenue) * 128)}px`, background: d.revenue > 0 ? "#7C3AED" : "rgba(124,58,237,0.15)" }} />
+                style={{ height: `${Math.max(4, (d.revenue / maxRevenue) * 128)}px`, background: d.revenue > 0 ? "#8b5cf6" : "rgba(139,92,246,0.15)" }} />
               {i % 5 === 0 && <span className="text-[9px] text-[#64748B] whitespace-nowrap">{d.date}</span>}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Top workspaces por billing</p>
         </div>
-        <div className="divide-y" style={{ borderColor: "rgba(124,58,237,0.08)" }}>
+        <div className="divide-y" style={{ borderColor: "rgba(139,92,246,0.08)" }}>
           {billingByWorkspace.length === 0 ? (
             <div className="px-5 py-8 text-center text-sm text-[#64748B]">Sin pagos registrados</div>
           ) : billingByWorkspace.map((ws, i) => (
-            <div key={ws.id} className="flex items-center justify-between px-5 py-3 hover:bg-[rgba(124,58,237,0.04)] transition-colors">
+            <div key={ws.id} className="flex items-center justify-between px-5 py-3 hover:bg-[rgba(139,92,246,0.04)] transition-colors">
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-[#64748B] w-5">#{i + 1}</span>
                 <div>
@@ -138,7 +138,7 @@ export default async function AdminAnalyticsPage() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold text-[#e1691e]">{ws.revenue > 0 ? formatCurrency(ws.revenue) : "-"}</p>
+                <p className="text-sm font-bold text-[#c084fc]">{ws.revenue > 0 ? formatCurrency(ws.revenue) : "-"}</p>
                 <p className="text-xs text-[#64748B]">{ws.paymentCount} pago{ws.paymentCount !== 1 ? "s" : ""}</p>
               </div>
             </div>

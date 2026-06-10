@@ -147,7 +147,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
     <>
       <header
         className="flex items-center justify-between px-4 sm:px-6 flex-shrink-0 gap-3"
-        style={{ height: "56px", background: "#0d0d14", borderBottom: "1px solid rgba(124,58,237,0.15)" }}
+        style={{ height: "56px", background: "#0d0d14", borderBottom: "1px solid rgba(139,92,246,0.15)" }}
       >
         {/* Logo en mobile */}
         <div className="flex sm:hidden items-center gap-2">
@@ -165,8 +165,8 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
           className="hidden sm:flex items-center gap-2 rounded-lg px-3 transition-all hover:border-purple-500/40 hover:bg-purple-500/10"
           style={{
             height: "36px",
-            background: "rgba(124,58,237,0.06)",
-            border: "1px solid rgba(124,58,237,0.2)",
+            background: "rgba(139,92,246,0.06)",
+            border: "1px solid rgba(139,92,246,0.2)",
             minWidth: "220px",
             maxWidth: "340px",
             flex: 1,
@@ -189,7 +189,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
           <button
             onClick={openSearch}
             className="flex sm:hidden items-center justify-center rounded-lg transition-all"
-            style={{ width: "36px", height: "36px", background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)", color: "#94A3B8" }}
+            style={{ width: "36px", height: "36px", background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)", color: "#94A3B8" }}
           >
             <Search size={16} strokeWidth={2} />
           </button>
@@ -198,8 +198,8 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
           <div ref={seccionesRef} className="relative hidden sm:block">
             <button
               onClick={() => setShowSecciones(!showSecciones)}
-              className="flex items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all hover:bg-[rgba(124,58,237,0.1)]"
-              style={{ height: "36px", background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)", color: "#F1F5F9" }}
+              className="flex items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all hover:bg-[rgba(139,92,246,0.1)]"
+              style={{ height: "36px", background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)", color: "#F1F5F9" }}
             >
               <LayoutGrid size={13} strokeWidth={2} />
               Vista
@@ -209,7 +209,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
             {showSecciones && (
               <div
                 className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-50 py-2"
-                style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", minWidth: "190px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
+                style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.25)", minWidth: "190px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
               >
                 <p className="px-4 py-1.5 text-[10px] font-semibold tracking-widest text-[#475569] uppercase">MODO DE VISTA</p>
 
@@ -218,7 +218,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
                   <div className="flex items-center gap-2.5">
                     {modoSimple
                       ? <GraduationCap size={13} strokeWidth={2} color="#22c55e" />
-                      : <Sparkles size={13} strokeWidth={2} color="#8B5CF6" />}
+                      : <Sparkles size={13} strokeWidth={2} color="#a78bfa" />}
                     <div>
                       <p className="text-xs font-semibold text-[#F1F5F9]">{modoSimple ? "Modo Simple" : "Modo Pro"}</p>
                       <p className="text-[10px] text-[#475569]">
@@ -229,7 +229,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
                   <button
                     onClick={toggleModoSimple}
                     className="relative flex-shrink-0 rounded-full transition-all duration-200"
-                    style={{ width: "32px", height: "18px", background: modoSimple ? "#22c55e" : "#7C3AED" }}
+                    style={{ width: "32px", height: "18px", background: modoSimple ? "#22c55e" : "#8b5cf6" }}
                   >
                     <span
                       className="absolute top-0.5 rounded-full bg-white transition-all duration-200"
@@ -238,7 +238,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
                   </button>
                 </div>
 
-                <div className="mx-3 my-1 h-px" style={{ background: "rgba(124,58,237,0.12)" }} />
+                <div className="mx-3 my-1 h-px" style={{ background: "rgba(139,92,246,0.12)" }} />
 
                 <p className="px-4 py-1.5 text-[10px] font-semibold tracking-widest text-[#475569] uppercase">PREFERENCIAS</p>
 
@@ -254,7 +254,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
                   <button
                     onClick={toggleRedondeo}
                     className="relative flex-shrink-0 rounded-full transition-all duration-200"
-                    style={{ width: "32px", height: "18px", background: redondeo ? "#7C3AED" : "rgba(100,116,139,0.3)" }}
+                    style={{ width: "32px", height: "18px", background: redondeo ? "#8b5cf6" : "rgba(100,116,139,0.3)" }}
                   >
                     <span
                       className="absolute top-0.5 rounded-full bg-white transition-all duration-200"
@@ -270,7 +270,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
           <Link
             href="/app/changelog"
             className="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition-all hover:opacity-85"
-            style={{ height: "36px", background: "rgba(225,105,30,0.15)", border: "1px solid rgba(225,105,30,0.35)", color: "#e1691e" }}
+            style={{ height: "36px", background: "rgba(192,132,252,0.15)", border: "1px solid rgba(192,132,252,0.35)", color: "#c084fc" }}
             title="Ver novedades de la versión"
           >
             <Megaphone size={12} strokeWidth={2.5} />
@@ -280,8 +280,8 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
           {/* Actividad — solo sm+ */}
           <Link
             href="/app/configuracion/actividad"
-            className="hidden sm:flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(124,58,237,0.1)]"
-            style={{ width: "36px", height: "36px", background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)", color: "#94A3B8" }}
+            className="hidden sm:flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(139,92,246,0.1)]"
+            style={{ width: "36px", height: "36px", background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)", color: "#94A3B8" }}
             title="Registro de actividad"
           >
             <Activity size={14} strokeWidth={2} />
@@ -291,8 +291,8 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
           <div className="relative hidden sm:block">
             <Link
               href="/app/alertas"
-              className="flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(124,58,237,0.1)]"
-              style={{ width: "36px", height: "36px", background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)", color: "#94A3B8", display: "flex" }}
+              className="flex items-center justify-center rounded-lg transition-all hover:bg-[rgba(139,92,246,0.1)]"
+              style={{ width: "36px", height: "36px", background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)", color: "#94A3B8", display: "flex" }}
               title="Alertas"
             >
               <Bell size={14} strokeWidth={2} />
@@ -300,7 +300,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
             {alertCount > 0 && (
               <span
                 className="absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full text-white text-[9px] font-bold"
-                style={{ width: "14px", height: "14px", background: "#7C3AED" }}
+                style={{ width: "14px", height: "14px", background: "#8b5cf6" }}
               >
                 {alertCount > 9 ? "9+" : alertCount}
               </span>
@@ -311,8 +311,8 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
           <div ref={userMenuRef} className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 rounded-xl px-3 py-1.5 cursor-pointer transition-all hover:bg-[rgba(124,58,237,0.1)]"
-              style={{ background: showUserMenu ? "rgba(124,58,237,0.12)" : "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+              className="flex items-center gap-2 rounded-xl px-3 py-1.5 cursor-pointer transition-all hover:bg-[rgba(139,92,246,0.1)]"
+              style={{ background: showUserMenu ? "rgba(139,92,246,0.12)" : "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
             >
               {avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -320,7 +320,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
               ) : (
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-[10px] font-bold"
-                  style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+                  style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
                 >
                   {initials}
                 </div>
@@ -332,7 +332,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
             {showUserMenu && (
               <div
                 className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-50 py-1.5"
-                style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)", minWidth: "200px", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}
+                style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.25)", minWidth: "200px", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}
               >
                 <p className="px-4 pt-2 pb-1.5 text-[10px] font-semibold tracking-widest text-[#475569] uppercase">Mi cuenta</p>
                 {[
@@ -347,14 +347,14 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
                       key={item.href}
                       href={item.href}
                       onClick={() => setShowUserMenu(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 transition-colors text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[rgba(124,58,237,0.06)]"
+                      className="flex items-center gap-3 px-4 py-2.5 transition-colors text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[rgba(139,92,246,0.06)]"
                     >
                       <Icon size={13} strokeWidth={2} className="flex-shrink-0" />
                       <span className="text-sm">{item.label}</span>
                     </Link>
                   );
                 })}
-                <div className="mx-3 my-1 h-px" style={{ background: "rgba(124,58,237,0.1)" }} />
+                <div className="mx-3 my-1 h-px" style={{ background: "rgba(139,92,246,0.1)" }} />
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors text-[#ef4444] hover:bg-[rgba(239,68,68,0.06)]"
@@ -377,12 +377,12 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
         >
           <div
             className="w-full max-w-xl rounded-2xl overflow-hidden"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)", boxShadow: "0 24px 80px rgba(0,0,0,0.6)" }}
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)", boxShadow: "0 24px 80px rgba(0,0,0,0.6)" }}
           >
             {/* Input */}
             <div
               className="flex items-center gap-3 px-4"
-              style={{ borderBottom: "1px solid rgba(124,58,237,0.12)", height: "52px" }}
+              style={{ borderBottom: "1px solid rgba(139,92,246,0.12)", height: "52px" }}
             >
               <Search size={16} strokeWidth={2} className="text-[#64748B] flex-shrink-0" />
               <input
@@ -434,8 +434,8 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
                                 onClick={() => { setShowSearch(false); setSearchQ(""); }}
                                 className="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg transition-all"
                                 style={{
-                                  background: idx === selected ? "rgba(124,58,237,0.1)" : "transparent",
-                                  border: `1px solid ${idx === selected ? "rgba(124,58,237,0.2)" : "transparent"}`,
+                                  background: idx === selected ? "rgba(139,92,246,0.1)" : "transparent",
+                                  border: `1px solid ${idx === selected ? "rgba(139,92,246,0.2)" : "transparent"}`,
                                 }}
                                 onMouseEnter={() => setSelected(idx)}
                               >
@@ -455,7 +455,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
             {/* Footer */}
             <div
               className="flex items-center gap-4 px-4 py-2.5 text-[10px] text-[#475569]"
-              style={{ borderTop: "1px solid rgba(124,58,237,0.08)" }}
+              style={{ borderTop: "1px solid rgba(139,92,246,0.08)" }}
             >
               <span>↑↓ navegar</span>
               <span>↵ ir</span>

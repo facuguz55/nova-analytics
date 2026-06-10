@@ -7,7 +7,7 @@ export default function IntegracionesLoading() {
       </div>
 
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="rounded-2xl p-5" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+        <div key={i} className="rounded-2xl p-5" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
           <div className="flex items-center gap-4 mb-4">
             <div className="sk w-12 h-12 rounded-xl flex-shrink-0" />
             <div className="flex-1 space-y-1.5">

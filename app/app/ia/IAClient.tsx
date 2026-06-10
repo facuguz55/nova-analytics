@@ -74,13 +74,13 @@ export default function IAClient({ businessContext }: { businessContext: string 
       {/* Header */}
       <div
         className="flex items-center gap-3 px-6 py-4 flex-shrink-0"
-        style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}
+        style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}
       >
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ background: "rgba(124,58,237,0.15)" }}
+          style={{ background: "rgba(139,92,246,0.15)" }}
         >
-          <Bot size={18} color="#8B5CF6" strokeWidth={2} />
+          <Bot size={18} color="#a78bfa" strokeWidth={2} />
         </div>
         <div>
           <p className="font-bold text-[#F1F5F9] text-sm">IA Assistant</p>
@@ -103,25 +103,25 @@ export default function IAClient({ businessContext }: { businessContext: string 
               className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
               style={{
                 background: msg.role === "user"
-                  ? "linear-gradient(135deg, #7C3AED, #2563EB)"
-                  : "rgba(124,58,237,0.15)",
+                  ? "linear-gradient(135deg, #8b5cf6, #c026d3)"
+                  : "rgba(139,92,246,0.15)",
               }}
             >
               {msg.role === "user" ? (
                 <User size={14} color="white" strokeWidth={2} />
               ) : (
-                <Bot size={14} color="#8B5CF6" strokeWidth={2} />
+                <Bot size={14} color="#a78bfa" strokeWidth={2} />
               )}
             </div>
             <div
               className="max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed"
               style={{
                 background: msg.role === "user"
-                  ? "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(37,99,235,0.15))"
+                  ? "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(37,99,235,0.15))"
                   : "#111118",
                 border: msg.role === "user"
-                  ? "1px solid rgba(124,58,237,0.3)"
-                  : "1px solid rgba(124,58,237,0.2)",
+                  ? "1px solid rgba(139,92,246,0.3)"
+                  : "1px solid rgba(139,92,246,0.2)",
                 color: "#F1F5F9",
               }}
             >
@@ -139,19 +139,19 @@ export default function IAClient({ businessContext }: { businessContext: string 
           <div className="flex gap-3">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ background: "rgba(124,58,237,0.15)" }}
+              style={{ background: "rgba(139,92,246,0.15)" }}
             >
-              <Bot size={14} color="#8B5CF6" strokeWidth={2} />
+              <Bot size={14} color="#a78bfa" strokeWidth={2} />
             </div>
             <div
               className="rounded-2xl px-4 py-3"
-              style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+              style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
             >
               <div className="flex gap-1">
                 {[0, 1, 2].map((i) => (
                   <div
                     key={i}
-                    className="w-2 h-2 rounded-full bg-[#7C3AED] animate-bounce"
+                    className="w-2 h-2 rounded-full bg-[#8b5cf6] animate-bounce"
                     style={{ animationDelay: `${i * 150}ms` }}
                   />
                 ))}
@@ -171,9 +171,9 @@ export default function IAClient({ businessContext }: { businessContext: string 
               onClick={() => sendMessage(s)}
               className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
               style={{
-                background: "rgba(124,58,237,0.08)",
-                color: "#8B5CF6",
-                border: "1px solid rgba(124,58,237,0.2)",
+                background: "rgba(139,92,246,0.08)",
+                color: "#a78bfa",
+                border: "1px solid rgba(139,92,246,0.2)",
               }}
             >
               <Sparkles size={10} strokeWidth={2} />
@@ -186,11 +186,11 @@ export default function IAClient({ businessContext }: { businessContext: string 
       {/* Input */}
       <div
         className="px-4 sm:px-6 pb-5 flex-shrink-0"
-        style={{ borderTop: "1px solid rgba(124,58,237,0.15)", paddingTop: "16px" }}
+        style={{ borderTop: "1px solid rgba(139,92,246,0.15)", paddingTop: "16px" }}
       >
         <div
           className="flex items-end gap-3 rounded-2xl px-4 py-3"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)" }}
         >
           <textarea
             ref={inputRef}
@@ -206,7 +206,7 @@ export default function IAClient({ businessContext }: { businessContext: string 
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || loading}
             className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all hover:opacity-80 disabled:opacity-30"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+            style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
           >
             <Send size={14} color="white" strokeWidth={2.5} />
           </button>

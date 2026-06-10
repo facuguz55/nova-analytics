@@ -76,11 +76,11 @@ export default function InfoTooltip({ text, simpleText, size = 12, side = "top" 
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); calcPosition(); setOpen(!open); }}
-        className="flex items-center justify-center rounded-full transition-all hover:bg-[rgba(124,58,237,0.15)] cursor-help"
+        className="flex items-center justify-center rounded-full transition-all hover:bg-[rgba(139,92,246,0.15)] cursor-help"
         style={{ width: size + 6, height: size + 6 }}
         aria-label="Más información"
       >
-        <Info size={size} strokeWidth={2} color="#7C3AED" className="opacity-60 hover:opacity-100" />
+        <Info size={size} strokeWidth={2} color="#8b5cf6" className="opacity-60 hover:opacity-100" />
       </button>
 
       {mounted && open && createPortal(
@@ -91,7 +91,7 @@ export default function InfoTooltip({ text, simpleText, size = 12, side = "top" 
             left:      coords.left,
             width:     220,
             background: "#1a1a2e",
-            border:    "1px solid rgba(124,58,237,0.4)",
+            border:    "1px solid rgba(139,92,246,0.4)",
             color:     "#F1F5F9",
             boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
             whiteSpace: "normal",

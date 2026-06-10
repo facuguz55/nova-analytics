@@ -71,9 +71,9 @@ function SourceBadge({ source }: { source: string }) {
     <span
       className="text-[9px] font-bold rounded px-1"
       style={{
-        background: source === "meta" ? "rgba(24,119,242,0.15)" : "rgba(225,105,30,0.12)",
-        color:      source === "meta" ? "#1877F2" : "#e1691e",
-        border:     `1px solid ${source === "meta" ? "rgba(24,119,242,0.25)" : "rgba(225,105,30,0.2)"}`,
+        background: source === "meta" ? "rgba(24,119,242,0.15)" : "rgba(192,132,252,0.12)",
+        color:      source === "meta" ? "#1877F2" : "#c084fc",
+        border:     `1px solid ${source === "meta" ? "rgba(24,119,242,0.25)" : "rgba(192,132,252,0.2)"}`,
       }}
     >
       {source === "meta" ? "∞" : "≡"}
@@ -162,11 +162,11 @@ export default function MetaAdsClient() {
           style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}>
           <div className="rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)" }}>
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)" }}>
 
             {/* Header del modal */}
             <div className="flex items-center justify-between px-6 py-4 flex-shrink-0"
-              style={{ borderBottom: "1px solid rgba(124,58,237,0.12)" }}>
+              style={{ borderBottom: "1px solid rgba(139,92,246,0.12)" }}>
               <div>
                 <h3 className="text-base font-bold text-[#F1F5F9]">Métricas</h3>
                 <p className="text-xs text-[#64748B] mt-0.5">{selected.size} seleccionadas</p>
@@ -178,7 +178,7 @@ export default function MetaAdsClient() {
 
             {/* Leyenda */}
             <div className="flex items-center gap-4 px-6 py-2.5 flex-shrink-0"
-              style={{ borderBottom: "1px solid rgba(124,58,237,0.08)", background: "rgba(124,58,237,0.03)" }}>
+              style={{ borderBottom: "1px solid rgba(139,92,246,0.08)", background: "rgba(139,92,246,0.03)" }}>
               <div className="flex items-center gap-1.5">
                 <SourceBadge source="meta" />
                 <span className="text-xs text-[#64748B]">Dato directo de Meta</span>
@@ -204,16 +204,16 @@ export default function MetaAdsClient() {
                             onClick={() => toggleMetric(m.key)}
                             className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-all text-left"
                             style={{
-                              background: isSelected ? "rgba(124,58,237,0.08)" : "transparent",
-                              border: `1px solid ${isSelected ? "rgba(124,58,237,0.2)" : "transparent"}`,
+                              background: isSelected ? "rgba(139,92,246,0.08)" : "transparent",
+                              border: `1px solid ${isSelected ? "rgba(139,92,246,0.2)" : "transparent"}`,
                             }}
                           >
                             {/* Checkbox */}
                             <div
                               className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
                               style={{
-                                background: isSelected ? "#7C3AED" : "transparent",
-                                border: `1.5px solid ${isSelected ? "#7C3AED" : "rgba(100,116,139,0.4)"}`,
+                                background: isSelected ? "#8b5cf6" : "transparent",
+                                border: `1.5px solid ${isSelected ? "#8b5cf6" : "rgba(100,116,139,0.4)"}`,
                               }}
                             >
                               {isSelected && <Check size={9} color="white" strokeWidth={3} />}
@@ -231,7 +231,7 @@ export default function MetaAdsClient() {
 
             {/* Footer */}
             <div className="flex items-center justify-between px-6 py-4 flex-shrink-0 gap-3"
-              style={{ borderTop: "1px solid rgba(124,58,237,0.12)" }}>
+              style={{ borderTop: "1px solid rgba(139,92,246,0.12)" }}>
               <button
                 onClick={() => setSelected(new Set(DEFAULT_METRICS))}
                 className="text-xs text-[#64748B] hover:text-[#94A3B8] transition-colors"
@@ -241,12 +241,12 @@ export default function MetaAdsClient() {
               <div className="flex gap-3">
                 <button onClick={() => setShowModal(false)}
                   className="rounded-xl px-4 py-2 text-sm font-semibold text-[#64748B] transition-all hover:text-[#F1F5F9]"
-                  style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)" }}>
+                  style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)" }}>
                   Cancelar
                 </button>
                 <button onClick={saveMetrics}
                   className="rounded-xl px-5 py-2 text-sm font-bold text-white transition-all hover:opacity-80"
-                  style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}>
+                  style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}>
                   Guardar
                 </button>
               </div>

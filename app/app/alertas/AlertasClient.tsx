@@ -23,8 +23,8 @@ const CATEGORY_META: Record<Category, { label: string; icon: React.ElementType; 
   "stock-out":     { label: "Sin stock",       icon: AlertTriangle, color: "#ef4444" },
   "stock-low":     { label: "Stock bajo",      icon: Package,        color: "#f59e0b" },
   "orders":        { label: "Órdenes y pagos", icon: ShoppingCart,   color: "#22c55e" },
-  "integrations":  { label: "Integraciones",   icon: Bell,           color: "#8B5CF6" },
-  "finance":       { label: "Finanzas",        icon: DollarSign,     color: "#e1691e" },
+  "integrations":  { label: "Integraciones",   icon: Bell,           color: "#a78bfa" },
+  "finance":       { label: "Finanzas",        icon: DollarSign,     color: "#c084fc" },
   "other":         { label: "Otras",           icon: Mail,           color: "#64748B" },
 };
 
@@ -43,9 +43,9 @@ interface Alert {
 const TYPE_CONFIG: Record<string, { icon: React.ElementType; bg: string; color: string; border: string }> = {
   danger:  { icon: AlertTriangle, bg: "rgba(239,68,68,0.08)",   color: "#ef4444", border: "rgba(239,68,68,0.25)"   },
   warning: { icon: AlertTriangle, bg: "rgba(245,158,11,0.08)",  color: "#f59e0b", border: "rgba(245,158,11,0.25)"  },
-  info:    { icon: Info,          bg: "rgba(37,99,235,0.08)",   color: "#2563EB", border: "rgba(37,99,235,0.25)"   },
+  info:    { icon: Info,          bg: "rgba(37,99,235,0.08)",   color: "#c026d3", border: "rgba(37,99,235,0.25)"   },
   success: { icon: CheckCircle2,  bg: "rgba(34,197,94,0.08)",   color: "#22c55e", border: "rgba(34,197,94,0.25)"   },
-  system:  { icon: Bell,          bg: "rgba(124,58,237,0.08)",  color: "#7C3AED", border: "rgba(124,58,237,0.25)"  },
+  system:  { icon: Bell,          bg: "rgba(139,92,246,0.08)",  color: "#8b5cf6", border: "rgba(139,92,246,0.25)"  },
 };
 
 function getConfig(type: string) {
@@ -111,7 +111,7 @@ export default function AlertasClient({ alerts }: { alerts: Alert[] }) {
           <p className="text-sm text-[#94A3B8] mt-0.5">
             {unreadCount > 0 ? (
               <span>
-                <span className="text-[#7C3AED] font-semibold">{unreadCount}</span> sin leer
+                <span className="text-[#8b5cf6] font-semibold">{unreadCount}</span> sin leer
               </span>
             ) : "Sin alertas pendientes"}
           </p>
@@ -119,7 +119,7 @@ export default function AlertasClient({ alerts }: { alerts: Alert[] }) {
 
         <div
           className="flex items-center gap-1 rounded-xl p-1"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
         >
           {(["all", "unread"] as const).map((f) => (
             <button
@@ -127,7 +127,7 @@ export default function AlertasClient({ alerts }: { alerts: Alert[] }) {
               onClick={() => setFilter(f)}
               className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
               style={{
-                background: filter === f ? "#7C3AED" : "transparent",
+                background: filter === f ? "#8b5cf6" : "transparent",
                 color: filter === f ? "white" : "#94A3B8",
               }}
             >
@@ -141,7 +141,7 @@ export default function AlertasClient({ alerts }: { alerts: Alert[] }) {
       {visible.length === 0 ? (
         <div
           className="rounded-2xl p-10 flex flex-col items-center gap-3 text-center"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
         >
           <CheckCircle2 size={32} color="#22c55e" strokeWidth={1.5} />
           <p className="text-sm text-[#64748B]">
@@ -187,7 +187,7 @@ export default function AlertasClient({ alerts }: { alerts: Alert[] }) {
                       {unread > 0 && (
                         <span
                           className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                          style={{ background: "rgba(124,58,237,0.15)", color: "#8B5CF6" }}
+                          style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa" }}
                         >
                           {unread} sin leer
                         </span>
@@ -235,7 +235,7 @@ export default function AlertasClient({ alerts }: { alerts: Alert[] }) {
                               {alert.auto && (
                                 <span
                                   className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                                  style={{ background: "rgba(124,58,237,0.15)", color: "#8B5CF6" }}
+                                  style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa" }}
                                 >
                                   AUTO
                                 </span>

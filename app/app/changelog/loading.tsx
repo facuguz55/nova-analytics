@@ -7,7 +7,7 @@ export default function ChangelogLoading() {
       </div>
 
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+        <div key={i} className="rounded-2xl p-6 space-y-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
           <div className="flex items-center gap-3">
             <div className="sk h-5 w-20 rounded-full" />
             <div className="sk h-3 w-24 rounded" />

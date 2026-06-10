@@ -10,7 +10,7 @@ export default function ProductosLoading() {
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-2xl p-4 space-y-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+          <div key={i} className="rounded-2xl p-4 space-y-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
             <div className="sk h-3 w-24 rounded" />
             <div className="sk h-7 w-16 rounded-lg" />
           </div>
@@ -19,7 +19,7 @@ export default function ProductosLoading() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.12)" }}>
+          <div key={i} className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.12)" }}>
             <div className="sk h-36 w-full" />
             <div className="p-4 space-y-2">
               <div className="sk h-4 rounded" style={{ width: `${60 + (i % 3) * 12}%` }} />

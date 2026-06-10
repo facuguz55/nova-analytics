@@ -4,12 +4,12 @@ import { Truck, ArrowRight, Package, CheckCircle, Mail, Store as StoreIcon, Hand
 import Link from "next/link";
 
 const SHIPPING_METHODS = [
-  { name: "Correo Argentino",  icon: Mail,        color: "#2563EB", type: "nacional" },
+  { name: "Correo Argentino",  icon: Mail,        color: "#c026d3", type: "nacional" },
   { name: "OCA",               icon: Truck,       color: "#22c55e", type: "nacional" },
   { name: "Andreani",          icon: Package,     color: "#f59e0b", type: "nacional" },
   { name: "Mercado Envíos",    icon: ShoppingBag, color: "#facc15", type: "marketplace" },
-  { name: "Tu propio retiro",  icon: StoreIcon,   color: "#8B5CF6", type: "local" },
-  { name: "A convenir",        icon: Handshake,   color: "#e1691e", type: "personalizado" },
+  { name: "Tu propio retiro",  icon: StoreIcon,   color: "#a78bfa", type: "local" },
+  { name: "A convenir",        icon: Handshake,   color: "#c084fc", type: "personalizado" },
 ];
 
 export default function EnviosContent({
@@ -32,9 +32,9 @@ export default function EnviosContent({
         </div>
         <div
           className="rounded-2xl p-10 text-center"
-          style={{ background: "#111118", border: "1px dashed rgba(124,58,237,0.3)" }}
+          style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}
         >
-          <Truck size={40} color="#7C3AED" className="mx-auto mb-3" />
+          <Truck size={40} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conectá tu TiendaNube primero</p>
           <p className="text-sm text-[#64748B] mb-4">
             Para configurar los costos de envío, primero necesitás conectar una tienda.
@@ -42,7 +42,7 @@ export default function EnviosContent({
           <Link
             href="/app/configuracion/integraciones"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ background: "#7C3AED" }}
+            style={{ background: "#8b5cf6" }}
           >
             Ir a Integraciones <ArrowRight size={14} />
           </Link>
@@ -73,7 +73,7 @@ export default function EnviosContent({
 
       <div
         className="rounded-2xl p-6 space-y-4"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <p className="text-sm font-semibold text-[#F1F5F9]">Métodos en tu tienda</p>
 
@@ -84,7 +84,7 @@ export default function EnviosContent({
               <div
                 key={m.name}
                 className="flex items-center gap-3 rounded-xl px-4 py-3"
-                style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}
+                style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)" }}
               >
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -98,7 +98,7 @@ export default function EnviosContent({
                 </div>
                 <div
                   className="text-xs font-semibold rounded-xl px-3 py-1.5"
-                  style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)", color: "#64748B" }}
+                  style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)", color: "#64748B" }}
                 >
                   Costo: —
                 </div>
@@ -109,13 +109,13 @@ export default function EnviosContent({
 
         <div
           className="flex items-start gap-2 p-3 rounded-xl mt-2"
-          style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)" }}
+          style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)" }}
         >
-          <Package size={13} color="#7C3AED" strokeWidth={2} className="mt-0.5 flex-shrink-0" />
+          <Package size={13} color="#8b5cf6" strokeWidth={2} className="mt-0.5 flex-shrink-0" />
           <p className="text-xs text-[#94A3B8]">
             La configuración detallada de costos por método estará disponible próximamente.
             Por ahora podés agregar el costo promedio de envío en la sección{" "}
-            <strong className="text-[#8B5CF6]">Costos Adicionales</strong>.
+            <strong className="text-[#a78bfa]">Costos Adicionales</strong>.
           </p>
         </div>
       </div>

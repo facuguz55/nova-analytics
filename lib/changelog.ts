@@ -31,8 +31,8 @@ export const CHANGELOG: ChangelogEntry[] = [
 export const CURRENT_VERSION = CHANGELOG[0].version;
 
 export const TAG_META: Record<ChangelogEntry["tag"], { label: string; color: string; bg: string }> = {
-  launch:      { label: "Lanzamiento", color: "#e1691e", bg: "rgba(225,105,30,0.12)" },
+  launch:      { label: "Lanzamiento", color: "#c084fc", bg: "rgba(192,132,252,0.12)" },
   feature:     { label: "Nueva función", color: "#7C3AED", bg: "rgba(124,58,237,0.12)" },
   fix:         { label: "Corrección",  color: "#22c55e", bg: "rgba(34,197,94,0.12)"  },
-  improvement: { label: "Mejora",      color: "#2563EB", bg: "rgba(37,99,235,0.12)"  },
+  improvement: { label: "Mejora",      color: "#c026d3", bg: "rgba(37,99,235,0.12)"  },
 };

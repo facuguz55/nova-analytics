@@ -15,7 +15,7 @@ export default function TerminosPage() {
     <div className="min-h-screen bg-[#0a0a0f] text-[#F1F5F9]">
 
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[rgba(124,58,237,0.15)] bg-[rgba(10,10,15,0.92)] backdrop-blur-md">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[rgba(139,92,246,0.15)] bg-[rgba(10,10,15,0.92)] backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <img
@@ -27,7 +27,7 @@ export default function TerminosPage() {
           </Link>
           <Link
             href="/register"
-            className="text-xs sm:text-sm bg-gradient-to-r from-[#7C3AED] to-[#2563EB] hover:opacity-90 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all"
+            className="text-xs sm:text-sm bg-gradient-to-r from-[#8b5cf6] to-[#c026d3] hover:opacity-90 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all"
           >
             Empezar gratis
           </Link>
@@ -39,7 +39,7 @@ export default function TerminosPage() {
 
         {/* Header */}
         <div className="mb-10">
-          <div className="inline-flex items-center gap-2 bg-[rgba(124,58,237,0.12)] border border-[rgba(124,58,237,0.3)] rounded-full px-4 py-1.5 text-xs font-medium text-[#8B5CF6] mb-5">
+          <div className="inline-flex items-center gap-2 bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.3)] rounded-full px-4 py-1.5 text-xs font-medium text-[#a78bfa] mb-5">
             Legal
           </div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-3">
@@ -50,7 +50,7 @@ export default function TerminosPage() {
 
         <div className="space-y-8 text-[#CBD5E1] leading-relaxed text-sm">
 
-          <div className="p-4 rounded-xl bg-[rgba(124,58,237,0.06)] border border-[rgba(124,58,237,0.2)]">
+          <div className="p-4 rounded-xl bg-[rgba(139,92,246,0.06)] border border-[rgba(139,92,246,0.2)]">
             <p>Al crear una cuenta o utilizar Nova Analytics aceptás estos Términos y Condiciones en su totalidad. Si no estás de acuerdo, no uses el servicio.</p>
           </div>
 
@@ -73,7 +73,7 @@ export default function TerminosPage() {
 
           <Section title="3. Cuenta y seguridad">
             <p>
-              Sos responsable de mantener la confidencialidad de tus credenciales de acceso. Debés notificarnos de inmediato ante cualquier uso no autorizado de tu cuenta a través de <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#8B5CF6] hover:underline">{CONTACT_EMAIL}</a>.
+              Sos responsable de mantener la confidencialidad de tus credenciales de acceso. Debés notificarnos de inmediato ante cualquier uso no autorizado de tu cuenta a través de <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#a78bfa] hover:underline">{CONTACT_EMAIL}</a>.
             </p>
             <p className="mt-3">Cada workspace corresponde a un único comercio electrónico. No podés compartir tu cuenta ni reasignar credenciales a terceros sin autorización expresa de Nova Agency.</p>
           </Section>
@@ -159,7 +159,7 @@ export default function TerminosPage() {
           <Section title="12. Privacidad">
             <p>
               El tratamiento de tus datos personales está regido por nuestra{" "}
-              <Link href="/privacidad" className="text-[#8B5CF6] hover:underline">Política de Privacidad</Link>,
+              <Link href="/privacidad" className="text-[#a78bfa] hover:underline">Política de Privacidad</Link>,
               que forma parte integrante de estos Términos y Condiciones.
             </p>
           </Section>
@@ -191,10 +191,10 @@ export default function TerminosPage() {
 
           <Section title="16. Contacto">
             <p>Para consultas, reclamos o ejercicio de derechos:</p>
-            <div className="mt-4 p-4 rounded-xl bg-[#111118] border border-[rgba(124,58,237,0.2)]">
+            <div className="mt-4 p-4 rounded-xl bg-[#111118] border border-[rgba(139,92,246,0.2)]">
               <p className="font-semibold text-white">Nova Agency</p>
               <p className="text-sm text-[#94A3B8] mt-1">
-                Email: <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#8B5CF6] hover:underline">{CONTACT_EMAIL}</a>
+                Email: <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#a78bfa] hover:underline">{CONTACT_EMAIL}</a>
               </p>
               <p className="text-sm text-[#94A3B8]">Santa Fe, Argentina</p>
             </div>
@@ -204,7 +204,7 @@ export default function TerminosPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[rgba(124,58,237,0.15)] py-6 px-5 sm:px-6">
+      <footer className="border-t border-[rgba(139,92,246,0.15)] py-6 px-5 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#64748B]">
           <Link href="/" className="flex items-center gap-2 hover:text-[#94A3B8] transition-colors">
             <img
@@ -216,7 +216,7 @@ export default function TerminosPage() {
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/privacidad" className="hover:text-[#94A3B8] transition-colors">Privacidad</Link>
-            <Link href="/terminos" className="text-[#8B5CF6]">Términos</Link>
+            <Link href="/terminos" className="text-[#a78bfa]">Términos</Link>
             <span>© 2025 Nova Agency</span>
           </div>
         </div>
@@ -229,7 +229,7 @@ export default function TerminosPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[rgba(124,58,237,0.15)]">
+      <h2 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[rgba(139,92,246,0.15)]">
         {title}
       </h2>
       <div className="text-[#CBD5E1] text-sm leading-relaxed">{children}</div>

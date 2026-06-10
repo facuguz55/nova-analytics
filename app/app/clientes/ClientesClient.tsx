@@ -82,13 +82,13 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
       {/* Stats */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
-          { label: "Total clientes",    value: String(customers.length), icon: Users,        color: "#7C3AED" },
-          { label: "VIP (recurrentes)", value: String(recurrentes.length), icon: Crown,      color: "#e1691e" },
+          { label: "Total clientes",    value: String(customers.length), icon: Users,        color: "#8b5cf6" },
+          { label: "VIP (recurrentes)", value: String(recurrentes.length), icon: Crown,      color: "#c084fc" },
           { label: "Gasto promedio",    value: formatCurrency(avgSpent),   icon: ShoppingCart, color: "#22c55e" },
-          { label: "Facturación total", value: formatCurrency(totalSpent), icon: DollarSign,  color: "#2563EB" },
+          { label: "Facturación total", value: formatCurrency(totalSpent), icon: DollarSign,  color: "#c026d3" },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{ background: `${s.color}18` }}>
               <s.icon size={18} color={s.color} strokeWidth={2} />
@@ -106,16 +106,16 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
         <Link
           href={`/app/clientes/${topClient.id}`}
           className="rounded-2xl p-4 flex items-center gap-4 transition-all hover:border-purple-500/40 block"
-          style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+          style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
         >
-          <Crown size={20} color="#7C3AED" className="flex-shrink-0" />
+          <Crown size={20} color="#8b5cf6" className="flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-xs text-[#64748B]">Top cliente por gasto</p>
             <p className="text-sm font-semibold text-[#F1F5F9]">{topClient.name}</p>
             <p className="text-xs text-[#64748B]">{topClient.email} · {topClient.orders_count} órdenes</p>
           </div>
           <div className="text-right flex-shrink-0">
-            <p className="text-sm font-bold text-[#7C3AED]">{formatCurrency(parseFloat(topClient.total_spent))}</p>
+            <p className="text-sm font-bold text-[#8b5cf6]">{formatCurrency(parseFloat(topClient.total_spent))}</p>
             <p className="text-xs text-[#64748B]">gastado total</p>
           </div>
         </Link>
@@ -125,7 +125,7 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
       <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
         {/* Búsqueda */}
         <div className="flex items-center gap-2 rounded-xl px-3 py-2 flex-1 min-w-0 w-full sm:w-auto"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
           <Users size={12} color="#64748B" strokeWidth={2} />
           <input
             type="text"
@@ -138,7 +138,7 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
 
         {/* Sort */}
         <div className="flex items-center gap-1 rounded-xl p-1"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
           <ArrowUpDown size={11} color="#64748B" className="ml-2" />
           {SORT_OPTIONS.map((o) => (
             <button
@@ -146,7 +146,7 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
               onClick={() => setSort(o.key)}
               className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
               style={{
-                background: sort === o.key ? "#7C3AED" : "transparent",
+                background: sort === o.key ? "#8b5cf6" : "transparent",
                 color:      sort === o.key ? "white" : "#94A3B8",
               }}
             >
@@ -159,7 +159,7 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
         <button
           onClick={handleExportCSV}
           className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all hover:opacity-85"
-          style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)", color: "#8B5CF6" }}
+          style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)", color: "#a78bfa" }}
         >
           <Download size={12} strokeWidth={2} />
           CSV
@@ -182,7 +182,7 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
 
       {/* Lista */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
         {sorted.length === 0 ? (
           <div className="p-8 text-center text-sm text-[#64748B]">
             Sin clientes que coincidan con &ldquo;{search}&rdquo;
@@ -192,11 +192,11 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
             <Link
               key={c.id}
               href={`/app/clientes/${c.id}`}
-              className="flex items-center gap-3 p-3 hover:bg-[rgba(124,58,237,0.04)] transition-colors block"
-              style={{ borderBottom: i < sorted.length - 1 ? "1px solid rgba(124,58,237,0.07)" : "none" }}
+              className="flex items-center gap-3 p-3 hover:bg-[rgba(139,92,246,0.04)] transition-colors block"
+              style={{ borderBottom: i < sorted.length - 1 ? "1px solid rgba(139,92,246,0.07)" : "none" }}
             >
-              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold text-[#7C3AED]"
-                style={{ background: "rgba(124,58,237,0.12)" }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold text-[#8b5cf6]"
+                style={{ background: "rgba(139,92,246,0.12)" }}>
                 {c.name?.charAt(0)?.toUpperCase() ?? "?"}
               </div>
               <div className="flex-1 min-w-0">
@@ -216,7 +216,7 @@ export default function ClientesClient({ customers, q }: ClientesClientProps) {
               </div>
               {c.orders_count > 1 && (
                 <span className="px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0"
-                  style={{ background: "rgba(225,105,30,0.15)", color: "#e1691e" }}>
+                  style={{ background: "rgba(192,132,252,0.15)", color: "#c084fc" }}>
                   VIP
                 </span>
               )}

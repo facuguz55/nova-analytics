@@ -8,7 +8,7 @@ export default function ConfiguracionLoading() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+          <div key={i} className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
             <div className="flex items-center gap-3">
               <div className="sk w-10 h-10 rounded-xl flex-shrink-0" />
               <div className="flex-1 space-y-1.5">

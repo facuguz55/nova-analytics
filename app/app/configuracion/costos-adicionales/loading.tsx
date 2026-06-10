@@ -9,7 +9,7 @@ export default function LoadingCostosAdicionales() {
         </div>
       </div>
       {[...Array(2)].map((_, i) => (
-        <div key={i} className="rounded-2xl overflow-hidden bg-[#111118]" style={{ border: "1px solid rgba(124,58,237,0.1)" }}>
+        <div key={i} className="rounded-2xl overflow-hidden bg-[#111118]" style={{ border: "1px solid rgba(139,92,246,0.1)" }}>
           <div className="h-12 bg-[#1a1a2e]" />
           <div className="p-5 h-32" />
         </div>

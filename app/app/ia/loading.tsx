@@ -6,7 +6,7 @@ export default function IaLoading() {
         <div className="sk h-4 w-60 rounded" />
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)", minHeight: "420px" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", minHeight: "420px" }}>
         <div className="p-5 space-y-4">
           <div className="flex gap-3">
             <div className="sk w-8 h-8 rounded-full flex-shrink-0" />

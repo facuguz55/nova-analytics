@@ -137,12 +137,12 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
     return (
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 max-w-3xl">
         <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Rentabilidad</h1>
-        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(124,58,237,0.3)" }}>
-          <Store size={40} color="#7C3AED" className="mx-auto mb-3" />
+        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}>
+          <Store size={40} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conecta tu TiendaNube</p>
           <Link href="/app/configuracion/integraciones"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white mt-2"
-            style={{ background: "#7C3AED" }}>
+            style={{ background: "#8b5cf6" }}>
             Ir a Integraciones <ArrowRight size={14} />
           </Link>
         </div>
@@ -158,27 +158,27 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
           <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Rentabilidad</h1>
           <p className="text-sm text-[#94A3B8] mt-0.5">Datos en tiempo real desde TiendaNube</p>
         </div>
-        <Link href="/app/configuracion/financiera" className="text-xs text-[#7C3AED] hover:text-[#8B5CF6] flex items-center gap-1 self-center">
+        <Link href="/app/configuracion/financiera" className="text-xs text-[#8b5cf6] hover:text-[#a78bfa] flex items-center gap-1 self-center">
           Editar config <ArrowRight size={12} />
         </Link>
       </div>
 
       {/* Selector de período */}
       <div className="flex flex-wrap gap-2 items-center">
-        <div className="flex gap-1 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}>
+        <div className="flex gap-1 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(139,92,246,0.2)" }}>
           {DATE_PRESETS.map((p) => (
             <button key={p.key} onClick={() => setPreset(p.key)}
               className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-              style={{ background: preset === p.key ? "#7C3AED" : "transparent", color: preset === p.key ? "#fff" : "#64748B" }}>
+              style={{ background: preset === p.key ? "#8b5cf6" : "transparent", color: preset === p.key ? "#fff" : "#64748B" }}>
               {p.label}
             </button>
           ))}
         </div>
-        <div className="flex gap-1 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}>
+        <div className="flex gap-1 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(139,92,246,0.2)" }}>
           {monthTabs.map((m) => (
             <button key={m.key} onClick={() => setPreset(m.key)}
               className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-              style={{ background: preset === m.key ? "#7C3AED" : "transparent", color: preset === m.key ? "#fff" : "#64748B" }}>
+              style={{ background: preset === m.key ? "#8b5cf6" : "transparent", color: preset === m.key ? "#fff" : "#64748B" }}>
               {m.label}
             </button>
           ))}
@@ -197,7 +197,7 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
       )}
 
       {metrics.ordersCount === 0 ? (
-        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(124,58,237,0.3)" }}>
+        <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}>
           <p className="text-[#94A3B8] text-sm">Sin órdenes en este período</p>
         </div>
       ) : (
@@ -207,11 +207,11 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
             {[
               { label: "Ingresos brutos", rawValue: metrics.totalRevenue, format: formatCurrency, icon: DollarSign, color: "#F1F5F9" },
               { label: "Ingresos netos",  rawValue: metrics.netRevenue,   format: formatCurrency, icon: TrendingUp, color: "#22c55e" },
-              { label: "Margen neto",     rawValue: metrics.netMarginPct,  format: (n: number) => `${n.toFixed(1)}%`, icon: Percent, color: "#e1691e" },
-              { label: "Margen bruto",    rawValue: metrics.grossMarginPct, format: (n: number) => metrics.grossMarginPct > 0 ? `${n.toFixed(1)}%` : "Sin costo", icon: Percent, color: "#7C3AED" },
+              { label: "Margen neto",     rawValue: metrics.netMarginPct,  format: (n: number) => `${n.toFixed(1)}%`, icon: Percent, color: "#c084fc" },
+              { label: "Margen bruto",    rawValue: metrics.grossMarginPct, format: (n: number) => metrics.grossMarginPct > 0 ? `${n.toFixed(1)}%` : "Sin costo", icon: Percent, color: "#8b5cf6" },
             ].map((s, i) => (
-              <div key={s.label} className="metric-card anim-up rounded-2xl p-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)", animationDelay: `${0.05 + i * 0.07}s` }}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 anim-scale" style={{ background: "rgba(124,58,237,0.12)", animationDelay: `${0.12 + i * 0.07}s` }}>
+              <div key={s.label} className="metric-card anim-up rounded-2xl p-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: `${0.05 + i * 0.07}s` }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 anim-scale" style={{ background: "rgba(139,92,246,0.12)", animationDelay: `${0.12 + i * 0.07}s` }}>
                   <s.icon size={15} color={s.color} strokeWidth={2} />
                 </div>
                 <AnimatedNumber value={s.rawValue} format={s.format} className="text-lg sm:text-xl font-black text-[#F1F5F9]" />
@@ -221,15 +221,15 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
           </div>
 
           {/* Desglose financiero (waterfall) */}
-          <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)", animationDelay: "0.33s" }}>
-            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+          <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: "0.33s" }}>
+            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
               <p className="text-sm font-semibold text-[#F1F5F9]">Desglose financiero</p>
               <p className="text-xs text-[#64748B] mt-0.5">{metrics.ordersCount} órdenes pagas</p>
             </div>
-            <div className="divide-y" style={{ borderColor: "rgba(124,58,237,0.08)" }}>
+            <div className="divide-y" style={{ borderColor: "rgba(139,92,246,0.08)" }}>
               {waterfall.map((row, i) => {
                 const pct = metrics.totalRevenue > 0 ? Math.abs(row.value) / metrics.totalRevenue * 100 : 0;
-                const barColor = row.type === "positive" ? "#2563EB" : row.type === "negative" ? "#ef4444" : "#22c55e";
+                const barColor = row.type === "positive" ? "#c026d3" : row.type === "negative" ? "#ef4444" : "#22c55e";
                 return (
                 <div key={row.label} className="anim-up px-5 py-3" style={{ animationDelay: `${0.38 + i * 0.05}s` }}>
                   <div className="flex items-center justify-between mb-1.5">

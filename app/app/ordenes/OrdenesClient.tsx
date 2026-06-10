@@ -98,9 +98,9 @@ export default function OrdenesClient({
   }
 
   const STATS = [
-    { label: "Total órdenes", value: String(totalOrders), icon: ShoppingCart, color: "#7C3AED" },
+    { label: "Total órdenes", value: String(totalOrders), icon: ShoppingCart, color: "#8b5cf6" },
     { label: "Órdenes pagadas", value: String(totalPaid), icon: CheckCircle, color: "#22c55e" },
-    { label: "Facturación total", value: fmt(totalRevenue), icon: DollarSign, color: "#e1691e" },
+    { label: "Facturación total", value: fmt(totalRevenue), icon: DollarSign, color: "#c084fc" },
   ];
 
   return (
@@ -121,7 +121,7 @@ export default function OrdenesClient({
           <div
             key={s.label}
             className="rounded-2xl p-4 flex items-center gap-4"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${s.color}18` }}>
               <s.icon size={18} color={s.color} strokeWidth={2} />
@@ -140,7 +140,7 @@ export default function OrdenesClient({
         <form onSubmit={handleSearch} className="flex items-center gap-2">
           <div
             className="flex items-center gap-2 rounded-xl px-3 py-2 flex-1"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
           >
             <Search size={13} color="#64748B" strokeWidth={2} />
             <input
@@ -154,7 +154,7 @@ export default function OrdenesClient({
           <button
             type="submit"
             className="rounded-xl px-4 py-2 text-sm font-semibold text-white flex-shrink-0"
-            style={{ background: "#7C3AED" }}
+            style={{ background: "#8b5cf6" }}
           >
             Buscar
           </button>
@@ -163,7 +163,7 @@ export default function OrdenesClient({
         {/* Status filter */}
         <div
           className="flex items-center gap-1 rounded-xl p-1 overflow-x-auto"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
         >
           {STATUS_FILTERS.map((f) => (
             <button
@@ -171,7 +171,7 @@ export default function OrdenesClient({
               onClick={() => updateParams({ status: f.value === "all" ? "" : f.value })}
               className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap"
               style={{
-                background: statusFilter === f.value || (f.value === "all" && statusFilter === "all") ? "#7C3AED" : "transparent",
+                background: statusFilter === f.value || (f.value === "all" && statusFilter === "all") ? "#8b5cf6" : "transparent",
                 color: statusFilter === f.value || (f.value === "all" && statusFilter === "all") ? "white" : "#94A3B8",
               }}
             >
@@ -184,12 +184,12 @@ export default function OrdenesClient({
       {/* Table */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+              <tr style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
                 {["PEDIDO", "CLIENTE", "EMAIL", "FECHA", "MONTO", "ESTADO"].map((col) => (
                   <th key={col} className="text-left px-5 py-3 text-[10px] font-semibold tracking-widest text-[#94A3B8] uppercase whitespace-nowrap">
                     {col}
@@ -209,12 +209,12 @@ export default function OrdenesClient({
                 return (
                   <tr
                     key={order.id}
-                    style={{ borderBottom: i < orders.length - 1 ? "1px solid rgba(124,58,237,0.08)" : "none" }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "rgba(124,58,237,0.04)"; }}
+                    style={{ borderBottom: i < orders.length - 1 ? "1px solid rgba(139,92,246,0.08)" : "none" }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "rgba(139,92,246,0.04)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "transparent"; }}
                   >
                     <td className="px-5 py-3 whitespace-nowrap">
-                      <span className="text-sm font-semibold text-[#8B5CF6]">#{order.external_id}</span>
+                      <span className="text-sm font-semibold text-[#a78bfa]">#{order.external_id}</span>
                     </td>
                     <td className="px-5 py-3 whitespace-nowrap">
                       <span className="text-sm font-medium text-[#F1F5F9]">{order.customer_name ?? "Sin nombre"}</span>
@@ -247,7 +247,7 @@ export default function OrdenesClient({
         {totalPages > 1 && (
           <div
             className="flex items-center justify-between px-5 py-3"
-            style={{ borderTop: "1px solid rgba(124,58,237,0.15)" }}
+            style={{ borderTop: "1px solid rgba(139,92,246,0.15)" }}
           >
             <p className="text-xs text-[#64748B]">
               Página {currentPage} de {totalPages} · {count} resultados
@@ -256,16 +256,16 @@ export default function OrdenesClient({
               <button
                 onClick={() => goPage(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-30 hover:bg-[rgba(124,58,237,0.1)]"
-                style={{ border: "1px solid rgba(124,58,237,0.2)", color: "#94A3B8" }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-30 hover:bg-[rgba(139,92,246,0.1)]"
+                style={{ border: "1px solid rgba(139,92,246,0.2)", color: "#94A3B8" }}
               >
                 <ChevronLeft size={14} strokeWidth={2.5} />
               </button>
               <button
                 onClick={() => goPage(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-30 hover:bg-[rgba(124,58,237,0.1)]"
-                style={{ border: "1px solid rgba(124,58,237,0.2)", color: "#94A3B8" }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-30 hover:bg-[rgba(139,92,246,0.1)]"
+                style={{ border: "1px solid rgba(139,92,246,0.2)", color: "#94A3B8" }}
               >
                 <ChevronRight size={14} strokeWidth={2.5} />
               </button>

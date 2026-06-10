@@ -85,7 +85,7 @@ export default function FinancieraClient({
       suffix: "% de la venta",
       description: "Fee fijo extra sobre cada venta (ej. mensualidad de TiendaNube prorrateada o comisión de un marketplace). Dejá 0 si solo usás MercadoPago/PagoNube — esas comisiones se configuran aparte en la tab Comisiones.",
       icon: Percent,
-      iconColor: "#7C3AED",
+      iconColor: "#8b5cf6",
       step: "0.1",
       placeholder: "0",
     },
@@ -122,7 +122,7 @@ export default function FinancieraClient({
             <div
               key={f.name}
               className="rounded-2xl p-5 flex flex-col gap-4"
-              style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+              style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
             >
               <div className="flex items-center gap-3">
                 <div
@@ -139,7 +139,7 @@ export default function FinancieraClient({
 
               <div
                 className="flex items-center gap-2 rounded-xl px-4 py-3"
-                style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)" }}
+                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
               >
                 <input
                   type="number"
@@ -164,13 +164,13 @@ export default function FinancieraClient({
           {/* Vista previa — ocupa 2 columnas */}
           <div
             className="xl:col-span-2 rounded-2xl overflow-hidden"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
           >
             <div
               className="px-6 py-4 flex items-center gap-2"
-              style={{ borderBottom: "1px solid rgba(124,58,237,0.15)", background: "rgba(124,58,237,0.04)" }}
+              style={{ borderBottom: "1px solid rgba(139,92,246,0.15)", background: "rgba(139,92,246,0.04)" }}
             >
-              <TrendingUp size={15} color="#7C3AED" strokeWidth={2.5} />
+              <TrendingUp size={15} color="#8b5cf6" strokeWidth={2.5} />
               <p className="text-sm font-bold text-[#F1F5F9]">
                 Vista previa — venta de {fmt(exampleSale)}
               </p>
@@ -186,7 +186,7 @@ export default function FinancieraClient({
                   key={row.label}
                   className={`flex items-center justify-between py-3 text-sm ${i < arr.length - 1 ? "border-b" : ""}`}
                   style={{
-                    borderColor: "rgba(124,58,237,0.08)",
+                    borderColor: "rgba(139,92,246,0.08)",
                     background: row.highlight ? "rgba(34,197,94,0.03)" : "transparent",
                     marginLeft: row.highlight ? "-20px" : undefined,
                     marginRight: row.highlight ? "-20px" : undefined,
@@ -204,14 +204,14 @@ export default function FinancieraClient({
 
               <div
                 className="flex items-center justify-between mt-3 pt-3 rounded-xl px-4 py-3"
-                style={{ background: "rgba(225,105,30,0.08)", border: "1px solid rgba(225,105,30,0.2)" }}
+                style={{ background: "rgba(192,132,252,0.08)", border: "1px solid rgba(192,132,252,0.2)" }}
               >
                 <div>
-                  <p className="text-sm font-bold text-[#e1691e]">Margen neto final</p>
+                  <p className="text-sm font-bold text-[#c084fc]">Margen neto final</p>
                   <p className="text-xs text-[#64748B]">En USD al tipo de cambio configurado</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-black text-[#e1691e]">{margin}%</p>
+                  <p className="text-2xl font-black text-[#c084fc]">{margin}%</p>
                   <p className="text-xs text-[#64748B]">≈ USD {usdValue}</p>
                 </div>
               </div>
@@ -222,10 +222,10 @@ export default function FinancieraClient({
           <div className="flex flex-col gap-5">
             <div
               className="rounded-2xl p-5 flex flex-col gap-4"
-              style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+              style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
             >
               <div className="flex items-start gap-2">
-                <Info size={14} color="#7C3AED" strokeWidth={2.5} className="mt-0.5 flex-shrink-0" />
+                <Info size={14} color="#8b5cf6" strokeWidth={2.5} className="mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-[#64748B] leading-relaxed">
                   Estos valores se aplican a <strong className="text-[#94A3B8]">todos los cálculos de rentabilidad</strong> del dashboard.
                   Actualizalos cuando cambie el dólar o las comisiones.
@@ -237,7 +237,7 @@ export default function FinancieraClient({
               type="submit"
               disabled={saving}
               className="flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 hover:scale-[1.01]"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
             >
               <Save size={16} strokeWidth={2.5} />
               {saving ? "Guardando..." : "Guardar cambios"}
@@ -249,7 +249,7 @@ export default function FinancieraClient({
 
       {/* Card de costo promedio de productos desde TiendaNube */}
       <div className="rounded-2xl p-5 flex items-start gap-4"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
           style={{ background: "rgba(34,197,94,0.12)" }}>
           <Package size={18} color="#22c55e" strokeWidth={2} />

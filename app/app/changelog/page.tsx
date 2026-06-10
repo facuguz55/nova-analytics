@@ -27,7 +27,7 @@ export default function ChangelogPage() {
         {/* Línea vertical de timeline */}
         <div
           className="absolute left-4 top-0 bottom-0 w-px"
-          style={{ background: "rgba(124,58,237,0.2)" }}
+          style={{ background: "rgba(139,92,246,0.2)" }}
         />
 
         <div className="space-y-10">
@@ -48,7 +48,7 @@ export default function ChangelogPage() {
                 {/* Card */}
                 <div
                   className="rounded-2xl p-5 space-y-4"
-                  style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.18)" }}
+                  style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.18)" }}
                 >
                   {/* Header */}
                   <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -62,7 +62,7 @@ export default function ChangelogPage() {
                         </span>
                         <span
                           className="text-xs font-bold px-2.5 py-1 rounded-full font-mono"
-                          style={{ background: "rgba(124,58,237,0.1)", color: "#8B5CF6" }}
+                          style={{ background: "rgba(139,92,246,0.1)", color: "#a78bfa" }}
                         >
                           v{entry.version}
                         </span>

@@ -75,11 +75,11 @@ export default function ConfiguracionClient({ user }: Props) {
       {/* Info de cuenta */}
       <div
         className="rounded-2xl p-5 flex items-center gap-4"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}
       >
         <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "rgba(124,58,237,0.15)" }}>
-          <Shield size={20} color="#8B5CF6" strokeWidth={2} />
+          style={{ background: "rgba(139,92,246,0.15)" }}>
+          <Shield size={20} color="#a78bfa" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-[#F1F5F9] truncate">{user.email}</p>
@@ -88,17 +88,17 @@ export default function ConfiguracionClient({ user }: Props) {
           </p>
         </div>
         <span className="text-[10px] font-bold px-2 py-1 rounded-full flex-shrink-0"
-          style={{ background: "rgba(139,92,246,0.12)", color: "#8B5CF6", border: "1px solid rgba(139,92,246,0.25)" }}>
+          style={{ background: "rgba(139,92,246,0.12)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}>
           {PLAN_LABELS[user.plan] ?? user.plan}
         </span>
       </div>
 
       {/* Cambio de contraseña */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
         <div className="px-5 py-4 flex items-center gap-2"
-          style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
-          <Lock size={15} color="#8B5CF6" strokeWidth={2} />
+          style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
+          <Lock size={15} color="#a78bfa" strokeWidth={2} />
           <p className="text-sm font-bold text-[#F1F5F9]">Cambiar contraseña</p>
         </div>
 
@@ -134,7 +134,7 @@ export default function ConfiguracionClient({ user }: Props) {
                     onChange={(e) => field.setter(e.target.value)}
                     placeholder={field.placeholder}
                     className="w-full px-4 py-2.5 rounded-xl text-sm bg-transparent text-[#F1F5F9] placeholder-[#475569] outline-none"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(124,58,237,0.2)" }}
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(139,92,246,0.2)" }}
                   />
                   {field.id === "new" && (
                     <button
@@ -163,7 +163,7 @@ export default function ConfiguracionClient({ user }: Props) {
                 onClick={handlePasswordChange}
                 disabled={saving || !newPwd || !confirmPwd}
                 className="px-5 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-40 hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #7C3AED, #8B5CF6)", color: "white" }}
+                style={{ background: "linear-gradient(135deg, #8b5cf6, #a78bfa)", color: "white" }}
               >
                 {saving ? "Guardando..." : "Actualizar contraseña"}
               </button>
@@ -174,17 +174,17 @@ export default function ConfiguracionClient({ user }: Props) {
 
       {/* Links a otras secciones */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
           <p className="text-sm font-bold text-[#F1F5F9]">Más configuraciones</p>
         </div>
-        <div className="divide-y" style={{ borderColor: "rgba(124,58,237,0.07)" }}>
+        <div className="divide-y" style={{ borderColor: "rgba(139,92,246,0.07)" }}>
           {SHORTCUTS.map(({ href, icon: Icon, label, desc }) => (
             <Link key={href} href={href}
-              className="flex items-center gap-4 px-5 py-4 transition-all hover:bg-[rgba(124,58,237,0.04)] group">
+              className="flex items-center gap-4 px-5 py-4 transition-all hover:bg-[rgba(139,92,246,0.04)] group">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(124,58,237,0.1)" }}>
-                <Icon size={16} color="#8B5CF6" strokeWidth={2} />
+                style={{ background: "rgba(139,92,246,0.1)" }}>
+                <Icon size={16} color="#a78bfa" strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-[#F1F5F9]">{label}</p>

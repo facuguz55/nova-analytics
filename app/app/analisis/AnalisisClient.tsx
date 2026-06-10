@@ -134,8 +134,8 @@ function computeByHour(orders: TNOrder[]) {
 
 function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
-      <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
+      <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
         <p className="font-semibold text-[#F1F5F9] text-sm">{title}</p>
         {subtitle && <p className="text-xs text-[#94A3B8] mt-0.5">{subtitle}</p>}
       </div>
@@ -167,14 +167,14 @@ function DateRangeSelector({
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
       {/* Preset pills — scroll horizontal en mobile */}
-      <div className="flex gap-0.5 rounded-xl p-1 overflow-x-auto max-w-full" style={{ background: "#0D0D12", border: "1px solid rgba(124,58,237,0.2)" }}>
+      <div className="flex gap-0.5 rounded-xl p-1 overflow-x-auto max-w-full" style={{ background: "#0D0D12", border: "1px solid rgba(139,92,246,0.2)" }}>
         {PRESETS.map((p) => (
           <button
             key={p.key}
             onClick={() => { onChange(p.key); setShowCustom(false); }}
             className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0"
             style={{
-              background: activePreset === p.key && !showCustom ? "#7C3AED" : "transparent",
+              background: activePreset === p.key && !showCustom ? "#8b5cf6" : "transparent",
               color: activePreset === p.key && !showCustom ? "#fff" : "#94A3B8",
             }}
           >
@@ -189,9 +189,9 @@ function DateRangeSelector({
           onClick={() => setShowCustom(!showCustom)}
           className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
           style={{
-            background: isCustomActive ? "#7C3AED" : showCustom ? "rgba(124,58,237,0.15)" : "rgba(124,58,237,0.06)",
-            border: `1px solid ${isCustomActive ? "#7C3AED" : showCustom ? "rgba(124,58,237,0.4)" : "rgba(124,58,237,0.2)"}`,
-            color: isCustomActive ? "#fff" : showCustom ? "#8B5CF6" : "#94A3B8",
+            background: isCustomActive ? "#8b5cf6" : showCustom ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.06)",
+            border: `1px solid ${isCustomActive ? "#8b5cf6" : showCustom ? "rgba(139,92,246,0.4)" : "rgba(139,92,246,0.2)"}`,
+            color: isCustomActive ? "#fff" : showCustom ? "#a78bfa" : "#94A3B8",
           }}
         >
           <Calendar size={12} strokeWidth={2.5} />
@@ -213,17 +213,17 @@ function DateRangeSelector({
               className="absolute right-0 top-full mt-2 rounded-2xl overflow-hidden z-20"
               style={{
                 background: "#111118",
-                border: "1px solid rgba(124,58,237,0.35)",
+                border: "1px solid rgba(139,92,246,0.35)",
                 minWidth: "320px",
-                boxShadow: "0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.1)",
+                boxShadow: "0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(139,92,246,0.1)",
               }}
             >
               {/* Header */}
               <div
                 className="px-5 py-3 flex items-center gap-2"
-                style={{ borderBottom: "1px solid rgba(124,58,237,0.15)", background: "rgba(124,58,237,0.04)" }}
+                style={{ borderBottom: "1px solid rgba(139,92,246,0.15)", background: "rgba(139,92,246,0.04)" }}
               >
-                <Calendar size={14} color="#8B5CF6" strokeWidth={2.5} />
+                <Calendar size={14} color="#a78bfa" strokeWidth={2.5} />
                 <p className="text-sm font-bold text-[#F1F5F9]">Rango personalizado</p>
               </div>
 
@@ -240,7 +240,7 @@ function DateRangeSelector({
                       className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-[#F1F5F9] outline-none transition-all focus:border-purple-500"
                       style={{
                         background: "#0D0D12",
-                        border: "1px solid rgba(124,58,237,0.25)",
+                        border: "1px solid rgba(139,92,246,0.25)",
                         colorScheme: "dark",
                       }}
                     />
@@ -256,7 +256,7 @@ function DateRangeSelector({
                       className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-[#F1F5F9] outline-none transition-all focus:border-purple-500"
                       style={{
                         background: "#0D0D12",
-                        border: "1px solid rgba(124,58,237,0.25)",
+                        border: "1px solid rgba(139,92,246,0.25)",
                         colorScheme: "dark",
                       }}
                     />
@@ -268,7 +268,7 @@ function DateRangeSelector({
                   <button
                     onClick={() => setShowCustom(false)}
                     className="flex-1 rounded-xl py-2.5 text-xs font-semibold text-[#94A3B8] transition-all hover:text-[#F1F5F9]"
-                    style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)" }}
+                    style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)" }}
                   >
                     Cancelar
                   </button>
@@ -281,7 +281,7 @@ function DateRangeSelector({
                     }}
                     disabled={!customSince || !customUntil}
                     className="flex-1 rounded-xl py-2.5 text-xs font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
-                    style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+                    style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
                   >
                     Aplicar
                   </button>
@@ -399,14 +399,14 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
     return (
       <div className="p-4 sm:p-6">
         <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9] mb-2" style={{ letterSpacing: "-0.02em" }}>Análisis</h1>
-        <div className="rounded-2xl p-10 text-center" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
-          <Store size={40} color="#7C3AED" className="mx-auto mb-3" />
+        <div className="rounded-2xl p-10 text-center" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
+          <Store size={40} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conectá tu TiendaNube</p>
           <p className="text-sm text-[#64748B] mb-4">Necesitás conectar tu tienda para ver el análisis de ventas.</p>
           <a
             href="/app/configuracion/integraciones"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white"
-            style={{ background: "#7C3AED" }}
+            style={{ background: "#8b5cf6" }}
           >
             Ir a integraciones <ArrowRight size={14} />
           </a>
@@ -419,7 +419,7 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
     { key: "paid",      label: "Pagadas",    color: "#22c55e" },
     { key: "pending",   label: "Pendientes", color: "#f59e0b" },
     { key: "cancelled", label: "Canceladas", color: "#ef4444" },
-    { key: "all",       label: "Todas",      color: "#8B5CF6" },
+    { key: "all",       label: "Todas",      color: "#a78bfa" },
   ];
 
   return (
@@ -437,8 +437,8 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
           <div className="relative">
             <button
               onClick={() => setShowCurr(!showCurr)}
-              className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all hover:bg-[rgba(124,58,237,0.15)]"
-              style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.25)", color: "#8B5CF6" }}
+              className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all hover:bg-[rgba(139,92,246,0.15)]"
+              style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.25)", color: "#a78bfa" }}
             >
               {currency}
               <ChevronDown size={11} strokeWidth={2.5} className={`transition-transform ${showCurr ? "rotate-180" : ""}`} />
@@ -448,21 +448,21 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
                 <div className="fixed inset-0 z-10" onClick={() => setShowCurr(false)} />
                 <div
                   className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-20 py-1"
-                  style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.3)", minWidth: "160px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
+                  style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)", minWidth: "160px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
                 >
                   {CURRENCIES.map((c) => (
                     <button
                       key={c.code}
                       onClick={() => { setCurrency(c.code); setShowCurr(false); }}
-                      className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold transition-colors hover:bg-[rgba(124,58,237,0.08)]"
-                      style={{ color: c.code === currency ? "#8B5CF6" : "#94A3B8" }}
+                      className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold transition-colors hover:bg-[rgba(139,92,246,0.08)]"
+                      style={{ color: c.code === currency ? "#a78bfa" : "#94A3B8" }}
                     >
                       <span>{c.code} — {c.label}</span>
-                      {c.code === currency && <Check size={11} strokeWidth={2.5} color="#7C3AED" />}
+                      {c.code === currency && <Check size={11} strokeWidth={2.5} color="#8b5cf6" />}
                     </button>
                   ))}
                   {currency !== "ARS" && (
-                    <p className="px-4 py-1.5 text-[10px] text-[#475569] border-t" style={{ borderColor: "rgba(124,58,237,0.12)" }}>
+                    <p className="px-4 py-1.5 text-[10px] text-[#475569] border-t" style={{ borderColor: "rgba(139,92,246,0.12)" }}>
                       {currency === "USD" ? `1 USD = ${usdRate.toLocaleString("es-AR")} ARS` : "Tasa aprox. vs USD"}
                     </p>
                   )}
@@ -512,7 +512,7 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
         {loadingMore && (
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs"
-            style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", color: "#8B5CF6" }}
+            style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)", color: "#a78bfa" }}
           >
             <Loader2 size={11} className="animate-spin" />
             Cargando más datos...
@@ -540,7 +540,7 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
       {filtered.length === 0 && !loadingMore && (
         <div
           className="rounded-2xl p-8 text-center"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}
         >
           <p className="text-[#64748B] text-sm">
             {allOrders.length === 0
@@ -555,9 +555,9 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
           {/* Resumen */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {[
-              { label: "Órdenes",      value: String(filtered.length),                                         color: "#8B5CF6", bg: "rgba(139,92,246,0.08)" },
+              { label: "Órdenes",      value: String(filtered.length),                                         color: "#a78bfa", bg: "rgba(139,92,246,0.08)" },
               { label: "Ingresos",     value: fmt(totalRevenue),                                               color: "#22c55e", bg: "rgba(34,197,94,0.08)" },
-              { label: "Ticket prom.", value: filtered.length > 0 ? fmt(totalRevenue / filtered.length) : "$0",color: "#e1691e", bg: "rgba(225,105,30,0.08)" },
+              { label: "Ticket prom.", value: filtered.length > 0 ? fmt(totalRevenue / filtered.length) : "$0",color: "#c084fc", bg: "rgba(192,132,252,0.08)" },
             ].map((s) => (
               <div key={s.label} className="rounded-2xl p-3 sm:p-4 flex flex-col gap-1" style={{ background: s.bg, border: `1px solid ${s.color}25` }}>
                 <p className="text-[10px] sm:text-xs font-medium" style={{ color: s.color + "aa" }}>{s.label}</p>
@@ -575,19 +575,19 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
               <AreaChart data={monthlyData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
                 <defs>
                   <linearGradient id="gVentas" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#e1691e" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#e1691e" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#c084fc" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#c084fc" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.08)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.08)" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={fmt} tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={52} />
                 <Tooltip
-                  contentStyle={{ background: "#1a1a2e", border: "1px solid rgba(124,58,237,0.3)", borderRadius: "12px", fontSize: "12px" }}
+                  contentStyle={{ background: "#1a1a2e", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "12px", fontSize: "12px" }}
                   labelStyle={{ color: "#F1F5F9", fontWeight: 700 }}
                   formatter={(v) => [fmt(Number(v)), "Ventas"]}
                 />
-                <Area type="monotone" dataKey="ventas" stroke="#e1691e" strokeWidth={2} fill="url(#gVentas)" dot={false} activeDot={{ r: 4, fill: "#e1691e", strokeWidth: 0 }} />
+                <Area type="monotone" dataKey="ventas" stroke="#c084fc" strokeWidth={2} fill="url(#gVentas)" dot={false} activeDot={{ r: 4, fill: "#c084fc", strokeWidth: 0 }} />
               </AreaChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -596,14 +596,14 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
             <ChartCard title="Ventas por día de la semana" subtitle="Distribución semanal">
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={byWeekday} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.08)" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.08)" vertical={false} />
                   <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
                   <YAxis tickFormatter={fmt} tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={48} />
                   <Tooltip
-                    contentStyle={{ background: "#1a1a2e", border: "1px solid rgba(124,58,237,0.3)", borderRadius: "12px", fontSize: "12px" }}
+                    contentStyle={{ background: "#1a1a2e", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "12px", fontSize: "12px" }}
                     formatter={(v) => [fmt(Number(v)), "Ventas"]}
                   />
-                  <Bar dataKey="ventas" fill="#7C3AED" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                  <Bar dataKey="ventas" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={32} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -611,14 +611,14 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
             <ChartCard title="Órdenes por hora del día" subtitle="Distribución horaria">
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={byHour} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,58,237,0.08)" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.08)" vertical={false} />
                   <XAxis dataKey="hora" tick={{ fontSize: 9, fill: "#94A3B8" }} axisLine={false} tickLine={false} interval={3} />
                   <YAxis tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={24} />
                   <Tooltip
-                    contentStyle={{ background: "#1a1a2e", border: "1px solid rgba(124,58,237,0.3)", borderRadius: "12px", fontSize: "12px" }}
+                    contentStyle={{ background: "#1a1a2e", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "12px", fontSize: "12px" }}
                     formatter={(v) => [Number(v), "Órdenes"]}
                   />
-                  <Bar dataKey="ordenes" fill="#e1691e" radius={[3, 3, 0, 0]} maxBarSize={20} />
+                  <Bar dataKey="ordenes" fill="#c084fc" radius={[3, 3, 0, 0]} maxBarSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -628,7 +628,7 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
           {byWeekday.length > 0 && (
             <div
               className="rounded-2xl p-4"
-              style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(37,99,235,0.05))", border: "1px solid rgba(124,58,237,0.2)" }}
+              style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(37,99,235,0.05))", border: "1px solid rgba(139,92,246,0.2)" }}
             >
               {(() => {
                 const bestDay  = byWeekday.reduce((best, d) => d.ventas  > best.ventas  ? d : best, byWeekday[0]);
@@ -636,9 +636,9 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
                 return (
                   <p className="text-sm text-[#94A3B8]">
                     🔥 Tu mejor día de la semana es{" "}
-                    <span className="text-[#e1691e] font-bold">{bestDay.day}</span> con {fmt(bestDay.ventas)} en ventas.
+                    <span className="text-[#c084fc] font-bold">{bestDay.day}</span> con {fmt(bestDay.ventas)} en ventas.
                     El horario pico de órdenes es{" "}
-                    <span className="text-[#7C3AED] font-bold">{bestHour.hora}</span> hs.
+                    <span className="text-[#8b5cf6] font-bold">{bestHour.hora}</span> hs.
                   </p>
                 );
               })()}
@@ -646,16 +646,16 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
           )}
 
           {/* Lista de órdenes */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
-            <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
+            <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
               <p className="text-sm font-semibold text-[#F1F5F9]">
                 Lista de órdenes
                 {statusFilter !== "all" && (
                   <span
                     className="ml-2 text-xs font-normal px-2 py-0.5 rounded-full"
                     style={{
-                      background: `${STATUS_TABS.find((t) => t.key === statusFilter)?.color ?? "#8B5CF6"}15`,
-                      color: STATUS_TABS.find((t) => t.key === statusFilter)?.color ?? "#8B5CF6",
+                      background: `${STATUS_TABS.find((t) => t.key === statusFilter)?.color ?? "#a78bfa"}15`,
+                      color: STATUS_TABS.find((t) => t.key === statusFilter)?.color ?? "#a78bfa",
                     }}
                   >
                     {STATUS_TABS.find((t) => t.key === statusFilter)?.label}
@@ -673,13 +673,13 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
               return (
                 <div
                   key={o.id}
-                  className="flex items-center gap-3 px-5 py-3 hover:bg-[rgba(124,58,237,0.04)] transition-colors"
-                  style={{ borderBottom: i < Math.min(filtered.length, 150) - 1 ? "1px solid rgba(124,58,237,0.06)" : "none" }}
+                  className="flex items-center gap-3 px-5 py-3 hover:bg-[rgba(139,92,246,0.04)] transition-colors"
+                  style={{ borderBottom: i < Math.min(filtered.length, 150) - 1 ? "1px solid rgba(139,92,246,0.06)" : "none" }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: dotColor }} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-[#8B5CF6]">#{o.number ?? o.id}</span>
+                      <span className="text-sm font-semibold text-[#a78bfa]">#{o.number ?? o.id}</span>
                       <span
                         className="text-xs px-2 py-0.5 rounded-full font-medium"
                         style={{ background: `${dotColor}15`, color: dotColor }}
@@ -702,7 +702,7 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
             })}
 
             {filtered.length > 150 && (
-              <div className="px-5 py-3 text-center" style={{ borderTop: "1px solid rgba(124,58,237,0.08)" }}>
+              <div className="px-5 py-3 text-center" style={{ borderTop: "1px solid rgba(139,92,246,0.08)" }}>
                 <p className="text-xs text-[#64748B]">
                   Mostrando 150 de {filtered.length} — achicá el rango o filtrá por estado
                 </p>

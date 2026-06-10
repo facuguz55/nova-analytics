@@ -28,9 +28,9 @@ export default async function EnviosPage() {
         </div>
         <div
           className="rounded-2xl p-10 text-center"
-          style={{ background: "#111118", border: "1px dashed rgba(124,58,237,0.3)" }}
+          style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}
         >
-          <Truck size={40} color="#7C3AED" className="mx-auto mb-3" />
+          <Truck size={40} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conectá tu TiendaNube primero</p>
           <p className="text-sm text-[#64748B] mb-4">
             Para configurar los costos de envío, primero necesitás conectar una tienda.
@@ -38,7 +38,7 @@ export default async function EnviosPage() {
           <Link
             href="/app/configuracion/integraciones"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ background: "#7C3AED" }}
+            style={{ background: "#8b5cf6" }}
           >
             Ir a Integraciones <ArrowRight size={14} />
           </Link>
@@ -67,7 +67,7 @@ export default async function EnviosPage() {
 
       <div
         className="rounded-2xl p-6 space-y-4"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <p className="text-sm font-semibold text-[#F1F5F9]">Métodos detectados en tu tienda</p>
 
@@ -76,7 +76,7 @@ export default async function EnviosPage() {
             <div
               key={m.name}
               className="flex items-center gap-3 rounded-xl px-4 py-3"
-              style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}
+              style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)" }}
             >
               <span className="text-xl">{m.logo}</span>
               <div className="flex-1">
@@ -85,7 +85,7 @@ export default async function EnviosPage() {
               </div>
               <div
                 className="flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold"
-                style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)", color: "#64748B" }}
+                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)", color: "#64748B" }}
               >
                 Costo: —
               </div>
@@ -95,13 +95,13 @@ export default async function EnviosPage() {
 
         <div
           className="flex items-start gap-2 p-3 rounded-xl mt-2"
-          style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)" }}
+          style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)" }}
         >
-          <Package size={13} color="#7C3AED" strokeWidth={2} className="mt-0.5 flex-shrink-0" />
+          <Package size={13} color="#8b5cf6" strokeWidth={2} className="mt-0.5 flex-shrink-0" />
           <p className="text-xs text-[#94A3B8]">
             La configuración de costos por método de envío estará disponible próximamente.
             Por ahora podés agregar el costo promedio de envío en{" "}
-            <Link href="/app/configuracion/costos-adicionales" className="text-[#8B5CF6] hover:underline font-semibold">
+            <Link href="/app/configuracion/costos-adicionales" className="text-[#a78bfa] hover:underline font-semibold">
               Costos Adicionales
             </Link>.
           </p>

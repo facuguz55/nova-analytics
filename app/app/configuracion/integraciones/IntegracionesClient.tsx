@@ -64,7 +64,7 @@ function IntegrationCard({
   return (
     <div
       className="rounded-2xl flex flex-col"
-      style={{ background: "#111118", border: `1px solid ${isConnected ? "rgba(34,197,94,0.2)" : "rgba(124,58,237,0.2)"}` }}
+      style={{ background: "#111118", border: `1px solid ${isConnected ? "rgba(34,197,94,0.2)" : "rgba(139,92,246,0.2)"}` }}
     >
       <div className="p-6 flex flex-col gap-5 flex-1">
         {/* Header: icono + nombre + badge */}
@@ -117,7 +117,7 @@ function IntegrationCard({
             {integration.store_id && (
               <div className="flex items-center justify-between text-xs">
                 <span className="text-[#94A3B8]">ID de tienda</span>
-                <span className="text-[#F1F5F9] font-mono bg-[rgba(124,58,237,0.1)] px-2 py-0.5 rounded">{integration.store_id}</span>
+                <span className="text-[#F1F5F9] font-mono bg-[rgba(139,92,246,0.1)] px-2 py-0.5 rounded">{integration.store_id}</span>
               </div>
             )}
             {integration.metadata?.store_name && (
@@ -156,7 +156,7 @@ function IntegrationCard({
                   <a
                     href={connectHref}
                     className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all hover:opacity-80"
-                    style={{ background: "rgba(124,58,237,0.1)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.25)" }}
+                    style={{ background: "rgba(139,92,246,0.1)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}
                   >
                     <RefreshCw size={13} strokeWidth={2.5} />
                     Reconectar
@@ -176,7 +176,7 @@ function IntegrationCard({
               <a
                 href={connectHref}
                 className="flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all hover:opacity-90 hover:scale-[1.01]"
-                style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)", color: "white" }}
+                style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)", color: "white" }}
               >
                 <ExternalLink size={14} strokeWidth={2.5} />
                 Conectar {name}
@@ -203,13 +203,13 @@ function IntegrationCard({
 const SECURITY_ITEMS = [
   {
     icon: Lock,
-    color: "#7C3AED",
+    color: "#8b5cf6",
     title: "AES-256-GCM",
     desc: "Todos los tokens OAuth se encriptan con AES-256-GCM antes de persistirse en la base de datos.",
   },
   {
     icon: Eye,
-    color: "#2563EB",
+    color: "#c026d3",
     title: "Nunca expuestos al cliente",
     desc: "Los tokens viven solo en el servidor. Ningún token toca el navegador ni aparece en logs.",
   },
@@ -221,7 +221,7 @@ const SECURITY_ITEMS = [
   },
   {
     icon: Shield,
-    color: "#e1691e",
+    color: "#c084fc",
     title: "Revocación inmediata",
     desc: "Desconectar una integración elimina los tokens de forma permanente e irreversible.",
   },
@@ -301,9 +301,9 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
           <div
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
             style={{
-              background: connectedCount > 0 ? "rgba(34,197,94,0.1)" : "rgba(124,58,237,0.1)",
-              border: connectedCount > 0 ? "1px solid rgba(34,197,94,0.25)" : "1px solid rgba(124,58,237,0.25)",
-              color: connectedCount > 0 ? "#22c55e" : "#8B5CF6",
+              background: connectedCount > 0 ? "rgba(34,197,94,0.1)" : "rgba(139,92,246,0.1)",
+              border: connectedCount > 0 ? "1px solid rgba(34,197,94,0.25)" : "1px solid rgba(139,92,246,0.25)",
+              color: connectedCount > 0 ? "#22c55e" : "#a78bfa",
             }}
           >
             <Zap size={14} strokeWidth={2.5} />
@@ -321,17 +321,17 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
         {/* Seguridad de tokens */}
         <div
           className="rounded-2xl overflow-hidden"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
         >
           <div
             className="px-6 py-4 flex items-center gap-3"
-            style={{ borderBottom: "1px solid rgba(124,58,237,0.15)", background: "rgba(124,58,237,0.04)" }}
+            style={{ borderBottom: "1px solid rgba(139,92,246,0.15)", background: "rgba(139,92,246,0.04)" }}
           >
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: "rgba(124,58,237,0.15)" }}
+              style={{ background: "rgba(139,92,246,0.15)" }}
             >
-              <Shield size={16} color="#7C3AED" strokeWidth={2} />
+              <Shield size={16} color="#8b5cf6" strokeWidth={2} />
             </div>
             <div>
               <p className="font-bold text-[#F1F5F9] text-sm">Seguridad de tokens — cifrado de extremo a extremo</p>
@@ -339,7 +339,7 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-[rgba(124,58,237,0.1)]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-[rgba(139,92,246,0.1)]">
             {SECURITY_ITEMS.map((item) => (
               <div key={item.title} className="p-5 flex flex-col gap-3">
                 <div

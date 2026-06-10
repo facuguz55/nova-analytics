@@ -22,9 +22,9 @@ const PRO_FEATURES  = ["Órdenes ilimitadas", "Meta Ads completo", "IA Assistant
 const PLAN_META: Record<string, { label: string; color: string; bg: string; border: string; desc: string }> = {
   free:   { label: "Plan Gratuito",   color: "#94A3B8", bg: "rgba(100,116,139,0.08)", border: "rgba(100,116,139,0.25)", desc: "Período de prueba no iniciado." },
   trial:  { label: "Prueba Gratuita", color: "#f59e0b", bg: "rgba(245,158,11,0.08)",  border: "rgba(245,158,11,0.3)",   desc: "Acceso completo Pro por 7 días." },
-  pro:    { label: "Plan Pro",        color: "#8B5CF6", bg: "rgba(124,58,237,0.08)",  border: "rgba(124,58,237,0.3)",   desc: "Acceso completo sin límites." },
-  active: { label: "Plan Pro",        color: "#8B5CF6", bg: "rgba(124,58,237,0.08)",  border: "rgba(124,58,237,0.3)",   desc: "Acceso completo sin límites." },
-  agency: { label: "Plan Agency",     color: "#e1691e", bg: "rgba(225,105,30,0.08)",  border: "rgba(225,105,30,0.3)",   desc: "Multi-tienda y soporte dedicado." },
+  pro:    { label: "Plan Pro",        color: "#a78bfa", bg: "rgba(139,92,246,0.08)",  border: "rgba(139,92,246,0.3)",   desc: "Acceso completo sin límites." },
+  active: { label: "Plan Pro",        color: "#a78bfa", bg: "rgba(139,92,246,0.08)",  border: "rgba(139,92,246,0.3)",   desc: "Acceso completo sin límites." },
+  agency: { label: "Plan Agency",     color: "#c084fc", bg: "rgba(192,132,252,0.08)",  border: "rgba(192,132,252,0.3)",   desc: "Multi-tienda y soporte dedicado." },
 };
 
 export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props) {
@@ -97,10 +97,10 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
       </div>
 
       {/* Incluido en tu plan */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
         <button
           onClick={() => setShowDetails(!showDetails)}
-          className="w-full px-5 py-3.5 flex items-center justify-between transition-all hover:bg-[rgba(124,58,237,0.04)]"
+          className="w-full px-5 py-3.5 flex items-center justify-between transition-all hover:bg-[rgba(139,92,246,0.04)]"
         >
           <p className="text-sm font-semibold text-[#F1F5F9]">Qué incluye tu plan</p>
           {showDetails ? <ChevronUp size={15} color="#64748B" /> : <ChevronDown size={15} color="#64748B" />}
@@ -121,10 +121,10 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
       {isFree && (
         <div className="space-y-3">
           {/* MercadoPago — ARS */}
-          <div className="rounded-2xl p-5 space-y-4" style={{ background: "rgba(124,58,237,0.06)", border: "2px solid rgba(124,58,237,0.3)" }}>
+          <div className="rounded-2xl p-5 space-y-4" style={{ background: "rgba(139,92,246,0.06)", border: "2px solid rgba(139,92,246,0.3)" }}>
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(124,58,237,0.15)" }}>
-                <DollarSign size={18} color="#8B5CF6" strokeWidth={2} />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(139,92,246,0.15)" }}>
+                <DollarSign size={18} color="#a78bfa" strokeWidth={2} />
               </div>
               <div className="flex-1">
                 <p className="text-sm font-bold text-[#F1F5F9]">Plan Pro — Pago en ARS</p>
@@ -138,7 +138,7 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {PRO_FEATURES.slice(0, 4).map((f) => (
                 <div key={f} className="flex items-center gap-1.5">
-                  <Check size={11} color="#8B5CF6" strokeWidth={2.5} className="flex-shrink-0" />
+                  <Check size={11} color="#a78bfa" strokeWidth={2.5} className="flex-shrink-0" />
                   <span className="text-[11px] text-[#94A3B8]">{f}</span>
                 </div>
               ))}
@@ -147,7 +147,7 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
               onClick={handleCheckoutMP}
               disabled={loadingMP}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition-all hover:opacity-85 disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
             >
               <CreditCard size={15} strokeWidth={2.5} />
               {loadingMP ? "Redirigiendo..." : "Pagar en ARS con MercadoPago"}
@@ -155,9 +155,9 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
           </div>
 
           {/* Manual / WhatsApp */}
-          <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
+          <div className="rounded-2xl p-5 space-y-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(124,58,237,0.08)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(139,92,246,0.08)" }}>
                 <MessageCircle size={18} color="#64748B" strokeWidth={2} />
               </div>
               <div>
@@ -179,7 +179,7 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
       )}
 
       {isTrial && (
-        <div className="rounded-2xl p-5 space-y-4" style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.25)" }}>
+        <div className="rounded-2xl p-5 space-y-4" style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.25)" }}>
           <div>
             <p className="text-sm font-bold text-[#F1F5F9]">¿Te gusta lo que ves?</p>
             <p className="text-xs text-[#94A3B8] leading-relaxed mt-1">
@@ -190,7 +190,7 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
             onClick={handleCheckoutMP}
             disabled={loadingMP}
             className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition-all hover:opacity-85 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+            style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
           >
             <DollarSign size={15} strokeWidth={2.5} />
             {loadingMP ? "Redirigiendo..." : "Contratar Plan Pro — $77.000 ARS/mes"}
@@ -220,7 +220,7 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
             href="https://wa.me/5491100000000"
             target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all hover:opacity-80"
-            style={{ background: "rgba(124,58,237,0.1)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.25)" }}
+            style={{ background: "rgba(139,92,246,0.1)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}
           >
             Contactar <ArrowRight size={12} />
           </a>
@@ -228,11 +228,11 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
       )}
 
       {/* ── Comparación rápida ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.15)" }}>
-        <div className="px-5 py-3.5" style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
+        <div className="px-5 py-3.5" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Comparar planes</p>
         </div>
-        <div className="divide-y" style={{ borderColor: "rgba(124,58,237,0.08)" }}>
+        <div className="divide-y" style={{ borderColor: "rgba(139,92,246,0.08)" }}>
           {[
             { feature: "Órdenes / mes",        free: "Hasta 80",     pro: "Ilimitadas",   icon: ShoppingCart },
             { feature: "Meta Ads",              free: "—",            pro: "Completo",     icon: BarChart2 },
@@ -247,15 +247,15 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
                   <span className="text-xs text-[#94A3B8]">{row.feature}</span>
                 </div>
                 <span className="text-xs text-center font-medium" style={{ color: isFree ? "#F1F5F9" : "#64748B" }}>{row.free}</span>
-                <span className="text-xs text-center font-bold" style={{ color: isPro || isTrial ? "#8B5CF6" : "#475569" }}>{row.pro}</span>
+                <span className="text-xs text-center font-bold" style={{ color: isPro || isTrial ? "#a78bfa" : "#475569" }}>{row.pro}</span>
               </div>
             );
           })}
         </div>
-        <div className="grid grid-cols-3 px-3 sm:px-5 py-2" style={{ borderTop: "1px solid rgba(124,58,237,0.1)", background: "rgba(124,58,237,0.04)" }}>
+        <div className="grid grid-cols-3 px-3 sm:px-5 py-2" style={{ borderTop: "1px solid rgba(139,92,246,0.1)", background: "rgba(139,92,246,0.04)" }}>
           <span />
           <span className="text-[10px] font-bold text-center text-[#64748B] uppercase tracking-widest">Gratis</span>
-          <span className="text-[10px] font-bold text-center uppercase tracking-widest" style={{ color: "#8B5CF6" }}>Pro</span>
+          <span className="text-[10px] font-bold text-center uppercase tracking-widest" style={{ color: "#a78bfa" }}>Pro</span>
         </div>
       </div>
 

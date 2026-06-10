@@ -50,7 +50,7 @@ export default async function WorkspacesPage() {
   });
 
   const PLAN_COLORS: Record<string, string> = {
-    free: "#64748B", pro: "#7C3AED", agency: "#e1691e", trial: "#22c55e", active: "#2563EB",
+    free: "#64748B", pro: "#8b5cf6", agency: "#c084fc", trial: "#22c55e", active: "#c026d3",
   };
 
   return (
@@ -63,15 +63,15 @@ export default async function WorkspacesPage() {
       {/* Stats rápidas */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
-          { label: "Total", value: allWorkspaces.length, icon: Store, color: "#7C3AED" },
+          { label: "Total", value: allWorkspaces.length, icon: Store, color: "#8b5cf6" },
           { label: "Con integración", value: workspaceStats.filter((w) => w.integrationCount > 0).length, icon: Plug, color: "#22c55e" },
-          { label: "Con órdenes", value: workspaceStats.filter((w) => w.orderCount > 0).length, icon: DollarSign, color: "#e1691e" },
-          { label: "Usuarios totales", value: allUsers.length, icon: Users, color: "#2563EB" },
+          { label: "Con órdenes", value: workspaceStats.filter((w) => w.orderCount > 0).length, icon: DollarSign, color: "#c084fc" },
+          { label: "Usuarios totales", value: allUsers.length, icon: Users, color: "#c026d3" },
         ].map((s) => (
           <div
             key={s.label}
             className="rounded-2xl p-4 flex items-center gap-3"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${s.color}18` }}>
               <s.icon size={18} color={s.color} strokeWidth={2} />
@@ -88,7 +88,7 @@ export default async function WorkspacesPage() {
       {allWorkspaces.length > 0 && (
         <div
           className="rounded-2xl p-5"
-          style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+          style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
         >
           <p className="text-xs font-semibold tracking-widest text-[#94A3B8] uppercase mb-4">Distribución por plan</p>
           <div className="space-y-2.5">
@@ -100,7 +100,7 @@ export default async function WorkspacesPage() {
             ).sort((a, b) => b[1] - a[1]).map(([plan, count]) => (
               <div key={plan} className="flex items-center gap-3">
                 <span className="text-xs font-semibold text-[#94A3B8] capitalize w-16 flex-shrink-0">{plan}</span>
-                <div className="flex-1 h-2 rounded-full" style={{ background: "rgba(124,58,237,0.1)" }}>
+                <div className="flex-1 h-2 rounded-full" style={{ background: "rgba(139,92,246,0.1)" }}>
                   <div
                     className="h-2 rounded-full transition-all"
                     style={{
@@ -122,9 +122,9 @@ export default async function WorkspacesPage() {
       {/* Tabla interactiva */}
       <div
         className="rounded-2xl p-1"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
-        <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+        <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Gestión de workspaces</p>
           <p className="text-[11px] text-[#64748B] mt-0.5">Cambiá plan, estado, eliminá workspace o usuario, y agregá órdenes manuales</p>
         </div>

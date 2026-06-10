@@ -13,13 +13,13 @@ export default function CampanasPage() {
       </div>
       <div
         className="rounded-2xl p-10 flex flex-col items-center gap-5 text-center"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center"
-          style={{ background: "rgba(124,58,237,0.12)" }}
+          style={{ background: "rgba(139,92,246,0.12)" }}
         >
-          <Megaphone size={28} color="#7C3AED" strokeWidth={1.5} />
+          <Megaphone size={28} color="#8b5cf6" strokeWidth={1.5} />
         </div>
         <div>
           <h2 className="text-xl font-bold text-[#F1F5F9]">Campañas — Próximamente</h2>
@@ -31,7 +31,7 @@ export default function CampanasPage() {
         <Link
           href="/app/mails"
           className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all hover:opacity-80"
-          style={{ background: "rgba(124,58,237,0.15)", color: "#8B5CF6", border: "1px solid rgba(124,58,237,0.3)" }}
+          style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.3)" }}
         >
           Ir a Mails →
         </Link>

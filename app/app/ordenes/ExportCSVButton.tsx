@@ -35,7 +35,7 @@ export default function ExportCSVButton({ orders }: { orders: Order[] }) {
     <button
       onClick={handleExport}
       className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all hover:opacity-85"
-      style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)", color: "#8B5CF6" }}
+      style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)", color: "#a78bfa" }}
     >
       <Download size={12} strokeWidth={2} />
       Exportar CSV

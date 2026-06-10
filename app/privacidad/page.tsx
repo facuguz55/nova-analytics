@@ -14,7 +14,7 @@ export default function PrivacidadPage() {
     <div className="min-h-screen bg-[#0a0a0f] text-[#F1F5F9]">
 
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[rgba(124,58,237,0.15)] bg-[rgba(10,10,15,0.92)] backdrop-blur-md">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[rgba(139,92,246,0.15)] bg-[rgba(10,10,15,0.92)] backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <img
@@ -26,7 +26,7 @@ export default function PrivacidadPage() {
           </Link>
           <Link
             href="/register"
-            className="text-xs sm:text-sm bg-gradient-to-r from-[#7C3AED] to-[#2563EB] hover:opacity-90 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all"
+            className="text-xs sm:text-sm bg-gradient-to-r from-[#8b5cf6] to-[#c026d3] hover:opacity-90 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all"
           >
             Empezar gratis
           </Link>
@@ -38,7 +38,7 @@ export default function PrivacidadPage() {
 
         {/* Header */}
         <div className="mb-10">
-          <div className="inline-flex items-center gap-2 bg-[rgba(124,58,237,0.12)] border border-[rgba(124,58,237,0.3)] rounded-full px-4 py-1.5 text-xs font-medium text-[#8B5CF6] mb-5">
+          <div className="inline-flex items-center gap-2 bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.3)] rounded-full px-4 py-1.5 text-xs font-medium text-[#a78bfa] mb-5">
             Legal
           </div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-3">
@@ -54,7 +54,7 @@ export default function PrivacidadPage() {
               Nova Analytics es un servicio operado por <strong className="text-white">Nova Agency</strong> (en adelante, &ldquo;Nova&rdquo;, &ldquo;nosotros&rdquo; o &ldquo;la plataforma&rdquo;), con sede en Argentina. Proveemos un dashboard de analítica unificada para comercios electrónicos que integra TiendaNube, Meta Ads y Gmail.
             </p>
             <p className="mt-3">
-              Al utilizar Nova Analytics aceptás esta Política de Privacidad. Si tenés dudas podés contactarnos en <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#8B5CF6] hover:underline">{CONTACT_EMAIL}</a>.
+              Al utilizar Nova Analytics aceptás esta Política de Privacidad. Si tenés dudas podés contactarnos en <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#a78bfa] hover:underline">{CONTACT_EMAIL}</a>.
             </p>
           </Section>
 
@@ -95,8 +95,8 @@ export default function PrivacidadPage() {
                 { name: "Anthropic (Claude)", desc: "Procesamiento del Asistente IA. Los mensajes se envían a Anthropic para su procesamiento y no se almacenan en nuestros servidores." },
                 { name: "TiendaNube, Meta, Google", desc: "Plataformas de terceros que autorizás voluntariamente al conectar tus integraciones." },
               ].map((s) => (
-                <div key={s.name} className="flex gap-3 p-3 rounded-xl bg-[#111118] border border-[rgba(124,58,237,0.1)]">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C3AED] mt-2 flex-shrink-0" />
+                <div key={s.name} className="flex gap-3 p-3 rounded-xl bg-[#111118] border border-[rgba(139,92,246,0.1)]">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6] mt-2 flex-shrink-0" />
                   <div>
                     <span className="text-white font-semibold text-sm">{s.name}: </span>
                     <span className="text-sm text-[#94A3B8]">{s.desc}</span>
@@ -137,7 +137,7 @@ export default function PrivacidadPage() {
               <li><strong className="text-white">Portabilidad:</strong> solicitar la exportación de tus datos en formato legible.</li>
               <li><strong className="text-white">Oposición:</strong> oponerte al procesamiento de tus datos con fines distintos a los declarados.</li>
             </ul>
-            <p className="mt-3">Para ejercer cualquiera de estos derechos escribinos a <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#8B5CF6] hover:underline">{CONTACT_EMAIL}</a>.</p>
+            <p className="mt-3">Para ejercer cualquiera de estos derechos escribinos a <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#a78bfa] hover:underline">{CONTACT_EMAIL}</a>.</p>
           </Section>
 
           <Section title="8. Cookies">
@@ -152,10 +152,10 @@ export default function PrivacidadPage() {
             <p>
               Si tenés preguntas sobre esta Política de Privacidad o el tratamiento de tus datos personales podés contactarnos en:
             </p>
-            <div className="mt-4 p-4 rounded-xl bg-[#111118] border border-[rgba(124,58,237,0.2)]">
+            <div className="mt-4 p-4 rounded-xl bg-[#111118] border border-[rgba(139,92,246,0.2)]">
               <p className="font-semibold text-white">Nova Agency</p>
               <p className="text-sm text-[#94A3B8] mt-1">
-                Email: <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#8B5CF6] hover:underline">{CONTACT_EMAIL}</a>
+                Email: <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#a78bfa] hover:underline">{CONTACT_EMAIL}</a>
               </p>
               <p className="text-sm text-[#94A3B8]">Santa Fe, Argentina</p>
             </div>
@@ -165,7 +165,7 @@ export default function PrivacidadPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[rgba(124,58,237,0.15)] py-6 px-5 sm:px-6">
+      <footer className="border-t border-[rgba(139,92,246,0.15)] py-6 px-5 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#64748B]">
           <Link href="/" className="flex items-center gap-2 hover:text-[#94A3B8] transition-colors">
             <img
@@ -176,7 +176,7 @@ export default function PrivacidadPage() {
             <span className="font-semibold text-white">Nova Analytics</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/privacidad" className="text-[#8B5CF6]">Privacidad</Link>
+            <Link href="/privacidad" className="text-[#a78bfa]">Privacidad</Link>
             <Link href="/terminos" className="hover:text-[#94A3B8] transition-colors">Términos</Link>
             <span>© 2025 Nova Agency</span>
           </div>
@@ -190,7 +190,7 @@ export default function PrivacidadPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[rgba(124,58,237,0.15)]">
+      <h2 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[rgba(139,92,246,0.15)]">
         {title}
       </h2>
       <div className="text-[#CBD5E1] text-sm leading-relaxed">{children}</div>

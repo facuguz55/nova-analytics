@@ -35,7 +35,7 @@ function ForgotPassword() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-sm text-[#94A3B8] hover:text-[#8B5CF6] transition-colors"
+        className="text-sm text-[#94A3B8] hover:text-[#a78bfa] transition-colors"
       >
         Olvidaste tu contraseña?
       </button>
@@ -53,12 +53,12 @@ function ForgotPassword() {
         placeholder="tu@email.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7C3AED] transition-colors"
+        className="w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.25)] rounded-xl px-4 py-2.5 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#8b5cf6] transition-colors"
       />
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 border border-[rgba(124,58,237,0.4)] hover:border-[#7C3AED] text-[#8B5CF6] py-2.5 rounded-xl text-sm font-semibold transition-all"
+        className="w-full flex items-center justify-center gap-2 border border-[rgba(139,92,246,0.4)] hover:border-[#8b5cf6] text-[#a78bfa] py-2.5 rounded-xl text-sm font-semibold transition-all"
       >
         {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
         {loading ? "Enviando..." : "Enviar link de recuperación"}
@@ -127,7 +127,7 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-6">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.12)_0%,transparent_70%)] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.12)_0%,transparent_70%)] pointer-events-none" />
 
       <div className="w-full max-w-md relative">
         <div className="flex justify-center mb-8">
@@ -141,7 +141,7 @@ function LoginForm() {
           </Link>
         </div>
 
-        <div className="bg-[#111118] border border-[rgba(124,58,237,0.2)] rounded-2xl p-8">
+        <div className="bg-[#111118] border border-[rgba(139,92,246,0.2)] rounded-2xl p-8">
           <h1 className="text-2xl font-black text-[#F1F5F9] mb-1">Bienvenido de vuelta</h1>
           <p className="text-[#94A3B8] text-sm mb-8">Ingresa a tu cuenta para ver tus metricas.</p>
 
@@ -163,9 +163,9 @@ function LoginForm() {
           </button>
 
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-[rgba(124,58,237,0.15)]" />
+            <div className="flex-1 h-px bg-[rgba(139,92,246,0.15)]" />
             <span className="text-xs text-[#94A3B8]">o con email</span>
-            <div className="flex-1 h-px bg-[rgba(124,58,237,0.15)]" />
+            <div className="flex-1 h-px bg-[rgba(139,92,246,0.15)]" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -176,7 +176,7 @@ function LoginForm() {
                 placeholder="tu@email.com"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.25)] rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#8b5cf6] transition-colors"
               />
               {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
             </div>
@@ -189,7 +189,7 @@ function LoginForm() {
                   placeholder="Tu contrasena"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] rounded-xl px-4 py-3 pr-11 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  className="w-full bg-[#0a0a0f] border border-[rgba(139,92,246,0.25)] rounded-xl px-4 py-3 pr-11 text-sm text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#8b5cf6] transition-colors"
                 />
                 <button
                   type="button"
@@ -215,7 +215,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading || !captchaToken}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#7C3AED] to-[#2563EB] hover:opacity-90 disabled:opacity-60 text-white py-3.5 rounded-xl font-semibold transition-all"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#8b5cf6] to-[#c026d3] hover:opacity-90 disabled:opacity-60 text-white py-3.5 rounded-xl font-semibold transition-all"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {loading ? "Ingresando..." : "Iniciar sesion"}
@@ -226,7 +226,7 @@ function LoginForm() {
             <ForgotPassword />
             <p className="text-sm text-[#94A3B8]">
               No tenes cuenta?{" "}
-              <Link href="/register" className="text-[#8B5CF6] hover:text-white font-medium transition-colors">
+              <Link href="/register" className="text-[#a78bfa] hover:text-white font-medium transition-colors">
                 Crear cuenta gratis
               </Link>
             </p>
@@ -239,7 +239,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#8b5cf6]" /></div>}>
       <LoginForm />
     </Suspense>
   );

@@ -17,8 +17,8 @@ export default function FloatingAI() {
       href="/app/ia"
       className="fixed z-40 flex items-center gap-2 rounded-full shadow-xl transition-all duration-200 group bottom-20 right-5 sm:bottom-5"
       style={{
-        background: "linear-gradient(135deg, #7C3AED, #2563EB)",
-        boxShadow: "0 8px 32px rgba(124,58,237,0.4), 0 2px 8px rgba(0,0,0,0.3)",
+        background: "linear-gradient(135deg, #8b5cf6, #c026d3)",
+        boxShadow: "0 8px 32px rgba(139,92,246,0.4), 0 2px 8px rgba(0,0,0,0.3)",
         padding: hovered ? "12px 18px" : "14px",
       }}
       onMouseEnter={() => setHovered(true)}

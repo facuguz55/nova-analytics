@@ -83,12 +83,6 @@ export async function GET(request: Request) {
     metadata: { store_id: storeId },
   });
 
-  // Disparar sync en background
-  fetch(`${origin}/api/tiendanube/sync`, {
-    method: "POST",
-    headers: { "x-workspace-id": userRow.workspace_id },
-  }).catch(() => {});
-
   const oauthFrom = cookieStore.get("oauth_from")?.value;
   const redirectTo = oauthFrom === "onboarding"
     ? `${origin}/onboarding?success=tiendanube`

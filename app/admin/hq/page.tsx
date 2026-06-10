@@ -112,18 +112,18 @@ export default async function HQPage() {
   }, {} as Record<string, number>);
 
   const STATS = [
-    { label: "Workspaces", value: String(workspaceCount ?? 0), icon: Store, color: "#7C3AED" },
-    { label: "Usuarios", value: String(userCount ?? 0), icon: Users, color: "#2563EB" },
+    { label: "Workspaces", value: String(workspaceCount ?? 0), icon: Store, color: "#8b5cf6" },
+    { label: "Usuarios", value: String(userCount ?? 0), icon: Users, color: "#c026d3" },
     { label: "Integraciones activas", value: String(allIntegrations.length), icon: Plug, color: "#22c55e" },
-    { label: "MRR (billing pagado)", value: formatCurrency(totalRevenue), icon: DollarSign, color: "#e1691e" },
+    { label: "MRR (billing pagado)", value: formatCurrency(totalRevenue), icon: DollarSign, color: "#c084fc" },
   ];
 
   const PLAN_COLORS: Record<string, string> = {
     free: "#64748B",
-    pro: "#7C3AED",
-    agency: "#e1691e",
+    pro: "#8b5cf6",
+    agency: "#c084fc",
     trial: "#22c55e",
-    active: "#2563EB",
+    active: "#c026d3",
   };
 
   return (
@@ -153,7 +153,7 @@ export default async function HQPage() {
           <div
             key={s.label}
             className="rounded-2xl p-4 flex items-center gap-3"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${s.color}18` }}>
               <s.icon size={18} color={s.color} strokeWidth={2} />
@@ -169,7 +169,7 @@ export default async function HQPage() {
       {/* Plan distribution */}
       <div
         className="rounded-2xl p-5"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm font-semibold text-[#F1F5F9]">Distribución por plan</p>
@@ -198,7 +198,7 @@ export default async function HQPage() {
             <div key={plan} className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: PLAN_COLORS[plan] ?? "#94A3B8" }} />
               <span className="text-xs text-[#94A3B8] capitalize w-14 flex-shrink-0">{plan}</span>
-              <div className="flex-1 h-1.5 rounded-full" style={{ background: "rgba(124,58,237,0.08)" }}>
+              <div className="flex-1 h-1.5 rounded-full" style={{ background: "rgba(139,92,246,0.08)" }}>
                 <div
                   className="h-1.5 rounded-full"
                   style={{
@@ -216,15 +216,15 @@ export default async function HQPage() {
       {/* Workspaces table */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Todos los workspaces ({allWorkspaces.length})</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+              <tr style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
                 {["WORKSPACE", "PLAN", "ACCESO", "USUARIOS", "INTEGRACIONES", "PAGOS", "BILLING", "CREADO"].map((col) => (
                   <th key={col} className="text-left px-5 py-3 text-[10px] font-semibold tracking-widest text-[#94A3B8] uppercase whitespace-nowrap">
                     {col}
@@ -242,8 +242,8 @@ export default async function HQPage() {
               ) : workspaceStats.map((ws, i) => (
                 <tr
                   key={ws.id}
-                  className="hover:bg-[rgba(124,58,237,0.04)] transition-colors"
-                  style={{ borderBottom: i < workspaceStats.length - 1 ? "1px solid rgba(124,58,237,0.08)" : "none" }}
+                  className="hover:bg-[rgba(139,92,246,0.04)] transition-colors"
+                  style={{ borderBottom: i < workspaceStats.length - 1 ? "1px solid rgba(139,92,246,0.08)" : "none" }}
                 >
                   <td className="px-5 py-3">
                     <div>
@@ -295,7 +295,7 @@ export default async function HQPage() {
                     <span className="text-sm text-[#F1F5F9]">{ws.orderCount}</span>
                   </td>
                   <td className="px-5 py-3 whitespace-nowrap">
-                    <span className="text-sm font-bold text-[#e1691e]">
+                    <span className="text-sm font-bold text-[#c084fc]">
                       {ws.revenue > 0 ? formatCurrency(ws.revenue) : "—"}
                     </span>
                   </td>
@@ -314,18 +314,18 @@ export default async function HQPage() {
       {/* Token usage ranking */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
-        <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-2" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+        <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-2" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
           <div className="flex items-center gap-2">
-            <Sparkles size={15} color="#8B5CF6" strokeWidth={2} />
+            <Sparkles size={15} color="#a78bfa" strokeWidth={2} />
             <p className="text-sm font-semibold text-[#F1F5F9]">Uso de tokens IA por workspace</p>
           </div>
           <div className="flex items-center gap-4 text-xs text-[#64748B]">
             <span>{(totalInputTokens + totalOutputTokens).toLocaleString("es-AR")} tokens totales</span>
             <span
               className="font-bold px-2 py-0.5 rounded-full"
-              style={{ color: "#8B5CF6", background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.2)" }}
+              style={{ color: "#a78bfa", background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}
             >
               ~${totalCostUSD.toFixed(4)} USD
             </span>
@@ -337,7 +337,7 @@ export default async function HQPage() {
             Sin uso de IA registrado todavía
           </div>
         ) : (
-          <div className="divide-y divide-[rgba(124,58,237,0.08)]">
+          <div className="divide-y divide-[rgba(139,92,246,0.08)]">
             {tokenRanking.map((ws, i) => {
               const total = ws.inputTokens + ws.outputTokens;
               const maxTotal = (tokenRanking[0].inputTokens + tokenRanking[0].outputTokens) || 1;
@@ -348,8 +348,8 @@ export default async function HQPage() {
                   <span
                     className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
                     style={{
-                      background: i === 0 ? "rgba(225,105,30,0.2)" : i === 1 ? "rgba(124,58,237,0.15)" : "rgba(124,58,237,0.07)",
-                      color: i === 0 ? "#e1691e" : i === 1 ? "#8B5CF6" : "#64748B",
+                      background: i === 0 ? "rgba(192,132,252,0.2)" : i === 1 ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.07)",
+                      color: i === 0 ? "#c084fc" : i === 1 ? "#a78bfa" : "#64748B",
                     }}
                   >
                     {i + 1}
@@ -362,14 +362,14 @@ export default async function HQPage() {
                   </div>
 
                   {/* Barra */}
-                  <div className="flex-1 h-1.5 rounded-full" style={{ background: "rgba(124,58,237,0.08)" }}>
+                  <div className="flex-1 h-1.5 rounded-full" style={{ background: "rgba(139,92,246,0.08)" }}>
                     <div
                       className="h-1.5 rounded-full transition-all"
                       style={{
                         width: `${pct}%`,
                         background: i === 0
-                          ? "linear-gradient(90deg, #e1691e, #f59e0b)"
-                          : "linear-gradient(90deg, #7C3AED, #2563EB)",
+                          ? "linear-gradient(90deg, #c084fc, #f59e0b)"
+                          : "linear-gradient(90deg, #8b5cf6, #c026d3)",
                       }}
                     />
                   </div>
@@ -380,7 +380,7 @@ export default async function HQPage() {
                       {total.toLocaleString("es-AR")} tokens
                     </p>
                     <p className="text-[10px] text-[#64748B]">
-                      {ws.inputTokens.toLocaleString()} in · {ws.outputTokens.toLocaleString()} out · <span style={{ color: "#8B5CF6" }}>${ws.costUSD.toFixed(4)}</span>
+                      {ws.inputTokens.toLocaleString()} in · {ws.outputTokens.toLocaleString()} out · <span style={{ color: "#a78bfa" }}>${ws.costUSD.toFixed(4)}</span>
                     </p>
                   </div>
                 </div>
@@ -393,18 +393,18 @@ export default async function HQPage() {
       {/* Audit log */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Audit log reciente</p>
         </div>
-        <div className="divide-y divide-[rgba(124,58,237,0.08)]">
+        <div className="divide-y divide-[rgba(139,92,246,0.08)]">
           {(audits ?? []).length === 0 ? (
             <div className="px-5 py-6 text-center text-sm text-[#64748B]">Sin eventos</div>
           ) : (audits ?? []).map((log, i) => (
             <div key={i} className="flex flex-wrap items-center justify-between gap-2 px-5 py-2.5">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "#7C3AED" }} />
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "#8b5cf6" }} />
                 <span className="text-sm font-mono text-[#94A3B8] truncate">{log.action}</span>
               </div>
               <div className="flex items-center gap-4 flex-shrink-0">
@@ -423,18 +423,18 @@ export default async function HQPage() {
       {/* Recent users */}
       <div
         className="rounded-2xl overflow-hidden"
-        style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
+        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(124,58,237,0.15)" }}>
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
           <p className="text-sm font-semibold text-[#F1F5F9]">Usuarios recientes</p>
         </div>
-        <div className="divide-y divide-[rgba(124,58,237,0.08)]">
+        <div className="divide-y divide-[rgba(139,92,246,0.08)]">
           {allUsers.slice(0, 10).map((u) => (
             <div key={u.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-3">
               <div className="flex items-center gap-3">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+                  style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
                 >
                   {(u.name ?? u.email ?? "?")[0]?.toUpperCase()}
                 </div>

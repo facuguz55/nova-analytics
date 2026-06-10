@@ -70,9 +70,9 @@ export default function NotificacionesClient({ userEmail, workspaceId, config }:
   }
 
   const Section = ({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) => (
-    <div className="rounded-2xl p-5 space-y-4" style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}>
+    <div className="rounded-2xl p-5 space-y-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
       <div className="flex items-center gap-2">
-        <Icon size={15} color="#8B5CF6" strokeWidth={2} />
+        <Icon size={15} color="#a78bfa" strokeWidth={2} />
         <h2 className="text-sm font-bold text-[#F1F5F9]">{title}</h2>
       </div>
       {children}
@@ -88,7 +88,7 @@ export default function NotificacionesClient({ userEmail, workspaceId, config }:
       <button
         onClick={onToggle}
         className="relative flex-shrink-0 rounded-full transition-all duration-200"
-        style={{ width: "40px", height: "22px", background: enabled ? "#7C3AED" : "rgba(100,116,139,0.3)" }}
+        style={{ width: "40px", height: "22px", background: enabled ? "#8b5cf6" : "rgba(100,116,139,0.3)" }}
       >
         <span className="absolute top-1 rounded-full bg-white transition-all duration-200"
           style={{ width: "14px", height: "14px", left: enabled ? "22px" : "4px" }} />
@@ -138,7 +138,7 @@ export default function NotificacionesClient({ userEmail, workspaceId, config }:
                 onChange={(e) => setTelegramChatId(e.target.value)}
                 placeholder="Ej: 123456789"
                 className="flex-1 rounded-xl px-3 py-2 text-sm text-[#F1F5F9] outline-none"
-                style={{ background: "#0d0d14", border: "1px solid rgba(124,58,237,0.25)" }}
+                style={{ background: "#0d0d14", border: "1px solid rgba(139,92,246,0.25)" }}
               />
               <button
                 type="button"
@@ -192,7 +192,7 @@ export default function NotificacionesClient({ userEmail, workspaceId, config }:
               value={dailyTime}
               onChange={(e) => setDailyTime(e.target.value)}
               className="rounded-xl px-3 py-2 text-sm text-[#F1F5F9] outline-none"
-              style={{ background: "#0d0d14", border: "1px solid rgba(124,58,237,0.25)" }}
+              style={{ background: "#0d0d14", border: "1px solid rgba(139,92,246,0.25)" }}
             />
           </div>
         )}
@@ -216,13 +216,13 @@ export default function NotificacionesClient({ userEmail, workspaceId, config }:
                 min={7}
                 max={365}
                 className="w-20 rounded-xl px-3 py-2 text-sm text-[#F1F5F9] outline-none text-center"
-                style={{ background: "#0d0d14", border: "1px solid rgba(124,58,237,0.25)" }}
+                style={{ background: "#0d0d14", border: "1px solid rgba(139,92,246,0.25)" }}
               />
               <span className="text-sm text-[#64748B]">días</span>
             </div>
           </div>
 
-          <div className="h-px" style={{ background: "rgba(124,58,237,0.1)" }} />
+          <div className="h-px" style={{ background: "rgba(139,92,246,0.1)" }} />
 
           <div>
             <label className="block text-xs font-semibold text-[#94A3B8] mb-1">
@@ -240,7 +240,7 @@ export default function NotificacionesClient({ userEmail, workspaceId, config }:
                 min={0}
                 step={1000}
                 className="w-32 rounded-xl px-3 py-2 text-sm text-[#F1F5F9] outline-none"
-                style={{ background: "#0d0d14", border: "1px solid rgba(124,58,237,0.25)" }}
+                style={{ background: "#0d0d14", border: "1px solid rgba(139,92,246,0.25)" }}
               />
               <span className="text-sm text-[#64748B]">ARS</span>
             </div>
@@ -262,7 +262,7 @@ export default function NotificacionesClient({ userEmail, workspaceId, config }:
           type="submit"
           disabled={isPending}
           className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-all hover:opacity-85 disabled:opacity-50"
-          style={{ background: "linear-gradient(135deg, #7C3AED, #2563EB)" }}
+          style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
         >
           {isPending ? "Guardando..." : "Guardar configuración"}
         </button>
