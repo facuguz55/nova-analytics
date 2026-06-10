@@ -55,6 +55,7 @@ async function upsertSubscription(
     status: string;
     provider_subscription_id?: string;
     cancelled_at?: string | null;
+    next_billing_at?: string | null;
   }
 ) {
   const service = createServiceClient();
@@ -68,6 +69,9 @@ async function upsertSubscription(
       }),
       ...(fields.cancelled_at !== undefined && {
         cancelled_at: fields.cancelled_at,
+      }),
+      ...(fields.next_billing_at !== undefined && {
+        next_billing_at: fields.next_billing_at,
       }),
       updated_at: new Date().toISOString(),
     },
@@ -123,12 +127,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true });
     }
 
+    // Fecha del próximo cobro que reporta MP — alimenta la red de seguridad del middleware.
+    // Si MP no la manda, caemos a 'autorización + 1 mes' como cota superior.
+    const mpNext = (sub as { next_payment_date?: string }).next_payment_date;
+    const nextBillingAt = mpNext
+      ? new Date(mpNext).toISOString()
+      : new Date(Date.now() + 31 * 86_400_000).toISOString();
+
     switch (status) {
       case "authorized": {
         await upsertSubscription(workspaceId, {
           status: "active",
           provider_subscription_id: preapprovalId,
           cancelled_at: null,
+          next_billing_at: nextBillingAt,
         });
         await updateWorkspacePlan(workspaceId, "active");
         break;

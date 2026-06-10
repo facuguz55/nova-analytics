@@ -54,5 +54,11 @@ export async function POST(request: Request) {
     })
     .eq("workspace_id", workspaceId);
 
+  // Mantener sincronizado el plan del workspace (lo lee el layout)
+  await service
+    .from("workspaces")
+    .update({ plan: "free" })
+    .eq("id", workspaceId);
+
   return NextResponse.json({ ok: true });
 }

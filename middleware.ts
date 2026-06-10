@@ -11,11 +11,25 @@ const LOCKED_API_ROUTES = [
   "/api/ai",
 ];
 
-type SubRow = { status: string; trial_ends_at: string | null };
+type SubRow = { status: string; trial_ends_at: string | null; next_billing_at: string | null };
+
+// Gracia tras el vencimiento de pago antes de cortar el acceso (reintentos de MP, etc.)
+const BILLING_GRACE_MS = 3 * 86_400_000; // 3 días
 
 function hasActiveAccess(sub: SubRow | null): boolean {
   if (!sub) return false;
-  if (["active", "pro", "agency"].includes(sub.status)) return true;
+
+  if (["active", "pro", "agency"].includes(sub.status)) {
+    // Red de seguridad: si hay fecha de próximo cobro y ya venció hace más
+    // de la gracia, se corta el acceso aunque el webhook de baja nunca llegue.
+    // next_billing_at null = grant manual/admin (comp) → no expira.
+    if (sub.next_billing_at) {
+      const due = new Date(sub.next_billing_at).getTime();
+      if (Number.isFinite(due) && Date.now() > due + BILLING_GRACE_MS) return false;
+    }
+    return true;
+  }
+
   if (sub.status === "trial") {
     const endsAt = sub.trial_ends_at ? new Date(sub.trial_ends_at) : null;
     return !!endsAt && endsAt.getTime() > Date.now();
@@ -119,7 +133,7 @@ export async function middleware(request: NextRequest) {
     // Fuente única de verdad: tabla subscriptions
     const { data: sub } = await service
       .from("subscriptions")
-      .select("status, trial_ends_at")
+      .select("status, trial_ends_at, next_billing_at")
       .eq("workspace_id", workspaceId)
       .maybeSingle();
 
@@ -151,7 +165,7 @@ export async function middleware(request: NextRequest) {
 
     const { data: sub } = await service
       .from("subscriptions")
-      .select("status, trial_ends_at")
+      .select("status, trial_ends_at, next_billing_at")
       .eq("workspace_id", workspaceId)
       .maybeSingle();
 
