@@ -9,17 +9,41 @@ interface Message {
 }
 
 const SUGGESTIONS = [
-  "¿Cuáles son mis mejores días de ventas?",
-  "¿Cómo puedo mejorar mi tasa de conversión?",
-  "Estrategias para aumentar el ticket promedio",
-  "¿Qué productos debería reponer primero?",
+  "¿Cómo vengo este mes vs lo normal?",
+  "¿Qué productos me dan más ganancia?",
+  "¿Qué stock tengo que reponer ya?",
+  "Dame 3 ideas para subir el ticket promedio",
+  "¿Quiénes son mis mejores clientes?",
+  "¿Mi margen está bien o tengo que ajustar precios?",
 ];
 
-export default function IAClient({ businessContext }: { businessContext: string }) {
+// Render liviano de markdown: **negrita**, *itálica*, viñetas y saltos.
+function renderContent(text: string) {
+  const lines = text.split("\n");
+  return lines.map((line, i) => {
+    const bullet = /^\s*[-*]\s+/.test(line);
+    const clean = line.replace(/^\s*[-*]\s+/, "");
+    const parts = clean.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(Boolean).map((p, j) => {
+      if (p.startsWith("**") && p.endsWith("**")) return <strong key={j} className="text-[#F1F5F9] font-bold">{p.slice(2, -2)}</strong>;
+      if (p.startsWith("*") && p.endsWith("*")) return <em key={j} className="text-[#c4b5fd]">{p.slice(1, -1)}</em>;
+      return <span key={j}>{p}</span>;
+    });
+    return (
+      <div key={i} className={bullet ? "flex gap-2" : ""}>
+        {bullet && <span className="text-[#a78bfa] flex-shrink-0">•</span>}
+        <span>{parts}</span>
+      </div>
+    );
+  });
+}
+
+export default function IAClient({ connected, storeName }: { connected: boolean; storeName: string | null }) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "¡Hola! Soy tu asistente IA de Nova Analytics. Analicé los datos de tu negocio y estoy listo para ayudarte con estrategias, insights y recomendaciones. ¿En qué te puedo ayudar hoy?",
+      content: connected
+        ? `¡Hola! Soy tu asistente de Nova Analytics. Ya tengo cargados los datos reales de ${storeName ?? "tu tienda"} — ventas, productos, clientes y rentabilidad de los últimos 90 días. Preguntame lo que quieras sobre tu negocio. 📊`
+        : "¡Hola! Soy tu asistente de Nova Analytics. Todavía no veo tu TiendaNube conectada, así que no puedo analizar tus ventas reales. Conectala en Configuración → Integraciones y vuelvo a tener todo tu negocio a mano. Igual puedo ayudarte con estrategias de e-commerce mientras tanto.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -125,12 +149,7 @@ export default function IAClient({ businessContext }: { businessContext: string 
                 color: "#F1F5F9",
               }}
             >
-              {msg.content.split("\n").map((line, li) => (
-                <span key={li}>
-                  {line}
-                  {li < msg.content.split("\n").length - 1 && <br />}
-                </span>
-              ))}
+              <div className="space-y-1">{renderContent(msg.content)}</div>
             </div>
           </div>
         ))}
