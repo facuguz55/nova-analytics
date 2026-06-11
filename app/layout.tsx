@@ -62,6 +62,14 @@ export default function RootLayout({
       <head>
         <link rel="icon" type="image/png" sizes="96x96" href="/logo-favicon.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
+        {/* Metricool tracking */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"6f63db9fb1540d74b699b2c25e7c82e3"})});
+            `,
+          }}
+        />
         {/* Previene flash de tema incorrecto */}
         <script
           dangerouslySetInnerHTML={{
