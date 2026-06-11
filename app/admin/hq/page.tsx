@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { createServiceClient } from "@/lib/supabase/service";
-import { Users, Store, DollarSign, Activity, Plug, Sparkles } from "lucide-react";
+import { Users, Store, DollarSign, Activity, Plug, Sparkles, ShieldCheck } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
+import HQCharts from "./HQCharts";
 
 export const metadata: Metadata = { title: "Nova HQ — Super Admin" };
 
@@ -112,10 +114,10 @@ export default async function HQPage() {
   }, {} as Record<string, number>);
 
   const STATS = [
-    { label: "Workspaces", value: String(workspaceCount ?? 0), icon: Store, color: "#8b5cf6" },
-    { label: "Usuarios", value: String(userCount ?? 0), icon: Users, color: "#c026d3" },
-    { label: "Integraciones activas", value: String(allIntegrations.length), icon: Plug, color: "#22c55e" },
-    { label: "MRR (billing pagado)", value: formatCurrency(totalRevenue), icon: DollarSign, color: "#c084fc" },
+    { label: "Workspaces", value: workspaceCount ?? 0, format: (n: number) => String(Math.round(n)), icon: Store, color: "#8b5cf6" },
+    { label: "Usuarios", value: userCount ?? 0, format: (n: number) => String(Math.round(n)), icon: Users, color: "#c026d3" },
+    { label: "Integraciones activas", value: allIntegrations.length, format: (n: number) => String(Math.round(n)), icon: Plug, color: "#22c55e" },
+    { label: "MRR (billing pagado)", value: totalRevenue, format: formatCurrency, icon: DollarSign, color: "#c084fc" },
   ];
 
   const PLAN_COLORS: Record<string, string> = {
@@ -126,96 +128,70 @@ export default async function HQPage() {
     active: "#c026d3",
   };
 
+  // Datos para gráficos
+  const planData = Object.entries(planCounts)
+    .filter(([, n]) => n > 0)
+    .map(([plan, count]) => ({ name: plan, value: count, color: PLAN_COLORS[plan] ?? "#94A3B8" }));
+
+  const MES_ES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  const nowD = new Date();
+  const signups = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(nowD.getFullYear(), nowD.getMonth() - (5 - i), 1);
+    const next = new Date(nowD.getFullYear(), nowD.getMonth() - (5 - i) + 1, 1);
+    const altas = allWorkspaces.filter((ws) => {
+      const c = new Date(ws.created_at);
+      return c >= d && c < next;
+    }).length;
+    return { month: MES_ES[d.getMonth()], altas };
+  });
+
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-5">
       {/* Header */}
       <div
-        className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl"
-        style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}
+        className="relative flex flex-wrap items-center justify-between gap-3 p-5 rounded-2xl overflow-hidden anim-up"
+        style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.14), rgba(192,38,211,0.06))", border: "1px solid rgba(168,85,247,0.3)", boxShadow: "0 0 32px rgba(168,85,247,0.1)" }}
       >
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
-            Nova HQ
-          </h1>
-          <p className="text-sm text-red-400 mt-0.5">Vista super admin — solo visible para cuentas autorizadas</p>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)", boxShadow: "0 0 18px rgba(168,85,247,0.45)" }}>
+            <ShieldCheck size={24} color="#fff" strokeWidth={2} />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+              Nova HQ
+            </h1>
+            <p className="text-sm text-[#c4b5fd] mt-0.5">Centro de control · solo super admin</p>
+          </div>
         </div>
-        <div
-          className="text-xs font-bold px-3 py-1.5 rounded-full"
-          style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)" }}
-        >
+        <div className="text-xs font-bold px-3 py-1.5 rounded-full neon-text"
+          style={{ background: "rgba(168,85,247,0.15)", border: "1px solid rgba(168,85,247,0.4)" }}>
           SUPER ADMIN
         </div>
       </div>
 
       {/* Global stats */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {STATS.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-2xl p-4 flex items-center gap-3"
-            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
-          >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${s.color}18` }}>
+        {STATS.map((s, i) => (
+          <div key={s.label} className="metric-card anim-up rounded-2xl p-4 flex items-center gap-3"
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: `${0.05 + i * 0.06}s` }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center anim-scale" style={{ background: `${s.color}1a`, animationDelay: `${0.12 + i * 0.06}s` }}>
               <s.icon size={18} color={s.color} strokeWidth={2} />
             </div>
-            <div>
-              <p className="text-xl font-black text-[#F1F5F9]">{s.value}</p>
-              <p className="text-xs text-[#94A3B8]">{s.label}</p>
+            <div className="min-w-0">
+              <AnimatedNumber value={s.value} format={s.format} className="text-xl font-black text-[#F1F5F9] leading-none" />
+              <p className="text-xs text-[#94A3B8] mt-0.5">{s.label}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Plan distribution */}
-      <div
-        className="rounded-2xl p-5"
-        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-semibold text-[#F1F5F9]">Distribución por plan</p>
-          <p className="text-xs text-[#64748B]">{workspaceCount} total</p>
-        </div>
-
-        {/* Barra apilada */}
-        {workspaceCount > 0 && (
-          <div className="flex h-3 rounded-full overflow-hidden mb-4 gap-px">
-            {Object.entries(planCounts).filter(([, n]) => n > 0).map(([plan, count]) => (
-              <div
-                key={plan}
-                style={{
-                  width: `${(count / workspaceCount) * 100}%`,
-                  background: PLAN_COLORS[plan] ?? "#94A3B8",
-                }}
-                title={`${plan}: ${count}`}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Leyenda con barras individuales */}
-        <div className="space-y-2">
-          {Object.entries(planCounts).map(([plan, count]) => (
-            <div key={plan} className="flex items-center gap-3">
-              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: PLAN_COLORS[plan] ?? "#94A3B8" }} />
-              <span className="text-xs text-[#94A3B8] capitalize w-14 flex-shrink-0">{plan}</span>
-              <div className="flex-1 h-1.5 rounded-full" style={{ background: "rgba(139,92,246,0.08)" }}>
-                <div
-                  className="h-1.5 rounded-full"
-                  style={{
-                    width: workspaceCount > 0 ? `${(count / workspaceCount) * 100}%` : "0%",
-                    background: PLAN_COLORS[plan] ?? "#94A3B8",
-                  }}
-                />
-              </div>
-              <span className="text-xs font-bold text-[#F1F5F9] w-5 text-right">{count}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Gráficos */}
+      <HQCharts planData={planData} signups={signups} totalWorkspaces={workspaceCount} />
 
       {/* Workspaces table */}
       <div
-        className="rounded-2xl overflow-hidden"
+        className="anim-up metric-card rounded-2xl overflow-hidden"
         style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
@@ -313,7 +289,7 @@ export default async function HQPage() {
 
       {/* Token usage ranking */}
       <div
-        className="rounded-2xl overflow-hidden"
+        className="anim-up metric-card rounded-2xl overflow-hidden"
         style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-2" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
@@ -392,7 +368,7 @@ export default async function HQPage() {
 
       {/* Audit log */}
       <div
-        className="rounded-2xl overflow-hidden"
+        className="anim-up metric-card rounded-2xl overflow-hidden"
         style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
@@ -422,7 +398,7 @@ export default async function HQPage() {
 
       {/* Recent users */}
       <div
-        className="rounded-2xl overflow-hidden"
+        className="anim-up metric-card rounded-2xl overflow-hidden"
         style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
       >
         <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>

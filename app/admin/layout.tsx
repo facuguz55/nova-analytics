@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { LayoutDashboard, Users, BarChart2, LogOut, UserPlus, Store } from "lucide-react";
+import { LogOut } from "lucide-react";
+import AdminNav from "./AdminNav";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -13,58 +14,41 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/app/dashboard");
   }
 
-  const nav = [
-    { href: "/admin/hq",         label: "HQ Dashboard", icon: LayoutDashboard },
-    { href: "/admin/clientes",   label: "Clientes",     icon: UserPlus },
-    { href: "/admin/workspaces", label: "Workspaces",   icon: Store },
-    { href: "/admin/analytics",  label: "Analytics",    icon: BarChart2 },
-  ];
-
   return (
     <div className="flex h-screen overflow-hidden bg-[#0a0a0f]">
       {/* Admin sidebar */}
       <aside
         className="flex flex-col h-full w-56 flex-shrink-0"
-        style={{ background: "#0a0a0f", borderRight: "1px solid rgba(239,68,68,0.2)" }}
+        style={{ background: "rgba(13,13,20,0.92)", backdropFilter: "blur(8px)", borderRight: "1px solid rgba(168,85,247,0.18)" }}
       >
         {/* Logo */}
         <div
           className="flex items-center gap-3 px-4 py-5"
-          style={{ borderBottom: "1px solid rgba(239,68,68,0.15)" }}
+          style={{ borderBottom: "1px solid rgba(168,85,247,0.15)", minHeight: "68px" }}
         >
           <img
             src="https://xfientejntectnwbqmdr.supabase.co/storage/v1/object/public/Logo%20Nova/Gemini_Generated_Image_mq47ltmq47ltmq47-removebg-preview.png"
             alt="Nova"
-            className="w-8 h-8 object-contain"
+            className="w-9 h-9 object-contain"
+            style={{ filter: "drop-shadow(0 0 8px rgba(168,85,247,0.4))" }}
           />
           <div>
             <p className="font-bold text-sm text-[#F1F5F9]">Nova HQ</p>
-            <p className="text-[10px] text-red-400">Super Admin</p>
+            <p className="text-[10px] neon-text">Super Admin</p>
           </div>
         </div>
 
-        <nav className="flex-1 py-4 px-2 space-y-1">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-[#94A3B8] transition-all hover:text-[#F1F5F9] hover:bg-[rgba(239,68,68,0.06)]"
-            >
-              <item.icon size={15} strokeWidth={2} />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <AdminNav />
 
-        <div className="p-3" style={{ borderTop: "1px solid rgba(239,68,68,0.15)" }}>
+        <div className="p-3" style={{ borderTop: "1px solid rgba(168,85,247,0.15)" }}>
           <Link
             href="/app/dashboard"
-            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-[#64748B] hover:text-[#94A3B8] transition-colors"
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-[#64748B] hover:text-[#a78bfa] transition-colors"
           >
             <LogOut size={13} strokeWidth={2} />
             Volver al app
           </Link>
-          <p className="text-[10px] text-[#475569] px-3 mt-1">{user.email}</p>
+          <p className="text-[10px] text-[#475569] px-3 mt-1 truncate">{user.email}</p>
         </div>
       </aside>
 
