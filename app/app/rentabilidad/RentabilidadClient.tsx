@@ -1,13 +1,18 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { TrendingUp, DollarSign, Percent, Store, ArrowRight, AlertTriangle } from "lucide-react";
+import {
+  TrendingUp, DollarSign, Percent, Store, ArrowRight, AlertTriangle,
+  ChevronDown, HelpCircle, Package, Coins, Receipt,
+} from "lucide-react";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell,
+} from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import Link from "next/link";
 import type { TNOrder, TNProduct } from "@/lib/tiendanube/client";
-
-// ── Tipos ─────────────────────────────────────────────────────────────────────
 
 interface FinConfig {
   tax_rate: number;
@@ -22,8 +27,6 @@ interface Props {
   products: TNProduct[];
   cfg: FinConfig;
 }
-
-// ── Presets ───────────────────────────────────────────────────────────────────
 
 const DATE_PRESETS = [
   { key: "hoy",  label: "Hoy" },
@@ -61,10 +64,13 @@ function getDateRange(preset: string): { from: Date; to: Date } {
   return { from: todayStart, to: todayEnd };
 }
 
-// ── Componente ────────────────────────────────────────────────────────────────
+function prodName(p: TNProduct): string {
+  return typeof p.name === "string" ? p.name : (p.name?.es ?? "Producto");
+}
 
 export default function RentabilidadClient({ connected, rawOrders, products, cfg }: Props) {
-  const [preset, setPreset] = useState("hoy");
+  const [preset, setPreset] = useState("30d");
+  const [showHow, setShowHow] = useState(false);
 
   const now = new Date();
   const monthTabs = [0, 1, 2].map((offset) => ({
@@ -72,25 +78,30 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
     label: MONTHS_ES[new Date(now.getFullYear(), now.getMonth() - offset, 1).getMonth()],
   }));
 
-  // costMap: product_id → costo promedio de variantes con costo
-  const costMap = useMemo(() => {
-    const map = new Map<number, number>();
+  // product_id → { costo promedio, nombre }
+  const productMap = useMemo(() => {
+    const map = new Map<number, { cost: number; name: string }>();
     for (const p of products) {
       const variants = p.variants.filter((v) => parseFloat(v.cost ?? "0") > 0);
-      if (variants.length === 0) continue;
-      const avg = variants.reduce((acc, v) => acc + parseFloat(v.cost ?? "0"), 0) / variants.length;
-      map.set(p.id, avg);
+      const avg = variants.length
+        ? variants.reduce((acc, v) => acc + parseFloat(v.cost ?? "0"), 0) / variants.length
+        : 0;
+      map.set(p.id, { cost: avg, name: prodName(p) });
     }
     return map;
   }, [products]);
 
-  const metrics = useMemo(() => {
-    const { from, to } = getDateRange(preset);
-    const paidOrders = rawOrders.filter((o) => {
+  const { from, to } = useMemo(() => getDateRange(preset), [preset]);
+
+  const paidOrders = useMemo(
+    () => rawOrders.filter((o) => {
       const d = new Date(o.created_at);
       return d >= from && d <= to && (o.payment_status === "paid" || o.status === "closed");
-    });
+    }),
+    [rawOrders, from, to]
+  );
 
+  const m = useMemo(() => {
     const totalRevenue = paidOrders.reduce((acc, o) => acc + parseFloat(o.total), 0);
     const taxFactor = 1 + cfg.tax_rate / 100;
     const revenuePreTax = totalRevenue / taxFactor;
@@ -99,50 +110,99 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
     const agencyFeeAmount = revenuePreTax * ((cfg.agency_fee ?? 0) / 100);
     const netRevenue = revenuePreTax - platformFeeAmount - agencyFeeAmount;
 
-    // COGS por ítem de orden × costo de la variante
-    let cogs = 0;
-    let noCostCount = 0;
+    let cogs = 0, noCostCount = 0;
     for (const order of paidOrders) {
       for (const item of order.products) {
-        const cost = costMap.get(item.product_id);
-        if (cost != null) {
-          cogs += cost * item.quantity;
-        } else {
-          noCostCount++;
-        }
+        const info = productMap.get(item.product_id);
+        if (info && info.cost > 0) cogs += info.cost * item.quantity;
+        else noCostCount++;
       }
     }
 
-    const grossProfit = netRevenue - cogs;
-    const netMarginPct = totalRevenue > 0 ? (netRevenue / totalRevenue) * 100 : 0;
-    const grossMarginPct = netRevenue > 0 && cogs > 0 ? (grossProfit / netRevenue) * 100 : 0;
+    const netProfit = netRevenue - cogs;
+    const netMarginPct = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
     return {
-      totalRevenue, taxAmount, platformFeeAmount, agencyFeeAmount,
-      netRevenue, cogs, grossProfit, netMarginPct, grossMarginPct,
+      totalRevenue, revenuePreTax, taxAmount, platformFeeAmount, agencyFeeAmount,
+      netRevenue, cogs, netProfit, netMarginPct,
       ordersCount: paidOrders.length, noCostCount,
     };
-  }, [preset, rawOrders, costMap, cfg]);
+  }, [paidOrders, productMap, cfg]);
+
+  // Ganancia diaria dentro del período (para el área)
+  const dailyProfit = useMemo(() => {
+    const dayMs = 86_400_000;
+    const spanDays = Math.min(Math.max(Math.ceil((to.getTime() - from.getTime()) / dayMs), 1), 60);
+    const start = new Date(to.getTime() - (spanDays - 1) * dayMs);
+    const base = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const arr = Array.from({ length: spanDays }, (_, i) => {
+      const d = new Date(base.getTime() + i * dayMs);
+      return { date: `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`, ganancia: 0, ts: d.getTime() };
+    });
+    const taxFactor = 1 + cfg.tax_rate / 100;
+    const feeFactor = 1 - cfg.platform_fee / 100 - (cfg.agency_fee ?? 0) / 100;
+    for (const o of paidOrders) {
+      const t = new Date(o.created_at).getTime();
+      const idx = Math.floor((t - base.getTime()) / dayMs);
+      if (idx < 0 || idx >= arr.length) continue;
+      let cogs = 0;
+      for (const item of o.products) {
+        const info = productMap.get(item.product_id);
+        if (info && info.cost > 0) cogs += info.cost * item.quantity;
+      }
+      arr[idx].ganancia += (parseFloat(o.total) / taxFactor) * feeFactor - cogs;
+    }
+    return arr;
+  }, [paidOrders, productMap, cfg, from, to]);
+
+  // Top productos por ganancia
+  const topProducts = useMemo(() => {
+    const agg = new Map<number, { name: string; units: number; revenue: number; cost: number }>();
+    for (const o of paidOrders) {
+      for (const item of o.products) {
+        const info = productMap.get(item.product_id);
+        const name = info?.name ?? item.name ?? "Producto";
+        const cur = agg.get(item.product_id) ?? { name, units: 0, revenue: 0, cost: 0 };
+        cur.units += item.quantity;
+        cur.revenue += parseFloat(item.price) * item.quantity;
+        cur.cost += (info?.cost ?? 0) * item.quantity;
+        agg.set(item.product_id, cur);
+      }
+    }
+    return Array.from(agg.values())
+      .map((p) => ({ ...p, profit: p.revenue - p.cost, margin: p.revenue > 0 ? ((p.revenue - p.cost) / p.revenue) * 100 : 0 }))
+      .sort((a, b) => b.profit - a.profit)
+      .slice(0, 6);
+  }, [paidOrders, productMap]);
+
+  // Composición: a dónde va cada peso de la venta bruta
+  const donutData = useMemo(() => [
+    { name: "Ganancia neta",   value: Math.max(m.netProfit, 0),       color: "#22c55e" },
+    { name: "Costo productos", value: m.cogs,                          color: "#c026d3" },
+    { name: `IVA ${cfg.tax_rate}%`, value: m.taxAmount,                color: "#f59e0b" },
+    { name: "Comisiones",      value: m.platformFeeAmount + m.agencyFeeAmount, color: "#8b5cf6" },
+  ].filter((d) => d.value > 0), [m, cfg.tax_rate]);
 
   const waterfall = [
-    { label: "Ingresos brutos", value: metrics.totalRevenue, type: "positive" as const },
-    { label: `IVA / Impuesto (${cfg.tax_rate}%)`, value: -metrics.taxAmount, type: "negative" as const },
-    { label: `Fee plataforma (${cfg.platform_fee}%)`, value: -metrics.platformFeeAmount, type: "negative" as const },
-    ...(cfg.agency_fee > 0 ? [{ label: `Fee agencia (${cfg.agency_fee}%)`, value: -metrics.agencyFeeAmount, type: "negative" as const }] : []),
-    ...(metrics.cogs > 0 ? [{ label: "Costo de productos", value: -metrics.cogs, type: "negative" as const }] : []),
-    { label: "Ganancia neta", value: metrics.cogs > 0 ? metrics.grossProfit : metrics.netRevenue, type: "total" as const },
+    { label: "Ingresos brutos", value: m.totalRevenue, kind: "in" as const },
+    { label: `IVA (${cfg.tax_rate}%)`, value: -m.taxAmount, kind: "out" as const },
+    { label: `Comisión plataforma (${cfg.platform_fee}%)`, value: -m.platformFeeAmount, kind: "out" as const },
+    ...(cfg.agency_fee > 0 ? [{ label: `Comisión agencia (${cfg.agency_fee}%)`, value: -m.agencyFeeAmount, kind: "out" as const }] : []),
+    ...(m.cogs > 0 ? [{ label: "Costo de productos", value: -m.cogs, kind: "out" as const }] : []),
+    { label: "Ganancia neta", value: m.netProfit, kind: "total" as const },
   ];
 
   if (!connected) {
     return (
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 max-w-3xl">
+      <div className="p-4 sm:p-6 space-y-4 max-w-3xl">
         <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Rentabilidad</h1>
         <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}>
           <Store size={40} color="#8b5cf6" className="mx-auto mb-3" />
-          <p className="text-[#F1F5F9] font-semibold mb-1">Conecta tu TiendaNube</p>
+          <p className="text-[#F1F5F9] font-semibold mb-1">Conectá tu TiendaNube</p>
+          <p className="text-sm text-[#94A3B8] mb-3">Necesitamos tus ventas y costos para calcular la rentabilidad.</p>
           <Link href="/app/configuracion/integraciones"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white mt-2"
-            style={{ background: "#8b5cf6" }}>
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white"
+            style={{ background: "#8b5cf6", boxShadow: "0 0 16px rgba(139,92,246,0.4)" }}>
             Ir a Integraciones <ArrowRight size={14} />
           </Link>
         </div>
@@ -150,104 +210,233 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
     );
   }
 
+  const fmt = formatCurrency;
+
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 max-w-3xl">
+    <div className="p-4 sm:p-6 space-y-5 max-w-screen-xl">
+
       {/* Header + filtros */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Rentabilidad</h1>
-          <p className="text-sm text-[#94A3B8] mt-0.5">Datos en tiempo real desde TiendaNube</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Rentabilidad</h1>
+          <p className="text-sm text-[#94A3B8] mt-1 flex items-center gap-1.5">
+            <span className="live-dot" /> Calculado en tiempo real desde tus ventas y costos
+          </p>
         </div>
-        <Link href="/app/configuracion/financiera" className="text-xs text-[#8b5cf6] hover:text-[#a78bfa] flex items-center gap-1 self-center">
-          Editar config <ArrowRight size={12} />
+        <Link href="/app/configuracion/financiera" className="text-xs font-semibold flex items-center gap-1 self-center px-3 py-1.5 rounded-lg neon-text"
+          style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)" }}>
+          Ajustar parámetros <ArrowRight size={12} />
         </Link>
       </div>
 
       {/* Selector de período */}
       <div className="flex flex-wrap gap-2 items-center">
-        <div className="flex gap-1 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(139,92,246,0.2)" }}>
+        <div className="flex gap-0.5 rounded-xl p-1" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
           {DATE_PRESETS.map((p) => (
             <button key={p.key} onClick={() => setPreset(p.key)}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={{ background: preset === p.key ? "#8b5cf6" : "transparent", color: preset === p.key ? "#fff" : "#64748B" }}>
               {p.label}
             </button>
           ))}
         </div>
-        <div className="flex gap-1 rounded-xl p-1" style={{ background: "#0D0D12", border: "1px solid rgba(139,92,246,0.2)" }}>
-          {monthTabs.map((m) => (
-            <button key={m.key} onClick={() => setPreset(m.key)}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-              style={{ background: preset === m.key ? "#8b5cf6" : "transparent", color: preset === m.key ? "#fff" : "#64748B" }}>
-              {m.label}
+        <div className="hidden sm:flex gap-0.5 rounded-xl p-1" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
+          {monthTabs.map((mt) => (
+            <button key={mt.key} onClick={() => setPreset(mt.key)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={{ background: preset === mt.key ? "#8b5cf6" : "transparent", color: preset === mt.key ? "#fff" : "#64748B" }}>
+              {mt.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Alerta de productos sin costo */}
-      {metrics.noCostCount > 0 && (
-        <div className="flex items-center gap-3 rounded-xl px-4 py-3"
-          style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)" }}>
+      {/* Cómo se calcula — explicador */}
+      <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(192,38,211,0.04))", border: "1px solid rgba(139,92,246,0.22)" }}>
+        <button onClick={() => setShowHow(!showHow)} className="w-full flex items-center gap-3 px-5 py-3.5 text-left">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(139,92,246,0.15)" }}>
+            <HelpCircle size={16} color="#a78bfa" strokeWidth={2} />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-[#F1F5F9]">¿Cómo se calcula tu rentabilidad?</p>
+            <p className="text-xs text-[#94A3B8]">Tocá para ver la fórmula aplicada a tus números reales</p>
+          </div>
+          <ChevronDown size={16} color="#94A3B8" className="transition-transform" style={{ transform: showHow ? "rotate(180deg)" : "none" }} />
+        </button>
+        {showHow && (
+          <div className="px-5 pb-5 anim-up">
+            <div className="space-y-2">
+              {[
+                { n: "1", t: "Partimos de tus ingresos brutos", d: `Suma de todas las órdenes pagas del período: ${fmt(m.totalRevenue)}`, c: "#F1F5F9" },
+                { n: "2", t: `Restamos el IVA (${cfg.tax_rate}%)`, d: `El precio incluye IVA. Lo sacamos: −${fmt(m.taxAmount)} → quedan ${fmt(m.revenuePreTax)} netos`, c: "#f59e0b" },
+                { n: "3", t: `Restamos comisiones (${cfg.platform_fee + (cfg.agency_fee ?? 0)}%)`, d: `Plataforma + agencia sobre el neto: −${fmt(m.platformFeeAmount + m.agencyFeeAmount)}`, c: "#8b5cf6" },
+                { n: "4", t: "Restamos el costo de los productos", d: m.cogs > 0 ? `Costo de lo vendido (desde TiendaNube): −${fmt(m.cogs)}` : "Sin costos cargados — cargalos en TiendaNube para incluirlos", c: "#c026d3" },
+                { n: "=", t: "Tu ganancia neta", d: `${fmt(m.netProfit)} — un margen del ${m.netMarginPct.toFixed(1)}% sobre la venta`, c: "#22c55e" },
+              ].map((s) => (
+                <div key={s.n} className="flex items-start gap-3 rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.02)" }}>
+                  <span className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0" style={{ background: `${s.c}1e`, color: s.c }}>{s.n}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-[#F1F5F9]">{s.t}</p>
+                    <p className="text-xs text-[#94A3B8] mt-0.5">{s.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Alerta productos sin costo */}
+      {m.noCostCount > 0 && (
+        <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)" }}>
           <AlertTriangle size={15} color="#f59e0b" strokeWidth={2.5} className="flex-shrink-0" />
           <p className="text-xs text-[#f59e0b]">
-            {metrics.noCostCount} ítems sin costo cargado en TiendaNube — el &ldquo;Costo de productos&rdquo; está subestimado.
+            {m.noCostCount} ítems sin costo cargado en TiendaNube — la ganancia está <strong>sobreestimada</strong>. Cargá el costo de cada producto para un cálculo exacto.
           </p>
         </div>
       )}
 
-      {metrics.ordersCount === 0 ? (
+      {m.ordersCount === 0 ? (
         <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}>
-          <p className="text-[#94A3B8] text-sm">Sin órdenes en este período</p>
+          <p className="text-[#94A3B8] text-sm">Sin órdenes pagas en este período</p>
         </div>
       ) : (
         <>
-          {/* Métricas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* KPIs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Ingresos brutos", rawValue: metrics.totalRevenue, format: formatCurrency, icon: DollarSign, color: "#F1F5F9" },
-              { label: "Ingresos netos",  rawValue: metrics.netRevenue,   format: formatCurrency, icon: TrendingUp, color: "#22c55e" },
-              { label: "Margen neto",     rawValue: metrics.netMarginPct,  format: (n: number) => `${n.toFixed(1)}%`, icon: Percent, color: "#c084fc" },
-              { label: "Margen bruto",    rawValue: metrics.grossMarginPct, format: (n: number) => metrics.grossMarginPct > 0 ? `${n.toFixed(1)}%` : "Sin costo", icon: Percent, color: "#8b5cf6" },
+              { label: "Ingresos brutos", value: m.totalRevenue, format: fmt, icon: Receipt, color: "#a78bfa" },
+              { label: "Ganancia neta",   value: m.netProfit,    format: fmt, icon: Coins, color: "#22c55e" },
+              { label: "Margen neto",     value: m.netMarginPct, format: (n: number) => `${n.toFixed(1)}%`, icon: Percent, color: "#c084fc" },
+              { label: "Costo productos", value: m.cogs,         format: fmt, icon: Package, color: "#c026d3" },
             ].map((s, i) => (
-              <div key={s.label} className="metric-card anim-up rounded-2xl p-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: `${0.05 + i * 0.07}s` }}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 anim-scale" style={{ background: "rgba(139,92,246,0.12)", animationDelay: `${0.12 + i * 0.07}s` }}>
-                  <s.icon size={15} color={s.color} strokeWidth={2} />
+              <div key={s.label} className="metric-card anim-up rounded-2xl p-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: `${0.05 + i * 0.06}s` }}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center anim-scale" style={{ background: `${s.color}1e`, animationDelay: `${0.12 + i * 0.06}s` }}>
+                    <s.icon size={15} color={s.color} strokeWidth={2} />
+                  </div>
                 </div>
-                <AnimatedNumber value={s.rawValue} format={s.format} className="text-lg sm:text-xl font-black text-[#F1F5F9]" />
-                <p className="text-xs text-[#94A3B8] mt-0.5">{s.label}</p>
+                <AnimatedNumber value={s.value} format={s.format} className="text-xl font-black text-[#F1F5F9] leading-none" />
+                <p className="text-xs text-[#94A3B8] mt-1">{s.label}</p>
               </div>
             ))}
           </div>
 
-          {/* Desglose financiero (waterfall) */}
-          <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: "0.33s" }}>
-            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
-              <p className="text-sm font-semibold text-[#F1F5F9]">Desglose financiero</p>
-              <p className="text-xs text-[#64748B] mt-0.5">{metrics.ordersCount} órdenes pagas</p>
-            </div>
-            <div className="divide-y" style={{ borderColor: "rgba(139,92,246,0.08)" }}>
-              {waterfall.map((row, i) => {
-                const pct = metrics.totalRevenue > 0 ? Math.abs(row.value) / metrics.totalRevenue * 100 : 0;
-                const barColor = row.type === "positive" ? "#c026d3" : row.type === "negative" ? "#ef4444" : "#22c55e";
-                return (
-                <div key={row.label} className="anim-up px-5 py-3" style={{ animationDelay: `${0.38 + i * 0.05}s` }}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: barColor }} />
-                      <span className="text-sm text-[#94A3B8]">{row.label}</span>
-                    </div>
-                    <span className="text-sm font-bold"
-                      style={{ color: row.type === "positive" ? "#F1F5F9" : row.type === "negative" ? "#ef4444" : "#22c55e" }}>
-                      {row.value < 0 ? "-" : ""}{formatCurrency(Math.abs(row.value))}
-                    </span>
-                  </div>
-                  <div className="h-1 rounded-full w-full" style={{ background: "rgba(255,255,255,0.04)" }}>
-                    <div className="bar-fill h-1 rounded-full" style={{ width: `${Math.min(pct, 100)}%`, background: barColor, opacity: 0.6, animationDelay: `${0.45 + i * 0.05}s` }} />
+          {/* Dona "a dónde va cada peso" + Ganancia diaria */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+            <div className="anim-up metric-card lg:col-span-2 rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)", animationDelay: "0.3s" }}>
+              <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
+                <p className="text-sm font-semibold text-[#F1F5F9]">A dónde va cada peso</p>
+                <p className="text-[11px] text-[#64748B] mt-0.5">De cada venta bruta</p>
+              </div>
+              <div className="p-3 flex items-center gap-4">
+                <div className="relative" style={{ width: 150, height: 150, flexShrink: 0 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={donutData} dataKey="value" nameKey="name" innerRadius={48} outerRadius={68} paddingAngle={3} stroke="none" animationDuration={1100}>
+                        {donutData.map((d) => <Cell key={d.name} fill={d.color} style={{ filter: `drop-shadow(0 0 5px ${d.color}66)` }} />)}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "10px", color: "#F1F5F9" }} formatter={(v) => fmt(Number(v))} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <p className="text-lg font-black text-[#22c55e] leading-none">{m.netMarginPct.toFixed(0)}%</p>
+                    <p className="text-[9px] text-[#64748B] uppercase tracking-widest mt-0.5">ganancia</p>
                   </div>
                 </div>
-                );
-              })}
+                <div className="flex-1 space-y-2 min-w-0">
+                  {donutData.map((d) => (
+                    <div key={d.name} className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color, boxShadow: `0 0 6px ${d.color}` }} />
+                      <span className="text-xs text-[#94A3B8] flex-1 truncate">{d.name}</span>
+                      <span className="text-xs font-bold text-[#F1F5F9]">{m.totalRevenue > 0 ? `${((d.value / m.totalRevenue) * 100).toFixed(0)}%` : "0%"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="anim-up metric-card lg:col-span-3 rounded-2xl overflow-hidden neon-chart-green" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)", animationDelay: "0.36s" }}>
+              <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(139,92,246,0.1)" }}>
+                <p className="text-sm font-semibold text-[#F1F5F9]">Ganancia por día</p>
+                <p className="text-[11px] text-[#64748B] mt-0.5">Evolución en el período</p>
+              </div>
+              <div className="p-3">
+                <ResponsiveContainer width="100%" height={170}>
+                  <AreaChart data={dailyProfit} margin={{ top: 8, right: 5, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.07)" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={24} />
+                    <YAxis tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} width={42}
+                      tickFormatter={(v) => `$${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
+                    <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(34,197,94,0.3)", borderRadius: "10px", color: "#F1F5F9" }} formatter={(v) => [fmt(Number(v)), "Ganancia"]} />
+                    <Area type="monotone" dataKey="ganancia" stroke="#22c55e" strokeWidth={2} fill="url(#profitGrad)" dot={false} activeDot={{ r: 4, fill: "#22c55e" }} animationDuration={1300} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Desglose (waterfall) + Top productos */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: "0.42s" }}>
+              <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
+                <p className="text-sm font-semibold text-[#F1F5F9]">Desglose financiero</p>
+                <p className="text-xs text-[#64748B] mt-0.5">{m.ordersCount} órdenes pagas</p>
+              </div>
+              <div className="divide-y" style={{ borderColor: "rgba(139,92,246,0.08)" }}>
+                {waterfall.map((row, i) => {
+                  const pct = m.totalRevenue > 0 ? Math.abs(row.value) / m.totalRevenue * 100 : 0;
+                  const barColor = row.kind === "in" ? "#a78bfa" : row.kind === "out" ? "#ef4444" : "#22c55e";
+                  return (
+                    <div key={row.label} className="anim-up px-5 py-3" style={{ animationDelay: `${0.46 + i * 0.05}s` }}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-sm text-[#94A3B8]">{row.label}</span>
+                        <span className="text-sm font-bold" style={{ color: row.kind === "in" ? "#F1F5F9" : row.kind === "out" ? "#ef4444" : "#22c55e" }}>
+                          {row.value < 0 ? "−" : ""}{fmt(Math.abs(row.value))}
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full w-full" style={{ background: "rgba(255,255,255,0.04)" }}>
+                        <div className="bar-fill h-1.5 rounded-full" style={{ width: `${Math.min(pct, 100)}%`, background: barColor, boxShadow: `0 0 8px ${barColor}99`, opacity: 0.8, animationDelay: `${0.5 + i * 0.05}s` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="anim-up rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: "0.48s" }}>
+              <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
+                <div>
+                  <p className="text-sm font-semibold text-[#F1F5F9]">Productos más rentables</p>
+                  <p className="text-xs text-[#64748B] mt-0.5">Por ganancia en el período</p>
+                </div>
+                <TrendingUp size={15} color="#22c55e" />
+              </div>
+              {topProducts.length === 0 ? (
+                <div className="p-8 text-center"><p className="text-sm text-[#64748B]">Sin datos de productos</p></div>
+              ) : (
+                <div className="divide-y" style={{ borderColor: "rgba(139,92,246,0.08)" }}>
+                  {topProducts.map((p, i) => (
+                    <div key={i} className="anim-up px-5 py-3 flex items-center gap-3" style={{ animationDelay: `${0.52 + i * 0.05}s` }}>
+                      <span className="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-black flex-shrink-0" style={{ background: "rgba(139,92,246,0.12)", color: "#a78bfa" }}>{i + 1}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-[#F1F5F9] truncate">{p.name}</p>
+                        <p className="text-xs text-[#64748B]">{p.units} u · margen {p.margin.toFixed(0)}%</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-sm font-bold text-[#22c55e]">{fmt(p.profit)}</p>
+                        <p className="text-[10px] text-[#64748B]">de {fmt(p.revenue)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </>

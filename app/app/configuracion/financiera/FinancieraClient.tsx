@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { DollarSign, Percent, Save, TrendingUp, Info, Calculator, Package } from "lucide-react";
+import { useEffect, useState } from "react";
+import { DollarSign, Percent, Save, Info, Package, Building2, TrendingUp } from "lucide-react";
 import { updateFinancialConfig } from "@/app/app/actions";
 import { toast } from "sonner";
 
@@ -10,6 +10,8 @@ interface Config {
   tax_rate: number;
   platform_fee: number;
 }
+
+const EXAMPLE = 100000; // venta de ejemplo en ARS
 
 export default function FinancieraClient({
   config,
@@ -22,14 +24,13 @@ export default function FinancieraClient({
 }) {
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
   const [live, setLive] = useState<Config>({ ...config });
 
   useEffect(() => { setMounted(true); }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const val = parseFloat(e.target.value) || 0;
-    setLive((prev) => ({ ...prev, [e.target.name]: val }));
+    const val = parseFloat(e.target.value);
+    setLive((prev) => ({ ...prev, [e.target.name]: isNaN(val) ? 0 : val }));
   }
 
   async function handleSubmit(formData: FormData) {
@@ -44,247 +45,205 @@ export default function FinancieraClient({
     }
   }
 
-  const exampleSale = 100000;
-  const netAfterTax = exampleSale / (1 + live.tax_rate / 100);
-  const netAfterPlatform = netAfterTax * (1 - live.platform_fee / 100);
-  const margin = ((netAfterPlatform / exampleSale) * 100).toFixed(1);
-  const usdValue = (exampleSale / (live.usd_rate || 1)).toFixed(2);
-
   const fmt = (n: number) => {
     if (!mounted) return `$${Math.round(n).toLocaleString()}`;
     return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(n);
   };
 
+  // Cascada de la venta de ejemplo
+  const tax        = EXAMPLE - EXAMPLE / (1 + live.tax_rate / 100);
+  const afterTax   = EXAMPLE - tax;
+  const platform   = afterTax * (live.platform_fee / 100);
+  const afterPlat  = afterTax - platform;
+  const cogs       = avgCostPct > 0 ? afterPlat * 0 + EXAMPLE * (avgCostPct / 100) : 0;
+  const profit     = afterPlat - cogs;
+  const marginPct  = (profit / EXAMPLE) * 100;
+
   const fields = [
     {
-      label: "Cotización USD aplicada",
+      label: "Cotización del dólar",
       name: "usd_rate",
       value: live.usd_rate,
-      suffix: "ARS por 1 USD",
-      description: "Valor de 1 dólar en pesos. Ej: si ponés 1200, significa 1 USD = $1.200 ARS. Lo usamos para convertir el gasto de Meta Ads (en USD) a tu moneda.",
+      suffix: "ARS = 1 USD",
+      help: "Cuántos pesos vale un dólar hoy. Se usa para convertir el gasto de Meta Ads (que viene en USD) a tu moneda.",
       icon: DollarSign,
-      iconColor: "#22c55e",
+      color: "#22c55e",
       step: "1",
-      placeholder: "1200",
     },
     {
-      label: "IVA / Impuesto sobre ventas",
+      label: "IVA sobre ventas",
       name: "tax_rate",
       value: live.tax_rate,
-      suffix: "% del precio",
-      description: "Porcentaje de IVA incluido en tus precios de venta. En Argentina suele ser 21%. Si vendés solo a consumidor final, dejá 0.",
+      suffix: "%",
+      help: "Porcentaje de IVA incluido en tus precios. En Argentina suele ser 21%. Lo descontamos para saber tu ingreso real.",
       icon: Percent,
-      iconColor: "#f59e0b",
-      step: "0.1",
-      placeholder: "21",
+      color: "#f59e0b",
+      step: "0.5",
     },
     {
-      label: "Comisión global de plataforma",
+      label: "Comisión de plataforma",
       name: "platform_fee",
       value: live.platform_fee,
-      suffix: "% de la venta",
-      description: "Fee fijo extra sobre cada venta (ej. mensualidad de TiendaNube prorrateada o comisión de un marketplace). Dejá 0 si solo usás MercadoPago/PagoNube — esas comisiones se configuran aparte en la tab Comisiones.",
-      icon: Percent,
-      iconColor: "#8b5cf6",
-      step: "0.1",
-      placeholder: "0",
+      suffix: "%",
+      help: "Comisión que te cobran por vender: MercadoPago, TiendaNube, marketplace, etc. Se descuenta de cada venta.",
+      icon: Building2,
+      color: "#8b5cf6",
+      step: "0.5",
     },
   ];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-5 max-w-screen-xl">
 
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
-            Parámetros generales
+          <h1 className="text-2xl sm:text-3xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+            Parámetros financieros
           </h1>
           <p className="text-sm text-[#94A3B8] mt-1 max-w-2xl">
-            Configurá los tres valores base que se usan en TODOS los cálculos: cotización del dólar, IVA y comisión global de plataforma.
-            Después podés afinar comisiones de pago y costos extras en las otras pestañas.
+            Estos 3 valores alimentan <strong className="text-[#c084fc]">todos</strong> los cálculos de ganancia y rentabilidad.
+            Mirá cómo impactan en la simulación de la derecha mientras los cambiás.
           </p>
         </div>
-        <div
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-          style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#22c55e" }}
-        >
-          <Calculator size={14} strokeWidth={2.5} />
-          Margen neto: {margin}%
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold flex-shrink-0"
+          style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", color: "#22c55e", boxShadow: "0 0 16px rgba(34,197,94,0.1)" }}>
+          <TrendingUp size={15} strokeWidth={2.5} />
+          Margen estimado: {marginPct.toFixed(1)}%
         </div>
       </div>
 
-      <form ref={formRef} action={handleSubmit} className="space-y-6">
+      <form action={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-        {/* Campos — 3 columnas (1 por cada parámetro) para que ocupen toda la pantalla */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {fields.map((f) => (
-            <div
-              key={f.name}
-              className="rounded-2xl p-5 flex flex-col gap-4"
-              style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: `${f.iconColor}15` }}
-                >
-                  <f.icon size={18} color={f.iconColor} strokeWidth={2} />
-                </div>
-                <div>
-                  <p className="font-bold text-[#F1F5F9] text-sm">{f.label}</p>
-                  <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">{f.description}</p>
-                </div>
+        {/* Columna izquierda: campos */}
+        <div className="space-y-4">
+          {fields.map((f, i) => (
+            <div key={f.name} className="anim-up rounded-2xl p-5 flex items-center gap-4"
+              style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: `${i * 0.07}s` }}>
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${f.color}1a` }}>
+                <f.icon size={19} color={f.color} strokeWidth={2} />
               </div>
-
-              <div
-                className="flex items-center gap-2 rounded-xl px-4 py-3"
-                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
-              >
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-[#F1F5F9] text-sm">{f.label}</p>
+                <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">{f.help}</p>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-xl px-3 py-2 flex-shrink-0"
+                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.25)" }}>
                 <input
-                  type="number"
-                  name={f.name}
-                  value={f.value}
-                  onChange={handleChange}
-                  step={f.step}
-                  min="0"
-                  placeholder={f.placeholder}
-                  className="flex-1 min-w-0 bg-transparent text-xl font-black text-[#F1F5F9] outline-none"
-                  style={{ appearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
+                  type="number" name={f.name} value={f.value} onChange={handleChange}
+                  step={f.step} min="0"
+                  className="w-20 bg-transparent text-xl font-black text-[#F1F5F9] outline-none text-right"
+                  style={{ MozAppearance: "textfield" } as React.CSSProperties}
                 />
-                <span className="flex-shrink-0 text-xs font-semibold text-[#64748B] whitespace-nowrap hidden sm:inline">{f.suffix}</span>
+                <span className="text-[10px] font-semibold text-[#64748B] whitespace-nowrap">{f.suffix}</span>
               </div>
             </div>
           ))}
-        </div>
 
-        {/* Preview + guardar en la misma fila */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+          <button type="submit" disabled={saving}
+            className="anim-up w-full flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 hover:scale-[1.01]"
+            style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)", boxShadow: "0 0 20px rgba(139,92,246,0.3)", animationDelay: "0.24s" }}>
+            <Save size={16} strokeWidth={2.5} />
+            {saving ? "Guardando..." : "Guardar cambios"}
+          </button>
 
-          {/* Vista previa — ocupa 2 columnas */}
-          <div
-            className="xl:col-span-2 rounded-2xl overflow-hidden"
-            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
-          >
-            <div
-              className="px-6 py-4 flex items-center gap-2"
-              style={{ borderBottom: "1px solid rgba(139,92,246,0.15)", background: "rgba(139,92,246,0.04)" }}
-            >
-              <TrendingUp size={15} color="#8b5cf6" strokeWidth={2.5} />
-              <p className="text-sm font-bold text-[#F1F5F9]">
-                Vista previa — venta de {fmt(exampleSale)}
-              </p>
-              <span className="text-xs text-[#64748B] ml-auto">Actualización en tiempo real</span>
-            </div>
-            <div className="p-5 space-y-0">
-              {[
-                { label: "Venta bruta", value: fmt(exampleSale), sub: null, color: "#F1F5F9", highlight: false },
-                { label: `Neto después de IVA (${live.tax_rate}%)`, value: fmt(netAfterTax), sub: `− ${fmt(exampleSale - netAfterTax)}`, color: "#94A3B8", highlight: false },
-                { label: `Neto después de plataforma (${live.platform_fee}%)`, value: fmt(netAfterPlatform), sub: `− ${fmt(netAfterTax - netAfterPlatform)}`, color: "#22c55e", highlight: true },
-              ].map((row, i, arr) => (
-                <div
-                  key={row.label}
-                  className={`flex items-center justify-between py-3 text-sm ${i < arr.length - 1 ? "border-b" : ""}`}
-                  style={{
-                    borderColor: "rgba(139,92,246,0.08)",
-                    background: row.highlight ? "rgba(34,197,94,0.03)" : "transparent",
-                    marginLeft: row.highlight ? "-20px" : undefined,
-                    marginRight: row.highlight ? "-20px" : undefined,
-                    paddingLeft: row.highlight ? "20px" : undefined,
-                    paddingRight: row.highlight ? "20px" : undefined,
-                  } as React.CSSProperties}
-                >
-                  <div>
-                    <span style={{ color: row.highlight ? "#F1F5F9" : "#64748B" }}>{row.label}</span>
-                    {row.sub && <span className="ml-2 text-xs text-[#ef4444]">{row.sub}</span>}
-                  </div>
-                  <span className="font-black text-base" style={{ color: row.color }}>{row.value}</span>
-                </div>
-              ))}
-
-              <div
-                className="flex items-center justify-between mt-3 pt-3 rounded-xl px-4 py-3"
-                style={{ background: "rgba(192,132,252,0.08)", border: "1px solid rgba(192,132,252,0.2)" }}
-              >
-                <div>
-                  <p className="text-sm font-bold text-[#c084fc]">Margen neto final</p>
-                  <p className="text-xs text-[#64748B]">En USD al tipo de cambio configurado</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-black text-[#c084fc]">{margin}%</p>
-                  <p className="text-xs text-[#64748B]">≈ USD {usdValue}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Guardar + info */}
-          <div className="flex flex-col gap-5">
-            <div
-              className="rounded-2xl p-5 flex flex-col gap-4"
-              style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
-            >
-              <div className="flex items-start gap-2">
-                <Info size={14} color="#8b5cf6" strokeWidth={2.5} className="mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-[#64748B] leading-relaxed">
-                  Estos valores se aplican a <strong className="text-[#94A3B8]">todos los cálculos de rentabilidad</strong> del dashboard.
-                  Actualizalos cuando cambie el dólar o las comisiones.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 hover:scale-[1.01]"
-              style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
-            >
-              <Save size={16} strokeWidth={2.5} />
-              {saving ? "Guardando..." : "Guardar cambios"}
-            </button>
+          <div className="anim-up flex items-start gap-2 rounded-xl px-4 py-3" style={{ background: "rgba(139,92,246,0.05)", border: "1px solid rgba(139,92,246,0.12)", animationDelay: "0.3s" }}>
+            <Info size={13} color="#8b5cf6" strokeWidth={2.5} className="mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-[#64748B] leading-relaxed">
+              Actualizá la cotización del dólar cuando se mueva, para que tus números de Meta Ads sean exactos.
+            </p>
           </div>
         </div>
 
+        {/* Columna derecha: simulación en vivo */}
+        <div className="anim-up rounded-2xl overflow-hidden h-fit lg:sticky lg:top-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.25)", boxShadow: "0 0 32px rgba(139,92,246,0.07)", animationDelay: "0.1s" }}>
+          <div className="px-5 py-4 flex items-center gap-2" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)", background: "linear-gradient(135deg, rgba(139,92,246,0.1), rgba(192,38,211,0.04))" }}>
+            <TrendingUp size={15} color="#a78bfa" strokeWidth={2.5} />
+            <p className="text-sm font-bold text-[#F1F5F9]">Simulación: venta de {fmt(EXAMPLE)}</p>
+            <span className="text-[10px] text-[#64748B] ml-auto">en vivo</span>
+          </div>
+
+          <div className="p-5 space-y-1">
+            {[
+              { label: "Venta bruta",                       value: EXAMPLE,    minus: false, color: "#F1F5F9", strong: true },
+              { label: `IVA (${live.tax_rate}%)`,           value: -tax,       minus: true,  color: "#f59e0b" },
+              { label: `Comisión plataforma (${live.platform_fee}%)`, value: -platform, minus: true, color: "#8b5cf6" },
+              ...(avgCostPct > 0 ? [{ label: `Costo productos (≈${avgCostPct.toFixed(0)}%)`, value: -cogs, minus: true, color: "#c026d3" }] : []),
+            ].map((row) => (
+              <div key={row.label} className="flex items-center justify-between py-2.5" style={{ borderBottom: "1px solid rgba(139,92,246,0.07)" }}>
+                <span className="text-sm" style={{ color: row.strong ? "#F1F5F9" : "#94A3B8", fontWeight: row.strong ? 700 : 400 }}>{row.label}</span>
+                <span className="text-sm font-bold" style={{ color: row.minus ? "#ef4444" : "#F1F5F9" }}>
+                  {row.minus ? "−" : ""}{fmt(Math.abs(row.value))}
+                </span>
+              </div>
+            ))}
+
+            {/* Barra visual de composición */}
+            <div className="pt-3 pb-1">
+              <div className="flex h-3 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
+                {[
+                  { v: tax, c: "#f59e0b" },
+                  { v: platform, c: "#8b5cf6" },
+                  { v: cogs, c: "#c026d3" },
+                  { v: Math.max(profit, 0), c: "#22c55e" },
+                ].map((seg, i) => seg.v > 0 && (
+                  <div key={i} className="bar-fill h-full" style={{ width: `${(seg.v / EXAMPLE) * 100}%`, background: seg.c, boxShadow: `0 0 8px ${seg.c}`, animationDelay: `${0.2 + i * 0.08}s` }} />
+                ))}
+              </div>
+              <div className="flex items-center gap-3 mt-2 flex-wrap">
+                {[
+                  { l: "IVA", c: "#f59e0b" }, { l: "Plataforma", c: "#8b5cf6" },
+                  ...(avgCostPct > 0 ? [{ l: "Costo", c: "#c026d3" }] : []), { l: "Ganancia", c: "#22c55e" },
+                ].map((lg) => (
+                  <span key={lg.l} className="flex items-center gap-1 text-[10px] text-[#64748B]">
+                    <span className="w-2 h-2 rounded-full" style={{ background: lg.c }} /> {lg.l}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Resultado */}
+            <div className="flex items-center justify-between mt-3 rounded-xl px-4 py-3.5"
+              style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", boxShadow: "0 0 16px rgba(34,197,94,0.08)" }}>
+              <div>
+                <p className="text-sm font-bold text-[#22c55e]">Te queda de ganancia</p>
+                <p className="text-[11px] text-[#64748B]">por cada {fmt(EXAMPLE)} de venta</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-black text-[#22c55e] leading-none">{fmt(profit)}</p>
+                <p className="text-[11px] text-[#64748B] mt-0.5">margen {marginPct.toFixed(1)}%</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </form>
 
-      {/* Card de costo promedio de productos desde TiendaNube */}
-      <div className="rounded-2xl p-5 flex items-start gap-4"
-        style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)" }}>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-          style={{ background: "rgba(34,197,94,0.12)" }}>
-          <Package size={18} color="#22c55e" strokeWidth={2} />
+      {/* Costo de productos desde TiendaNube */}
+      <div className="anim-up rounded-2xl p-5 flex items-center gap-4" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.15)", animationDelay: "0.34s" }}>
+        <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(192,38,211,0.12)" }}>
+          <Package size={19} color="#c026d3" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-bold text-[#F1F5F9] text-sm">Costo de productos</p>
           <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">
-            Promedio calculado desde el campo <strong className="text-[#94A3B8]">Costo</strong> de las variantes en TiendaNube
+            Lo tomamos del campo <strong className="text-[#94A3B8]">Costo</strong> de cada variante en TiendaNube.
+            {productStats.total > 0 && (
+              <span style={{ color: productStats.withCost > 0 ? "#22c55e" : "#f59e0b" }}>
+                {" "}{productStats.withCost > 0
+                  ? `${productStats.withCost} de ${productStats.total} con costo cargado.`
+                  : `${productStats.total} productos sin costo cargado.`}
+              </span>
+            )}
           </p>
-          {productStats.total > 0 && (
-            <p className="text-xs mt-1.5" style={{ color: productStats.withCost > 0 ? "#22c55e" : "#f59e0b" }}>
-              {productStats.withCost > 0
-                ? `${productStats.withCost} variante${productStats.withCost !== 1 ? "s" : ""} con costo cargado de ${productStats.total} productos`
-                : `${productStats.total} productos encontrados, ninguno tiene costo cargado en TiendaNube`}
-            </p>
-          )}
-          {productStats.total === 0 && (
-            <p className="text-xs text-[#f59e0b] mt-1.5">
-              No se encontraron productos — verificá que TiendaNube esté conectado
-            </p>
-          )}
         </div>
         <div className="text-right flex-shrink-0">
           {avgCostPct > 0 ? (
             <>
-              <p className="text-2xl font-black text-[#22c55e]">{avgCostPct.toFixed(1)}%</p>
-              <p className="text-xs text-[#64748B]">del precio de venta</p>
+              <p className="text-2xl font-black text-[#c026d3]">{avgCostPct.toFixed(0)}%</p>
+              <p className="text-[11px] text-[#64748B]">del precio de venta</p>
             </>
           ) : (
-            <div className="text-right">
-              <p className="text-sm font-semibold text-[#f59e0b]">Sin datos</p>
-              <p className="text-xs text-[#64748B] mt-0.5 max-w-[160px]">
-                Cargá el costo en cada variante desde TiendaNube → Productos
-              </p>
-            </div>
+            <p className="text-sm font-semibold text-[#f59e0b] max-w-[150px]">Cargá los costos en TiendaNube</p>
           )}
         </div>
       </div>
