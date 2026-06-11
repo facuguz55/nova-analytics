@@ -3,6 +3,8 @@
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Search, ChevronLeft, ChevronRight, DollarSign, ShoppingCart, CheckCircle } from "lucide-react";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 
 interface OrderRow {
   id: string;
@@ -98,40 +100,59 @@ export default function OrdenesClient({
   }
 
   const STATS = [
-    { label: "Total órdenes", value: String(totalOrders), icon: ShoppingCart, color: "#8b5cf6" },
-    { label: "Órdenes pagadas", value: String(totalPaid), icon: CheckCircle, color: "#22c55e" },
-    { label: "Facturación total", value: fmt(totalRevenue), icon: DollarSign, color: "#c084fc" },
+    { label: "Total órdenes",     value: totalOrders,  format: (n: number) => String(Math.round(n)), icon: ShoppingCart, color: "#8b5cf6" },
+    { label: "Órdenes pagadas",   value: totalPaid,    format: (n: number) => String(Math.round(n)), icon: CheckCircle,  color: "#22c55e" },
+    { label: "Facturación total", value: totalRevenue, format: fmt, icon: DollarSign, color: "#c084fc" },
   ];
 
+  const payRate = totalOrders > 0 ? (totalPaid / totalOrders) * 100 : 0;
+  const payData = [
+    { name: "Pagadas", value: totalPaid, color: "#22c55e" },
+    { name: "Resto",   value: Math.max(totalOrders - totalPaid, 0), color: "#8b5cf6" },
+  ].filter((d) => d.value > 0);
+
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
+    <div className="p-4 sm:p-6 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>
             Órdenes
           </h1>
           <p className="text-sm text-[#94A3B8] mt-0.5">{count} resultado{count !== 1 ? "s" : ""}</p>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {STATS.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-2xl p-4 flex items-center gap-4"
-            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}
-          >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${s.color}18` }}>
+      {/* Stats + dona tasa de pago */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {STATS.map((s, i) => (
+          <div key={s.label} className="metric-card anim-up rounded-2xl p-4 flex items-center gap-4"
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: `${0.05 + i * 0.06}s` }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center anim-scale" style={{ background: `${s.color}1a`, animationDelay: `${0.12 + i * 0.06}s` }}>
               <s.icon size={18} color={s.color} strokeWidth={2} />
             </div>
-            <div>
-              <p className="text-xl font-black text-[#F1F5F9]">{s.value}</p>
-              <p className="text-xs text-[#94A3B8]">{s.label}</p>
+            <div className="min-w-0">
+              <AnimatedNumber value={s.value} format={s.format} className="text-xl font-black text-[#F1F5F9] leading-none" />
+              <p className="text-xs text-[#94A3B8] mt-0.5">{s.label}</p>
             </div>
           </div>
         ))}
+        <div className="metric-card anim-up rounded-2xl p-3 flex items-center gap-3" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", animationDelay: "0.23s" }}>
+          <div className="relative" style={{ width: 64, height: 64, flexShrink: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={payData} dataKey="value" nameKey="name" innerRadius={20} outerRadius={30} paddingAngle={2} stroke="none" animationDuration={1000}>
+                  {payData.map((d) => <Cell key={d.name} fill={d.color} style={{ filter: `drop-shadow(0 0 4px ${d.color}66)` }} />)}
+                </Pie>
+                <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "10px", color: "#F1F5F9", fontSize: "12px" }} formatter={(v, n) => [`${v}`, n]} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="min-w-0">
+            <p className="text-xl font-black text-[#22c55e] leading-none">{payRate.toFixed(0)}%</p>
+            <p className="text-xs text-[#94A3B8] mt-0.5">Tasa de pago</p>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
