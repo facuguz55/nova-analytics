@@ -134,7 +134,7 @@ function computeByHour(orders: TNOrder[]) {
 
 function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
+    <div className="metric-card anim-up neon-chart rounded-2xl overflow-hidden" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
       <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(139,92,246,0.15)" }}>
         <p className="font-semibold text-[#F1F5F9] text-sm">{title}</p>
         {subtitle && <p className="text-xs text-[#94A3B8] mt-0.5">{subtitle}</p>}
@@ -398,7 +398,7 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
   if (!isConnected) {
     return (
       <div className="p-4 sm:p-6">
-        <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9] mb-2" style={{ letterSpacing: "-0.02em" }}>Análisis</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-[#F1F5F9] mb-2" style={{ letterSpacing: "-0.02em" }}>Análisis</h1>
         <div className="rounded-2xl p-10 text-center" style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
           <Store size={40} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conectá tu TiendaNube</p>
@@ -428,7 +428,7 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Análisis</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Análisis</h1>
           <p className="text-sm text-[#94A3B8] mt-0.5">Evolución histórica y patrones de ventas</p>
         </div>
 
@@ -559,7 +559,7 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
               { label: "Ingresos",     value: fmt(totalRevenue),                                               color: "#22c55e", bg: "rgba(34,197,94,0.08)" },
               { label: "Ticket prom.", value: filtered.length > 0 ? fmt(totalRevenue / filtered.length) : "$0",color: "#c084fc", bg: "rgba(192,132,252,0.08)" },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl p-3 sm:p-4 flex flex-col gap-1" style={{ background: s.bg, border: `1px solid ${s.color}25` }}>
+              <div key={s.label} className="metric-card anim-up rounded-2xl p-3 sm:p-4 flex flex-col gap-1" style={{ background: s.bg, border: `1px solid ${s.color}25` }}>
                 <p className="text-[10px] sm:text-xs font-medium" style={{ color: s.color + "aa" }}>{s.label}</p>
                 <p className="text-lg sm:text-2xl font-black leading-none" style={{ color: s.color }}>{s.value}</p>
               </div>
