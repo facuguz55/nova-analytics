@@ -39,21 +39,39 @@ export async function GET(request: Request) {
   const messageId = searchParams.get("id");
   if (!messageId) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
+  // Gmail message IDs son [a-zA-Z0-9_-]+ — sin validar, valores con / ? .. permiten
+  // manipular el path/query de la URL de Gmail.
+  if (!/^[a-zA-Z0-9_-]+$/.test(messageId))
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Filtro explícito por workspace_id — NO depender solo de RLS para aislar tenants
+  // (mismo patrón defensivo que lib/tiendanube/connection.ts).
+  const { data: rawUser } = await supabase
+    .from("users").select("workspace_id").eq("id", user.id).single();
+  const workspaceId = (rawUser as { workspace_id: string | null } | null)?.workspace_id;
+  if (!workspaceId) return NextResponse.json({ error: "Gmail not connected" }, { status: 400 });
 
   const { data: raw } = await supabase
     .from("integrations")
     .select("access_token_encrypted, status")
     .eq("provider", "gmail")
+    .eq("workspace_id", workspaceId)
     .maybeSingle();
 
   const integration = raw as { access_token_encrypted: string | null; status: string } | null;
   if (!integration?.access_token_encrypted || integration.status !== "active")
     return NextResponse.json({ error: "Gmail not connected" }, { status: 400 });
 
-  const token = decrypt(integration.access_token_encrypted);
+  let token: string;
+  try {
+    token = decrypt(integration.access_token_encrypted);
+  } catch {
+    return NextResponse.json({ error: "Gmail not connected" }, { status: 400 });
+  }
 
   const res = await fetch(
     `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}?format=full`,

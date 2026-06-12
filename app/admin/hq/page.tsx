@@ -30,7 +30,9 @@ export default async function HQPage() {
   type BillingRow = { workspace_id: string; amount: number; status: string };
   type SubRow = { workspace_id: string; status: string; trial_ends_at: string | null };
 
-  const [wsRes, userRes, intRes, auditRes, tokenRes, billingRes, subRes] = await Promise.all([
+  // allSettled: si una sola query falla (tabla/columna ausente, etc.) la página
+  // sigue renderizando con los datos que sí cargaron, en vez de tirar un 500 entero.
+  const [wsRes, userRes, intRes, auditRes, tokenRes, billingRes, subRes] = await Promise.allSettled([
     service.from("workspaces").select("*", { count: "exact" }).order("created_at", { ascending: false }),
     service.from("users").select("*", { count: "exact" }).order("created_at", { ascending: false }),
     service.from("integrations").select("workspace_id, provider, status").eq("status", "active"),
@@ -40,15 +42,22 @@ export default async function HQPage() {
     service.from("subscriptions").select("workspace_id, status, trial_ends_at"),
   ]);
 
-  const workspaceCount = wsRes.count ?? 0;
-  const userCount = userRes.count ?? 0;
-  const allWorkspaces = (wsRes.data ?? []) as unknown as WsRow[];
-  const allUsers = (userRes.data ?? []) as unknown as UserRow[];
-  const allIntegrations = (intRes.data ?? []) as unknown as IntRow[];
-  const audits = (auditRes.data ?? []) as unknown as AuditRow[];
-  const tokenRows = (tokenRes.data ?? []) as unknown as TokenRow[];
-  const billingRows = (billingRes.data ?? []) as unknown as BillingRow[];
-  const allSubs = (subRes.data ?? []) as unknown as SubRow[];
+  const val = <T,>(r: PromiseSettledResult<{ data: unknown; count?: number | null }>): { data: T[]; count: number } =>
+    r.status === "fulfilled"
+      ? { data: (r.value.data ?? []) as T[], count: r.value.count ?? 0 }
+      : { data: [], count: 0 };
+
+  const ws = val<WsRow>(wsRes);
+  const usr = val<UserRow>(userRes);
+  const workspaceCount = ws.count;
+  const userCount = usr.count;
+  const allWorkspaces = ws.data;
+  const allUsers = usr.data;
+  const allIntegrations = val<IntRow>(intRes).data;
+  const audits = val<AuditRow>(auditRes).data;
+  const tokenRows = val<TokenRow>(tokenRes).data;
+  const billingRows = val<BillingRow>(billingRes).data;
+  const allSubs = val<SubRow>(subRes).data;
 
   function getSubBadge(workspaceId: string): { label: string; color: string; bg: string } {
     const sub = allSubs.find((s) => s.workspace_id === workspaceId);
@@ -114,10 +123,10 @@ export default async function HQPage() {
   }, {} as Record<string, number>);
 
   const STATS = [
-    { label: "Workspaces", value: workspaceCount ?? 0, format: (n: number) => String(Math.round(n)), icon: Store, color: "#8b5cf6" },
-    { label: "Usuarios", value: userCount ?? 0, format: (n: number) => String(Math.round(n)), icon: Users, color: "#c026d3" },
-    { label: "Integraciones activas", value: allIntegrations.length, format: (n: number) => String(Math.round(n)), icon: Plug, color: "#22c55e" },
-    { label: "MRR (billing pagado)", value: totalRevenue, format: formatCurrency, icon: DollarSign, color: "#c084fc" },
+    { label: "Workspaces", value: workspaceCount ?? 0, format: "number" as const, icon: Store, color: "#8b5cf6" },
+    { label: "Usuarios", value: userCount ?? 0, format: "number" as const, icon: Users, color: "#c026d3" },
+    { label: "Integraciones activas", value: allIntegrations.length, format: "number" as const, icon: Plug, color: "#22c55e" },
+    { label: "MRR (billing pagado)", value: totalRevenue, format: "currency" as const, icon: DollarSign, color: "#c084fc" },
   ];
 
   const PLAN_COLORS: Record<string, string> = {

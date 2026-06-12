@@ -1,6 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { formatCurrency } from "@/lib/utils";
+
+// Tokens de formato serializables — se pueden pasar desde Server Components
+// (a diferencia de una función, que Next 15 prohíbe cruzar la frontera server→client).
+type FormatToken = "number" | "currency";
+const FORMATTERS: Record<FormatToken, (n: number) => string> = {
+  number: (n) => String(Math.round(n)),
+  currency: (n) => formatCurrency(n),
+};
 
 export function useCountUp(target: number, duration = 900): number {
   const [val, setVal] = useState(0);
@@ -32,13 +41,15 @@ export function useCountUp(target: number, duration = 900): number {
 
 interface Props {
   value: number;
-  format?: (n: number) => string;
+  // Función (solo desde Client Components) o token string (también desde Server Components)
+  format?: ((n: number) => string) | FormatToken;
   duration?: number;
   className?: string;
 }
 
 export default function AnimatedNumber({ value, format, duration = 900, className }: Props) {
   const animated = useCountUp(value, duration);
-  const display = format ? format(animated) : String(Math.round(animated));
+  const fmt = typeof format === "string" ? FORMATTERS[format] : format;
+  const display = fmt ? fmt(animated) : String(Math.round(animated));
   return <span className={className}>{display}</span>;
 }

@@ -55,10 +55,17 @@ export async function POST(request: Request) {
 
   const { to, subject, body, threadId, inReplyTo } = parsed.data;
 
+  // Filtro explícito por workspace_id — NO depender solo de RLS (ver connection.ts)
+  const { data: rawUser } = await supabase
+    .from("users").select("workspace_id").eq("id", user.id).single();
+  const workspaceId = (rawUser as { workspace_id: string | null } | null)?.workspace_id;
+  if (!workspaceId) return NextResponse.json({ error: "Gmail not connected" }, { status: 400 });
+
   const { data: raw } = await supabase
     .from("integrations")
     .select("access_token_encrypted, status, metadata")
     .eq("provider", "gmail")
+    .eq("workspace_id", workspaceId)
     .maybeSingle();
 
   const integration = raw as {
@@ -70,7 +77,12 @@ export async function POST(request: Request) {
   if (!integration?.access_token_encrypted)
     return NextResponse.json({ error: "Gmail not connected" }, { status: 400 });
 
-  const token = decrypt(integration.access_token_encrypted);
+  let token: string;
+  try {
+    token = decrypt(integration.access_token_encrypted);
+  } catch {
+    return NextResponse.json({ error: "Gmail not connected" }, { status: 400 });
+  }
   const fromEmail = integration.metadata?.email ?? "";
 
   // Construir los headers MIME con valores ya validados y sin CRLF
