@@ -10,12 +10,16 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   // Rate limit por usuario — 15 sugerencias/hora
-  const rl = await checkUserRateLimit(user.id, "ai_suggest", RATE_LIMITS.ai_suggest.max, RATE_LIMITS.ai_suggest.windowSeconds);
+  const rl = await checkUserRateLimit(user.id, "ai_suggest", RATE_LIMITS.ai_suggest.max, RATE_LIMITS.ai_suggest.windowSeconds, true);
   if (!rl.ok) return NextResponse.json({ error: rl.error }, { status: 429 });
 
-  const { from, subject, body } = await request.json() as {
-    from: string; subject: string; body: string;
-  };
+  let parsedBody: { from?: unknown; subject?: unknown; body?: unknown };
+  try {
+    parsedBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
+  }
+  const { from, subject, body } = parsedBody as { from: string; subject: string; body: string };
 
   // ── Detección de emails no respondibles ────────────────────────────────────
   // Si es una notificación automática o no-reply, no gastar tokens de IA.

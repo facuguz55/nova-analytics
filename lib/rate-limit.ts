@@ -53,8 +53,17 @@ export async function checkUserRateLimit(
   userId: string,
   endpoint: string,
   max: number,
-  windowSeconds = 3600
+  windowSeconds = 3600,
+  // Endpoints con costo monetario directo (API de Anthropic) → fail-closed:
+  // si el backend de rate-limit no responde, NO dejamos pasar ilimitado, porque
+  // un atacante que sature la RPC desactivaría el límite y dispararía el costo.
+  failClosed = false
 ): Promise<{ ok: boolean; error?: string; remaining?: number }> {
+  const denyOnError = () =>
+    failClosed
+      ? { ok: false, error: "Servicio de límites no disponible. Probá en un momento." }
+      : { ok: true };
+
   try {
     const service = createServiceClient();
     const { data, error } = await service.rpc("check_rate_limit", {
@@ -65,9 +74,8 @@ export async function checkUserRateLimit(
     });
 
     if (error) {
-      // Si falla la DB, dejar pasar (no bloquear al usuario por error nuestro)
       console.error("Rate limit DB error:", error.message);
-      return { ok: true };
+      return denyOnError();
     }
 
     const result = data as RateLimitResult;
@@ -82,9 +90,8 @@ export async function checkUserRateLimit(
 
     return { ok: true, remaining: result.remaining };
   } catch (err) {
-    // Si algo explota, dejar pasar
     console.error("Rate limit error:", err);
-    return { ok: true };
+    return denyOnError();
   }
 }
 

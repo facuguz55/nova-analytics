@@ -39,6 +39,14 @@ function verifySignature(
 
   if (!ts || !hash) return false;
 
+  // Anti-replay: rechazar notificaciones con timestamp fuera de ±5 min. Sin esto,
+  // una notificación firmada válida capturada se puede reenviar indefinidamente.
+  // MP puede mandar el ts en segundos (10 dígitos) o milisegundos (13) → detectamos
+  // por magnitud para no rechazar webhooks válidos por asumir mal la unidad.
+  const tsNum = Number(ts);
+  const tsMs = Number.isFinite(tsNum) ? (tsNum > 1e12 ? tsNum : tsNum * 1000) : NaN;
+  if (!Number.isFinite(tsMs) || Math.abs(Date.now() - tsMs) > 5 * 60_000) return false;
+
   const message = `id:${dataId};request-id:${xRequestId};ts:${ts}`;
   const expected = createHmac("sha256", secret).update(message).digest("hex");
 
@@ -94,7 +102,7 @@ export async function POST(request: Request) {
   const dataId = url.searchParams.get("data.id");
 
   if (!verifySignature(xSignature, xRequestId, dataId)) {
-    console.warn("[webhook/mercadopago] firma inválida", { xSignature, xRequestId, dataId });
+    console.warn("[webhook/mercadopago] firma inválida", { xRequestId, dataId });
     return NextResponse.json({ error: "Firma inválida" }, { status: 401 });
   }
 

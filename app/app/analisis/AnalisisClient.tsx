@@ -324,10 +324,13 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
 
   // Carga progresiva
   const loadNextPage = useCallback(async (page: number) => {
-    if (loadingMore || fullyLoaded || !isConnected) return;
+    // fetchError en la guarda: sin esto, un 429 dejaba fullyLoaded=false y el
+    // efecto de abajo reintentaba en loop infinito martillando el endpoint.
+    if (loadingMore || fullyLoaded || fetchError || !isConnected) return;
     setLoadingMore(true);
     try {
-      const res = await fetch(`/api/tiendanube/orders?page=${page}&since=${since}`);
+      const untilParam = until ? `&until=${until}` : "";
+      const res = await fetch(`/api/tiendanube/orders?page=${page}&since=${since}${untilParam}`);
       if (!res.ok) { setFetchError(true); return; }
       const data = await res.json() as { orders: TNOrder[]; hasMore: boolean };
       setAllOrders((prev) => {
@@ -341,7 +344,7 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, fullyLoaded, isConnected, since]);
+  }, [loadingMore, fullyLoaded, fetchError, isConnected, since, until]);
 
   useEffect(() => {
     if (initialOrders.length === 100 && !fullyLoaded) loadNextPage(2);

@@ -36,7 +36,7 @@ async function buildBusinessSnapshot(): Promise<string> {
   const agencyFee = cfg?.agency_fee ?? 0;
 
   const [ordersRes, productsRes, customersRes] = await Promise.allSettled([
-    getOrdersForRange(connection.opts, { days: 90 }, 3),
+    getOrdersForRange(connection.opts, { days: 90 }),
     getAllProducts(connection.opts),
     getCustomers(connection.opts, 1, 200),
   ]);
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const rl = await checkUserRateLimit(user.id, "ia_chat", RATE_LIMITS.ia_chat.max, RATE_LIMITS.ia_chat.windowSeconds);
+  const rl = await checkUserRateLimit(user.id, "ia_chat", RATE_LIMITS.ia_chat.max, RATE_LIMITS.ia_chat.windowSeconds, true);
   if (!rl.ok) return NextResponse.json({ error: rl.error }, { status: 429 });
 
   let body: unknown;

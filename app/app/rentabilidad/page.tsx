@@ -30,7 +30,7 @@ export default async function RentabilidadPage() {
 
   if (connection) {
     const [ordersRes, productsRes] = await Promise.allSettled([
-      getOrdersForRange(connection.opts, { days: 90 }, 3),
+      getOrdersForRange(connection.opts, { days: 90 }),
       getAllProducts(connection.opts),
     ]);
     if (ordersRes.status === "fulfilled") rawOrders = ordersRes.value;

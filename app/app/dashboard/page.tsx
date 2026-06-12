@@ -36,8 +36,10 @@ async function getDashboardData() {
 
   if (connection) {
     const [ordersRes, customersRes] = await Promise.allSettled([
-      // 90 días para cubrir 3 meses completos en los tabs de meses
-      getOrdersForRange(connection.opts, { days: 90 }, 3),
+      // 120 días: los tabs muestran hasta "mes-3" (día 1 de hace 3 meses ≈ 120
+      // días atrás). Con 90 ese tab quedaba recortado. Sin tope de 3 páginas
+      // (antes topaba en 300 órdenes y subcontaba revenue silenciosamente).
+      getOrdersForRange(connection.opts, { days: 120 }),
       getCustomers(connection.opts, 1, 100),
     ]);
     if (ordersRes.status === "fulfilled") rawOrders = ordersRes.value;

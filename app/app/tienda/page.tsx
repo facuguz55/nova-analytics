@@ -47,7 +47,7 @@ export default async function TiendaPage({
 
   if (isConnected && connection) {
     const [ordersRes, productsRes, customersRes] = await Promise.allSettled([
-      getOrdersForRange(connection.opts, { days }, 3),
+      getOrdersForRange(connection.opts, { days }),
       getProducts(connection.opts, 1, 100),
       getCustomers(connection.opts, 1, 100),
     ]);

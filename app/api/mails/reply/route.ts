@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   // Rate limit por usuario — 30 respuestas/hora
-  const rl = await checkUserRateLimit(user.id, "mail_reply", RATE_LIMITS.mail_reply.max, RATE_LIMITS.mail_reply.windowSeconds);
+  const rl = await checkUserRateLimit(user.id, "mail_reply", RATE_LIMITS.mail_reply.max, RATE_LIMITS.mail_reply.windowSeconds, true);
   if (!rl.ok) return NextResponse.json({ error: rl.error }, { status: 429 });
 
   let rawBody: unknown;

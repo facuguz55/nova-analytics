@@ -80,7 +80,7 @@ export default async function OrdenesPage({
 
   if (connection) {
     const result = await Promise.allSettled([
-      getOrdersForRange(connection.opts, { since, until }, 3),
+      getOrdersForRange(connection.opts, { since, until }),
     ]);
     if (result[0].status === "fulfilled") allOrders = result[0].value;
     else error = "Error al conectar con TiendaNube";

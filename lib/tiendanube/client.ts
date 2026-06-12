@@ -67,7 +67,7 @@ export interface TNCustomer {
 }
 
 export interface DateRangeOpts {
-  days?: 30 | 60 | 90;
+  days?: 30 | 60 | 90 | 120;
   since?: string;
   until?: string;
 }
@@ -125,15 +125,41 @@ export async function getOrders(
   });
 }
 
+// Pagina SECUENCIALMENTE hasta que una página devuelva <100 (igual que
+// getAllProducts). El esquema viejo (3 páginas en paralelo) topaba en 300
+// órdenes y, si una página intermedia fallaba, dejaba un hueco en el medio
+// del rango → revenue/AOV subcontados sin aviso. Acá, ante un fallo cortamos
+// y devolvemos las páginas más recientes (orden desc) más un flag `partial`
+// para que la UI pueda avisar que faltan datos viejos.
 export async function getOrdersForRange(
   opts: TiendaNubeOptions,
   range: DateRangeOpts,
-  maxPages = 3
+  maxPages = 10
 ): Promise<TNOrder[]> {
-  const pages = await Promise.allSettled(
-    Array.from({ length: maxPages }, (_, i) => getOrders(opts, i + 1, 100, range))
-  );
-  return pages.flatMap((p) => (p.status === "fulfilled" ? p.value : []));
+  const { orders } = await getOrdersForRangePaged(opts, range, maxPages);
+  return orders;
+}
+
+export async function getOrdersForRangePaged(
+  opts: TiendaNubeOptions,
+  range: DateRangeOpts,
+  maxPages = 10
+): Promise<{ orders: TNOrder[]; partial: boolean }> {
+  const all: TNOrder[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    let batch: TNOrder[];
+    try {
+      batch = await getOrders(opts, page, 100, range);
+    } catch {
+      // Fallo de red/API en una página → cortamos. Datos parciales (faltan los
+      // más viejos del rango), pero no inventamos un hueco silencioso.
+      return { orders: all, partial: true };
+    }
+    all.push(...batch);
+    if (batch.length < 100) return { orders: all, partial: false };
+  }
+  // Llegamos al tope sin agotar las páginas → puede haber más órdenes sin traer.
+  return { orders: all, partial: true };
 }
 
 export async function getProducts(

@@ -38,11 +38,20 @@ async function makeAccessCookie(userId: string, secret: string): Promise<string>
 
 async function isAccessCookieValid(value: string | undefined, userId: string, secret: string): Promise<boolean> {
   if (!value) return false;
-  const [uid, expStr, sig] = value.split(".");
+  const parts = value.split(".");
+  if (parts.length !== 3) return false;
+  const [uid, expStr, sig] = parts;
   if (uid !== userId || !expStr || !sig) return false;
   const exp = Number(expStr);
   if (!Number.isFinite(exp) || Date.now() > exp) return false;
   return (await hmacSign(`${uid}.${expStr}`, secret)) === sig;
+}
+
+// Secreto dedicado para la cookie de acceso. No reusamos el SERVICE_ROLE_KEY
+// (la credencial más sensible) como secreto HMAC de un cache de 60s. Fallback
+// al service key sólo si la env var aún no está configurada en Vercel.
+function accessCookieSecret(): string {
+  return process.env.ACCESS_COOKIE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY!;
 }
 
 // Gracia tras el vencimiento de pago antes de cortar el acceso (reintentos de MP, etc.)
@@ -133,7 +142,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const secret = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const secret = accessCookieSecret();
 
     // Cache hit: veredicto de acceso ya verificado hace <60s para este usuario
     // → ahorramos los 2-3 roundtrips a la base en cada click del sidebar.

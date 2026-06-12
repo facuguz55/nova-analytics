@@ -120,6 +120,9 @@ export default async function AnalisisPage({
 
   return (
     <AnalisisClient
+      // key por rango: fuerza remount al cambiar de preset para no arrastrar
+      // el estado (allOrders/loadedPages/fullyLoaded) del rango anterior.
+      key={`${activePreset}-${since}-${until}`}
       initialOrders={initialOrders}
       since={since}
       until={until}
