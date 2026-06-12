@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
 import BottomNav from "@/components/layout/BottomNav";
@@ -14,7 +15,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   type UserRow = { name: string | null; email: string; avatar_url: string | null; role: string; workspaces: { id: string; name: string; plan: string; status: string; onboarding_completed: boolean } | null };

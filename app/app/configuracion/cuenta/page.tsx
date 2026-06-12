@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import CuentaClient from "./CuentaClient";
 
 export const metadata: Metadata = { title: "Mi Cuenta" };
 
 export default async function CuentaPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return null;
 
   type UserRow = { id: string; email: string; name: string | null; avatar_url: string | null; role: string; created_at: string; workspace_id: string | null; workspaces: { id: string; name: string; plan: string; status: string } | null };

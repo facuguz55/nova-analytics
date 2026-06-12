@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AnalisisClient from "./AnalisisClient";
 import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getOrders } from "@/lib/tiendanube/client";
 import type { TNOrder } from "@/lib/tiendanube/client";
@@ -67,7 +68,7 @@ export default async function AnalisisPage({
 
   // Obtener usd_rate del workspace
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   let usdRate = 1100;
   if (user) {
     const { data: rawUserRow } = await supabase

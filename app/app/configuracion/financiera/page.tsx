@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getProducts } from "@/lib/tiendanube/client";
 import FinancieraHub from "./FinancieraHub";
@@ -14,7 +15,7 @@ export default async function FinancieraPage({
   const { tab = "general" } = await searchParams;
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return null;
 
   const { data: rawRow } = await supabase

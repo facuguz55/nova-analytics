@@ -13,6 +13,38 @@ const LOCKED_API_ROUTES = [
 
 type SubRow = { status: string; trial_ends_at: string | null; next_billing_at: string | null };
 
+// ── Cookie de acceso firmada ──────────────────────────────────────────────────
+// El chequeo completo (users + workspaces + subscriptions) son 3 roundtrips a
+// Supabase POR CADA navegación del sidebar. Cacheamos el veredicto 60 segundos
+// en una cookie HMAC-firmada atada al user.id: las navegaciones repetidas solo
+// pagan el getUser() de auth. Suspensión/vencimiento se aplica con ≤60s de delay.
+const ACCESS_COOKIE = "na_access";
+const ACCESS_TTL_MS = 60_000;
+
+async function hmacSign(payload: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=+$/, "");
+}
+
+async function makeAccessCookie(userId: string, secret: string): Promise<string> {
+  const exp = Date.now() + ACCESS_TTL_MS;
+  const payload = `${userId}.${exp}`;
+  return `${payload}.${await hmacSign(payload, secret)}`;
+}
+
+async function isAccessCookieValid(value: string | undefined, userId: string, secret: string): Promise<boolean> {
+  if (!value) return false;
+  const [uid, expStr, sig] = value.split(".");
+  if (uid !== userId || !expStr || !sig) return false;
+  const exp = Number(expStr);
+  if (!Number.isFinite(exp) || Date.now() > exp) return false;
+  return (await hmacSign(`${uid}.${expStr}`, secret)) === sig;
+}
+
 // Gracia tras el vencimiento de pago antes de cortar el acceso (reintentos de MP, etc.)
 const BILLING_GRACE_MS = 3 * 86_400_000; // 3 días
 
@@ -101,16 +133,36 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
+    const secret = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+    // Cache hit: veredicto de acceso ya verificado hace <60s para este usuario
+    // → ahorramos los 2-3 roundtrips a la base en cada click del sidebar.
+    if (await isAccessCookieValid(request.cookies.get(ACCESS_COOKIE)?.value, user.id, secret)) {
+      return supabaseResponse;
+    }
+
+    // users + workspaces(status) en un solo roundtrip vía join
     const { data: userRow } = await service
       .from("users")
-      .select("workspace_id, role")
+      .select("workspace_id, role, workspaces(status)")
       .eq("id", user.id)
       .single();
 
-    type URow = { workspace_id: string; role: string };
+    type URow = { workspace_id: string; role: string; workspaces: { status: string } | null };
     const ur = userRow as unknown as URow | null;
 
-    if (ur?.role === "super_admin") return supabaseResponse;
+    async function grantAccess() {
+      supabaseResponse.cookies.set(ACCESS_COOKIE, await makeAccessCookie(user!.id, secret), {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: Math.floor(ACCESS_TTL_MS / 1000),
+        path: "/",
+      });
+      return supabaseResponse;
+    }
+
+    if (ur?.role === "super_admin") return grantAccess();
 
     const workspaceId = ur?.workspace_id;
 
@@ -127,14 +179,8 @@ export async function middleware(request: NextRequest) {
 
     if (!workspaceId) return billingDenied();
 
-    // Verificar suspensión
-    const { data: wsData } = await service
-      .from("workspaces")
-      .select("status")
-      .eq("id", workspaceId)
-      .single();
-
-    if ((wsData as { status: string } | null)?.status === "suspended") {
+    // Verificar suspensión (status ya vino en el join de arriba)
+    if (ur?.workspaces?.status === "suspended") {
       if (isServerAction) return NextResponse.json({ error: "account_suspended" }, { status: 403 });
       return NextResponse.redirect(new URL("/suspended", request.nextUrl.origin));
     }
@@ -148,7 +194,7 @@ export async function middleware(request: NextRequest) {
 
     if (!hasActiveAccess(sub as SubRow | null)) return billingDenied();
 
-    return supabaseResponse;
+    return grantAccess();
   }
 
   // ── API routes protegidas ───────────────────────────────────────────────────

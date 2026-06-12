@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import ConfiguracionClient from "./ConfiguracionClient";
 
 export const metadata: Metadata = { title: "Configuración" };
 
 export default async function ConfiguracionPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return null;
 
   type UserRow = { name: string | null; email: string; avatar_url: string | null; role: string; workspaces: { name: string; plan: string } | null };

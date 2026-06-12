@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getOrdersForRange, getCustomers, type TNOrder } from "@/lib/tiendanube/client";
 import DashboardClient from "./DashboardClient";
@@ -8,7 +9,7 @@ export const metadata: Metadata = { title: "Dashboard" };
 
 async function getDashboardData() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return null;
 
   type UserRow = { name: string | null; workspace_id: string | null; role: string };

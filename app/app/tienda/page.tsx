@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import {
   getOrdersForRange,
@@ -26,7 +27,7 @@ export default async function TiendaPage({
 
   // Obtener usd_rate del workspace para conversiones
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   let usdRate = 1100;
   if (user) {
     const { data: rawUserRow } = await supabase

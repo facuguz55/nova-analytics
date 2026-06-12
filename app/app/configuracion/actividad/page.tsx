@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import { Activity, Shield, LogIn, LogOut, Settings, Plug, Trash2, UserCog, CreditCard, Zap } from "lucide-react";
 
 export const metadata: Metadata = { title: "Actividad de cuenta" };
@@ -21,7 +22,7 @@ function getActionMeta(action: string) {
 
 export default async function ActividadPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return null;
 
   const { data: userRow } = await supabase

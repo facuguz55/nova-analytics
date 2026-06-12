@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/cached-queries";
 import CostosAdicionalesClient, { type AdditionalCost } from "./CostosAdicionalesClient";
 export type { AdditionalCost };
 
@@ -7,7 +8,7 @@ export const metadata: Metadata = { title: "Costos Adicionales" };
 
 export default async function CostosAdicionalesPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return null;
 
   const { data: rawRow } = await supabase
