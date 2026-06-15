@@ -1,20 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { encrypt } from "@/lib/encryption";
+import { timingSafeEqual } from "crypto";
 
 const BASE_URL = process.env.NEXTAUTH_URL!;
 const APP_ID = process.env.META_APP_ID!;
 const APP_SECRET = process.env.META_APP_SECRET!;
 const REDIRECT_URI = `${BASE_URL}/api/auth/meta/callback`;
 
+function safeCompare(a: string, b: string): boolean {
+  try {
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) return false;
+    return timingSafeEqual(bufA, bufB);
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
-  const userId = searchParams.get("state");
+  const stateFromUrl = searchParams.get("state");
   const error = searchParams.get("error");
 
-  if (error || !code || !userId) {
+  if (error || !code || !stateFromUrl) {
     return NextResponse.redirect(`${BASE_URL}/app/configuracion/integraciones?error=meta_denied`);
+  }
+
+  // Verificar state contra cookie para prevenir CSRF
+  const stateFromCookie = req.cookies.get("meta_oauth_state")?.value;
+  if (!stateFromCookie || !safeCompare(stateFromUrl, stateFromCookie)) {
+    return NextResponse.redirect(`${BASE_URL}/app/configuracion/integraciones?error=token_failed`);
+  }
+
+  // Obtener usuario autenticado desde la sesión — nunca desde la URL
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.redirect(`${BASE_URL}/login`);
   }
 
   try {
@@ -54,12 +80,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(`${BASE_URL}/app/configuracion/integraciones?error=no_ad_accounts`);
     }
 
-    // 4. Obtener workspace_id del usuario
+    // 4. Obtener workspace_id del usuario autenticado
     const service = createServiceClient();
     const { data: userRow } = await (service as any)
       .from("users")
       .select("workspace_id")
-      .eq("id", userId)
+      .eq("id", user.id)
       .single();
 
     if (!userRow?.workspace_id) {
@@ -92,17 +118,19 @@ export async function GET(req: NextRequest) {
 
     await (service as any).from("audit_logs").insert({
       workspace_id: userRow.workspace_id,
-      user_id: userId,
+      user_id: user.id,
       action: "integration_connected",
       metadata: { provider: "meta", account_id: adAccountId, account_name: primaryAccount.name },
     });
 
-    // Si tiene más de una cuenta, redirigir al selector
-    if (activeAccounts.length > 1) {
-      return NextResponse.redirect(`${BASE_URL}/app/configuracion/integraciones?success=meta&multi=true`);
-    }
+    const redirectUrl = activeAccounts.length > 1
+      ? `${BASE_URL}/app/configuracion/integraciones?success=meta&multi=true`
+      : `${BASE_URL}/app/configuracion/integraciones?success=meta`;
 
-    return NextResponse.redirect(`${BASE_URL}/app/configuracion/integraciones?success=meta`);
+    const res = NextResponse.redirect(redirectUrl);
+    // Limpiar cookie de state
+    res.cookies.set("meta_oauth_state", "", { maxAge: 0, path: "/" });
+    return res;
   } catch (err) {
     console.error("[meta callback] unexpected error:", err);
     return NextResponse.redirect(`${BASE_URL}/app/configuracion/integraciones?error=token_failed`);
