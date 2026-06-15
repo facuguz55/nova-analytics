@@ -135,6 +135,18 @@ function IntegrationCard({
                 <span className="text-[#F1F5F9]">{integration.metadata.email}</span>
               </div>
             )}
+            {integration.metadata?.account_name && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#94A3B8]">Cuenta</span>
+                <span className="text-[#F1F5F9] font-semibold">{integration.metadata.account_name}</span>
+              </div>
+            )}
+            {integration.metadata?.currency && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#94A3B8]">Moneda</span>
+                <span className="text-[#F1F5F9]">{integration.metadata.currency}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between text-xs">
               <span className="text-[#94A3B8]">Conectado desde</span>
               <span className="text-[#22c55e]">
@@ -434,17 +446,18 @@ function URLParamHandler() {
 
     if (success === "tiendanube") toast.success("TiendaNube conectado correctamente");
     else if (success === "gmail") toast.success("Gmail conectado correctamente");
+    else if (success === "meta") toast.success("Meta Ads conectado correctamente");
     else if (error === "token_failed") toast.error("Error al obtener el token. Intentá conectar de nuevo.");
     else if (error === "no_code") toast.error("No se recibió el código de autorización. Intentá de nuevo.");
     else if (error === "no_workspace") toast.error("No se encontró tu workspace. Contactá soporte.");
+    else if (error === "meta_denied") toast.error("Cancelaste la conexión con Meta.");
+    else if (error === "no_ad_accounts") toast.error("No se encontraron cuentas publicitarias activas en tu Meta.");
   }, [params]);
 
   return null;
 }
 
 export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) {
-  const [showMetaModal, setShowMetaModal] = useState(false);
-
   const cards = [
     {
       icon: Store,
@@ -477,10 +490,10 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
       color: "#1877F2",
       bgColor: "rgba(24,119,242,0.12)",
       integration: meta,
-      connectHref: "#",
+      connectHref: "/api/auth/meta",
       onDisconnect: () => disconnectIntegration("meta"),
       comingSoon: false,
-      onManualConnect: () => setShowMetaModal(true),
+      onManualConnect: undefined,
     },
   ];
 
@@ -489,12 +502,6 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
   return (
     <Suspense>
       <URLParamHandler />
-      {showMetaModal && (
-        <MetaConnectModal
-          onClose={() => setShowMetaModal(false)}
-          onSuccess={() => window.location.reload()}
-        />
-      )}
       <div className="p-4 sm:p-6 space-y-8">
 
         {/* Header */}
