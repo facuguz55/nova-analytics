@@ -65,7 +65,7 @@ export default function CampanasPage() {
               Recuperá carritos abandonados, enviá campañas segmentadas y automatizá emails con tus clientes de TiendaNube — integrado directamente con Nova Recover.
             </p>
             <div className="mt-auto pt-2">
-              <a href="https://novaagency.info" target="_blank" rel="noopener noreferrer"
+              <a href="https://app.novaagency.info" target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all hover:opacity-80"
                 style={{ background: "rgba(234,67,53,0.08)", color: "#EA4335", border: "1px solid rgba(234,67,53,0.2)" }}>
                 <ExternalLink size={14} strokeWidth={2.5} /> Conocer Nova Recover
