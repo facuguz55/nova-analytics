@@ -152,6 +152,56 @@ export async function disconnectIntegration(provider: string) {
   revalidatePath("/app/configuracion/integraciones");
 }
 
+const MetaTokenSchema = z.object({
+  token: z.string().min(10).max(500),
+  adAccountId: z.string().min(5).max(50),
+  accountName: z.string().max(200).optional(),
+});
+
+export async function saveMetaToken(input: { token: string; adAccountId: string; accountName?: string }) {
+  const parsed = MetaTokenSchema.safeParse(input);
+  if (!parsed.success) throw new Error("Datos inválidos");
+
+  const { token, adAccountId, accountName } = parsed.data;
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data: userRow } = await supabase
+    .from("users")
+    .select("workspace_id")
+    .eq("id", user.id)
+    .single();
+  if (!userRow) throw new Error("Sin workspace");
+
+  const { encrypt } = await import("@/lib/encryption");
+  const encrypted = encrypt(token);
+  const cleanAccountId = adAccountId.replace(/^act_/, "");
+
+  await (supabase as any).from("integrations")
+    .upsert({
+      workspace_id: (userRow as any).workspace_id,
+      provider: "meta",
+      access_token_encrypted: encrypted,
+      store_id: cleanAccountId,
+      status: "active",
+      metadata: { account_name: accountName ?? "", token_type: "system_user" },
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "workspace_id,provider" });
+
+  const service = createServiceClient();
+  await (service as any).from("audit_logs").insert({
+    workspace_id: (userRow as any).workspace_id,
+    user_id: user.id,
+    action: "integration_connected",
+    metadata: { provider: "meta", account_id: cleanAccountId },
+  });
+
+  revalidatePath("/app/configuracion/integraciones");
+  revalidatePath("/app/meta-ads");
+}
+
 export async function startTrial() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

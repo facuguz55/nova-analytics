@@ -1,97 +1,234 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Target, ExternalLink, BarChart2, SlidersHorizontal, X, Check } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import {
+  Target, SlidersHorizontal, X, Check, RefreshCw, TrendingUp,
+  TrendingDown, Minus, AlertCircle, ExternalLink, Loader2,
+} from "lucide-react";
 
 // ── Definición de métricas ──────────────────────────────────────────────
 const METRIC_GROUPS = [
   {
     title: "Métricas Básicas",
     metrics: [
-      { key: "spend_meta",   label: "Spend",       source: "meta" },
-      { key: "spend_calc",   label: "Spend",       source: "calc" },
-      { key: "impressions",  label: "Impressions", source: "meta" },
-      { key: "reach",        label: "Reach",       source: "meta" },
-      { key: "frequency",    label: "Frequency",   source: "meta" },
-      { key: "cpm_meta",     label: "CPM",         source: "meta" },
-      { key: "cpm_calc",     label: "CPM",         source: "calc" },
-      { key: "ctr_meta",     label: "CTR",         source: "meta" },
-      { key: "cpc_meta",     label: "CPC",         source: "meta" },
+      { key: "spend",        label: "Spend",        source: "meta" },
+      { key: "impressions",  label: "Impressions",  source: "meta" },
+      { key: "reach",        label: "Reach",        source: "meta" },
+      { key: "frequency",    label: "Frequency",    source: "meta" },
+      { key: "cpm",          label: "CPM",          source: "meta" },
+      { key: "ctr",          label: "CTR",          source: "meta" },
+      { key: "cpc",          label: "CPC",          source: "meta" },
     ],
   },
   {
     title: "Métricas de Click",
     metrics: [
-      { key: "link_clicks",        label: "Link Clicks",            source: "meta" },
-      { key: "clicks",             label: "Clicks",                 source: "meta" },
-      { key: "cost_link_click_m",  label: "Cost per Link Click",    source: "meta" },
-      { key: "cost_link_click_c",  label: "Cost per Link Click",    source: "calc" },
-      { key: "cost_unique_lc",     label: "Cost per Unique Link Click", source: "meta" },
-      { key: "cost_unique_lc_c",   label: "Cost per Unique Link Click", source: "calc" },
-      { key: "unique_link_clicks", label: "Unique Link Clicks",     source: "meta" },
-      { key: "unique_ctr",         label: "Unique CTR",             source: "meta" },
+      { key: "link_clicks",         label: "Link Clicks",              source: "meta" },
+      { key: "clicks",              label: "Clicks totales",           source: "meta" },
+      { key: "unique_link_clicks",  label: "Unique Link Clicks",       source: "meta" },
+      { key: "unique_ctr",          label: "Unique CTR",               source: "meta" },
     ],
   },
   {
     title: "Métricas de Video",
     metrics: [
-      { key: "video_plays",       label: "Video Plays",           source: "meta" },
-      { key: "avg_play_time",     label: "Avg Play Time",         source: "meta" },
-      { key: "thruplays",         label: "Thruplays",             source: "meta" },
-      { key: "scroll_stopper",    label: "Scroll Stopper Rate",   source: "meta" },
-      { key: "hold_rate",         label: "Hold Rate",             source: "meta" },
-      { key: "video_plays_100",   label: "Video Plays at 100%",   source: "meta" },
-      { key: "video_plays_95",    label: "Video Plays at 95%",    source: "meta" },
-      { key: "video_plays_75",    label: "Video Plays at 75%",    source: "meta" },
-      { key: "video_plays_50",    label: "Video Plays at 50%",    source: "meta" },
+      { key: "video_plays",      label: "Video Plays",        source: "meta" },
+      { key: "thruplays",        label: "Thruplays",          source: "meta" },
+      { key: "video_plays_50",   label: "Video Plays 50%",    source: "meta" },
+      { key: "video_plays_75",   label: "Video Plays 75%",    source: "meta" },
+      { key: "video_plays_95",   label: "Video Plays 95%",    source: "meta" },
+      { key: "video_plays_100",  label: "Video Plays 100%",   source: "meta" },
     ],
   },
   {
     title: "Métricas de Conversión",
     metrics: [
-      { key: "cost_purchase_m",   label: "Cost per Purchase",    source: "meta" },
-      { key: "cost_purchase_c",   label: "Cost per Purchase",    source: "calc" },
-      { key: "roas_meta",         label: "ROAS",                 source: "meta" },
-      { key: "true_roas",         label: "True ROAS",            source: "calc" },
-      { key: "net_aov",           label: "Net AOV",              source: "calc" },
-      { key: "adds_to_cart",      label: "Adds to Cart",         source: "meta" },
-      { key: "cost_add_cart_c",   label: "Cost per Add to Cart", source: "calc" },
-      { key: "cost_add_cart_m",   label: "Cost per Add to Cart", source: "meta" },
-      { key: "checkouts",         label: "Checkouts Initiated",  source: "meta" },
+      { key: "purchases",       label: "Compras",              source: "meta" },
+      { key: "cost_purchase",   label: "Costo por compra",     source: "meta" },
+      { key: "roas",            label: "ROAS",                 source: "meta" },
+      { key: "adds_to_cart",    label: "Adds to Cart",         source: "meta" },
+      { key: "checkouts",       label: "Checkouts iniciados",  source: "meta" },
+      { key: "purchase_value",  label: "Valor de compras",     source: "meta" },
     ],
   },
 ];
 
-// Métricas activas por defecto
-const DEFAULT_METRICS = ["spend_meta", "impressions", "cpm_calc", "ctr_meta", "clicks", "cost_link_click_c", "cost_purchase_c", "true_roas", "net_aov"];
+const DEFAULT_METRICS = ["spend", "impressions", "cpm", "ctr", "clicks", "purchases", "cost_purchase", "roas"];
+
+const DATE_PRESETS = [
+  { value: "today",      label: "Hoy" },
+  { value: "yesterday",  label: "Ayer" },
+  { value: "last_7d",    label: "7 días" },
+  { value: "last_14d",   label: "14 días" },
+  { value: "last_30d",   label: "30 días" },
+  { value: "last_90d",   label: "90 días" },
+  { value: "this_month", label: "Este mes" },
+  { value: "last_month", label: "Mes anterior" },
+];
+
+interface Campaign {
+  campaign_name: string;
+  spend: string;
+  impressions: string;
+  reach?: string;
+  frequency?: string;
+  clicks: string;
+  ctr: string;
+  cpc?: string;
+  cpm?: string;
+  actions?: { action_type: string; value: string }[];
+  action_values?: { action_type: string; value: string }[];
+  cost_per_action_type?: { action_type: string; value: string }[];
+  video_play_actions?: { action_type: string; value: string }[];
+  video_p50_watched_actions?: { action_type: string; value: string }[];
+  video_p75_watched_actions?: { action_type: string; value: string }[];
+  video_p95_watched_actions?: { action_type: string; value: string }[];
+  video_p100_watched_actions?: { action_type: string; value: string }[];
+  website_ctr?: { action_type: string; value: string }[];
+  unique_link_clicks_ctr?: { action_type: string; value: string }[];
+  outbound_clicks?: { action_type: string; value: string }[];
+}
+
+function getActionValue(actions: { action_type: string; value: string }[] | undefined, type: string): number {
+  return parseFloat(actions?.find((a) => a.action_type === type)?.value ?? "0") || 0;
+}
+
+function extractMetric(c: Campaign, key: string): number {
+  switch (key) {
+    case "spend":        return parseFloat(c.spend) || 0;
+    case "impressions":  return parseInt(c.impressions) || 0;
+    case "reach":        return parseInt(c.reach ?? "0") || 0;
+    case "frequency":    return parseFloat(c.frequency ?? "0") || 0;
+    case "clicks":       return parseInt(c.clicks) || 0;
+    case "ctr":          return parseFloat(c.ctr) || 0;
+    case "cpc":          return parseFloat(c.cpc ?? "0") || 0;
+    case "cpm":          return parseFloat(c.cpm ?? "0") || 0;
+    case "link_clicks":      return getActionValue(c.actions, "link_click");
+    case "unique_link_clicks": return getActionValue(c.outbound_clicks, "outbound_click");
+    case "unique_ctr":   return getActionValue(c.unique_link_clicks_ctr, "outbound_click");
+    case "video_plays":  return getActionValue(c.video_play_actions, "video_view");
+    case "thruplays":    return getActionValue(c.actions, "video_thruplay_watched");
+    case "video_plays_50":  return getActionValue(c.video_p50_watched_actions, "video_view");
+    case "video_plays_75":  return getActionValue(c.video_p75_watched_actions, "video_view");
+    case "video_plays_95":  return getActionValue(c.video_p95_watched_actions, "video_view");
+    case "video_plays_100": return getActionValue(c.video_p100_watched_actions, "video_view");
+    case "purchases":     return getActionValue(c.actions, "purchase");
+    case "purchase_value": return getActionValue(c.action_values, "purchase");
+    case "adds_to_cart":  return getActionValue(c.actions, "add_to_cart");
+    case "checkouts":     return getActionValue(c.actions, "initiate_checkout");
+    case "cost_purchase": {
+      const purchases = getActionValue(c.actions, "purchase");
+      const spend = parseFloat(c.spend) || 0;
+      return purchases > 0 ? spend / purchases : 0;
+    }
+    case "roas": {
+      const value = getActionValue(c.action_values, "purchase");
+      const spend = parseFloat(c.spend) || 0;
+      return spend > 0 ? value / spend : 0;
+    }
+    default: return 0;
+  }
+}
+
+function formatMetric(key: string, value: number): string {
+  if (value === 0) return "—";
+  switch (key) {
+    case "spend":
+    case "cpc":
+    case "cpm":
+    case "cost_purchase":
+    case "purchase_value":
+      return `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    case "ctr":
+    case "unique_ctr":
+    case "frequency":
+      return `${value.toFixed(2)}%`;
+    case "roas":
+      return `${value.toFixed(2)}x`;
+    case "impressions":
+    case "reach":
+    case "clicks":
+    case "link_clicks":
+    case "unique_link_clicks":
+    case "video_plays":
+    case "thruplays":
+    case "video_plays_50":
+    case "video_plays_75":
+    case "video_plays_95":
+    case "video_plays_100":
+    case "purchases":
+    case "adds_to_cart":
+    case "checkouts":
+      return value.toLocaleString("es-AR");
+    default:
+      return value.toFixed(2);
+  }
+}
 
 function SourceBadge({ source }: { source: string }) {
   return (
     <span
       className="text-[9px] font-bold rounded px-1"
       style={{
-        background: source === "meta" ? "rgba(24,119,242,0.15)" : "rgba(192,132,252,0.12)",
-        color:      source === "meta" ? "#1877F2" : "#c084fc",
-        border:     `1px solid ${source === "meta" ? "rgba(24,119,242,0.25)" : "rgba(192,132,252,0.2)"}`,
+        background: "rgba(24,119,242,0.15)",
+        color: "#1877F2",
+        border: "1px solid rgba(24,119,242,0.25)",
       }}
     >
-      {source === "meta" ? "∞" : "≡"}
+      ∞
     </span>
   );
 }
 
-export default function MetaAdsClient() {
+function KPICard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-2xl p-5 flex flex-col gap-2"
+      style={{ background: "#111118", border: "1px solid rgba(24,119,242,0.2)" }}>
+      <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wider">{label}</p>
+      <p className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.03em" }}>{value}</p>
+      {sub && <p className="text-xs text-[#64748B]">{sub}</p>}
+    </div>
+  );
+}
+
+export default function MetaAdsClient({ connected }: { connected: boolean }) {
   const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set(DEFAULT_METRICS));
+  const [datePreset, setDatePreset] = useState("last_30d");
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [accountName, setAccountName] = useState("");
 
-  // Persistir en localStorage
   useEffect(() => {
     const saved = localStorage.getItem("nova-meta-metrics");
     if (saved) {
       try { setSelected(new Set(JSON.parse(saved))); } catch { /* ignore */ }
     }
   }, []);
+
+  const fetchData = useCallback(async () => {
+    if (!connected) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/meta/insights?date_preset=${datePreset}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Error al cargar datos de Meta");
+      } else {
+        setCampaigns(data.campaigns ?? []);
+        if (data.account?.name) setAccountName(data.account.name);
+      }
+    } catch {
+      setError("Error de conexión");
+    } finally {
+      setLoading(false);
+    }
+  }, [connected, datePreset]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   function toggleMetric(key: string) {
     setSelected((prev) => {
@@ -107,54 +244,163 @@ export default function MetaAdsClient() {
     setShowModal(false);
   }
 
-  return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
-      {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-3">
+  const selectedMetrics = METRIC_GROUPS.flatMap((g) => g.metrics).filter((m) => selected.has(m.key));
+
+  // Totales
+  const totalSpend = campaigns.reduce((s, c) => s + (parseFloat(c.spend) || 0), 0);
+  const totalImpressions = campaigns.reduce((s, c) => s + (parseInt(c.impressions) || 0), 0);
+  const totalPurchases = campaigns.reduce((s, c) => s + getActionValue(c.actions, "purchase"), 0);
+  const totalPurchaseValue = campaigns.reduce((s, c) => s + getActionValue(c.action_values, "purchase"), 0);
+  const globalROAS = totalSpend > 0 ? totalPurchaseValue / totalSpend : 0;
+  const globalCPA = totalPurchases > 0 ? totalSpend / totalPurchases : 0;
+
+  if (!connected) {
+    return (
+      <div className="p-4 sm:p-6 space-y-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Meta Ads</h1>
           <p className="text-sm text-[#94A3B8] mt-0.5">Métricas de campañas Facebook e Instagram</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:opacity-80"
-          style={{ background: "rgba(24,119,242,0.1)", color: "#1877F2", border: "1px solid rgba(24,119,242,0.25)" }}
-        >
-          <SlidersHorizontal size={14} strokeWidth={2.5} />
-          Métricas ({selected.size})
-        </button>
-      </div>
-
-      {/* Coming soon */}
-      <div className="rounded-2xl p-10 flex flex-col items-center gap-5 text-center"
-        style={{ background: "#111118", border: "1px solid rgba(24,119,242,0.25)" }}>
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
-          style={{ background: "rgba(24,119,242,0.12)" }}>
-          <Target size={28} color="#1877F2" strokeWidth={1.5} />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-[#F1F5F9]">Meta Ads — Próximamente</h2>
-          <p className="text-sm text-[#94A3B8] mt-2 max-w-md">
-            La integración con Meta Business API está en desarrollo. Podrás ver ROAS, CPA,
-            inversión vs. ventas y el rendimiento de cada campaña directamente aquí.
-          </p>
-          <p className="text-xs text-[#64748B] mt-3">
-            Ya podés configurar qué métricas querés ver pulsando el botón <strong className="text-[#94A3B8]">Métricas</strong> arriba.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap justify-center">
+        <div className="rounded-2xl p-10 flex flex-col items-center gap-5 text-center"
+          style={{ background: "#111118", border: "1px solid rgba(24,119,242,0.25)" }}>
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+            style={{ background: "rgba(24,119,242,0.12)" }}>
+            <Target size={28} color="#1877F2" strokeWidth={1.5} />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-[#F1F5F9]">Meta Ads no conectado</h2>
+            <p className="text-sm text-[#94A3B8] mt-2 max-w-md">
+              Conectá tu cuenta de Meta Ads para ver ROAS, CPA, inversión y el rendimiento de cada campaña.
+            </p>
+          </div>
           <Link href="/app/configuracion/integraciones"
             className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all hover:opacity-80"
             style={{ background: "rgba(24,119,242,0.15)", color: "#1877F2", border: "1px solid rgba(24,119,242,0.3)" }}>
-            <BarChart2 size={14} strokeWidth={2.5} /> Ver integraciones
+            <ExternalLink size={14} strokeWidth={2.5} /> Conectar en Integraciones
           </Link>
-          <a href="https://business.facebook.com" target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-80"
-            style={{ background: "rgba(100,116,139,0.1)", color: "#94A3B8", border: "1px solid rgba(100,116,139,0.2)" }}>
-            <ExternalLink size={14} strokeWidth={2.5} /> Abrir Meta Business
-          </a>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="p-4 sm:p-6 space-y-5">
+      {/* Header */}
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Meta Ads</h1>
+          <p className="text-sm text-[#94A3B8] mt-0.5">
+            {accountName ? accountName : "Métricas de campañas Facebook e Instagram"}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Date preset */}
+          <select
+            value={datePreset}
+            onChange={(e) => setDatePreset(e.target.value)}
+            className="rounded-xl px-3 py-2 text-sm font-semibold outline-none transition-all"
+            style={{ background: "#111118", color: "#F1F5F9", border: "1px solid rgba(24,119,242,0.25)" }}
+          >
+            {DATE_PRESETS.map((d) => (
+              <option key={d.value} value={d.value}>{d.label}</option>
+            ))}
+          </select>
+
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-all hover:opacity-80 disabled:opacity-40"
+            style={{ background: "rgba(24,119,242,0.1)", color: "#1877F2", border: "1px solid rgba(24,119,242,0.25)" }}
+          >
+            {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} strokeWidth={2.5} />}
+          </button>
+
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:opacity-80"
+            style={{ background: "rgba(24,119,242,0.1)", color: "#1877F2", border: "1px solid rgba(24,119,242,0.25)" }}
+          >
+            <SlidersHorizontal size={14} strokeWidth={2.5} />
+            Métricas ({selected.size})
+          </button>
+        </div>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-xl px-4 py-3 text-sm text-[#ef4444] flex items-center gap-2"
+          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+          <AlertCircle size={15} strokeWidth={2} /> {error}
+        </div>
+      )}
+
+      {/* KPIs globales */}
+      {!loading && campaigns.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <KPICard label="Inversión total" value={`$${totalSpend.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} />
+          <KPICard label="Impresiones" value={totalImpressions.toLocaleString("es-AR")} />
+          <KPICard label="ROAS" value={globalROAS > 0 ? `${globalROAS.toFixed(2)}x` : "—"} />
+          <KPICard label="Costo por compra" value={globalCPA > 0 ? `$${globalCPA.toFixed(0)}` : "—"} sub={`${totalPurchases} compras`} />
+        </div>
+      )}
+
+      {/* Tabla de campañas */}
+      {loading ? (
+        <div className="rounded-2xl p-12 flex flex-col items-center gap-3"
+          style={{ background: "#111118", border: "1px solid rgba(24,119,242,0.2)" }}>
+          <Loader2 size={28} color="#1877F2" className="animate-spin" />
+          <p className="text-sm text-[#64748B]">Cargando campañas...</p>
+        </div>
+      ) : campaigns.length === 0 && !error ? (
+        <div className="rounded-2xl p-10 flex flex-col items-center gap-3 text-center"
+          style={{ background: "#111118", border: "1px solid rgba(24,119,242,0.2)" }}>
+          <Target size={28} color="#1877F2" strokeWidth={1.5} />
+          <p className="text-sm text-[#94A3B8]">No hay campañas con datos para el período seleccionado.</p>
+        </div>
+      ) : campaigns.length > 0 ? (
+        <div className="rounded-2xl overflow-hidden"
+          style={{ background: "#111118", border: "1px solid rgba(24,119,242,0.2)" }}>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: "1px solid rgba(24,119,242,0.12)", background: "rgba(24,119,242,0.04)" }}>
+                  <th className="text-left px-4 py-3 text-xs font-bold text-[#64748B] uppercase tracking-wider whitespace-nowrap">
+                    Campaña
+                  </th>
+                  {selectedMetrics.map((m) => (
+                    <th key={m.key} className="text-right px-4 py-3 text-xs font-bold text-[#64748B] uppercase tracking-wider whitespace-nowrap">
+                      {m.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {campaigns.map((c, i) => (
+                  <tr
+                    key={i}
+                    style={{
+                      borderBottom: i < campaigns.length - 1 ? "1px solid rgba(24,119,242,0.08)" : "none",
+                    }}
+                    className="hover:bg-[rgba(24,119,242,0.03)] transition-colors"
+                  >
+                    <td className="px-4 py-3 text-[#F1F5F9] font-medium max-w-[240px] truncate">
+                      {c.campaign_name}
+                    </td>
+                    {selectedMetrics.map((m) => {
+                      const val = extractMetric(c, m.key);
+                      return (
+                        <td key={m.key} className="px-4 py-3 text-right text-[#94A3B8] font-mono text-xs whitespace-nowrap">
+                          {formatMetric(m.key, val)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : null}
 
       {/* Modal de métricas */}
       {showModal && (
@@ -164,7 +410,6 @@ export default function MetaAdsClient() {
           <div className="rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col"
             style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)" }}>
 
-            {/* Header del modal */}
             <div className="flex items-center justify-between px-6 py-4 flex-shrink-0"
               style={{ borderBottom: "1px solid rgba(139,92,246,0.12)" }}>
               <div>
@@ -176,20 +421,6 @@ export default function MetaAdsClient() {
               </button>
             </div>
 
-            {/* Leyenda */}
-            <div className="flex items-center gap-4 px-6 py-2.5 flex-shrink-0"
-              style={{ borderBottom: "1px solid rgba(139,92,246,0.08)", background: "rgba(139,92,246,0.03)" }}>
-              <div className="flex items-center gap-1.5">
-                <SourceBadge source="meta" />
-                <span className="text-xs text-[#64748B]">Dato directo de Meta</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <SourceBadge source="calc" />
-                <span className="text-xs text-[#64748B]">Calculado por Nova</span>
-              </div>
-            </div>
-
-            {/* Grupos de métricas */}
             <div className="overflow-y-auto flex-1 p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {METRIC_GROUPS.map((group) => (
@@ -208,7 +439,6 @@ export default function MetaAdsClient() {
                               border: `1px solid ${isSelected ? "rgba(139,92,246,0.2)" : "transparent"}`,
                             }}
                           >
-                            {/* Checkbox */}
                             <div
                               className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
                               style={{
@@ -229,7 +459,6 @@ export default function MetaAdsClient() {
               </div>
             </div>
 
-            {/* Footer */}
             <div className="flex items-center justify-between px-6 py-4 flex-shrink-0 gap-3"
               style={{ borderTop: "1px solid rgba(139,92,246,0.12)" }}>
               <button

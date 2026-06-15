@@ -6,8 +6,9 @@ import { Suspense } from "react";
 import {
   Store, Mail, Target, CheckCircle2, AlertCircle,
   Link2Off, RefreshCw, ExternalLink, Shield, Lock, Eye, Server, Zap,
+  X, Loader2, Key,
 } from "lucide-react";
-import { disconnectIntegration } from "@/app/app/actions";
+import { disconnectIntegration, saveMetaToken } from "@/app/app/actions";
 import { toast } from "sonner";
 
 interface IntegrationRow {
@@ -34,6 +35,7 @@ function IntegrationCard({
   connectHref,
   onDisconnect,
   comingSoon,
+  onManualConnect,
 }: {
   icon: React.ElementType;
   name: string;
@@ -44,6 +46,7 @@ function IntegrationCard({
   connectHref: string;
   onDisconnect: () => Promise<void>;
   comingSoon?: boolean;
+  onManualConnect?: () => void;
 }) {
   const [disconnecting, setDisconnecting] = useState(false);
   const isConnected = integration?.status === "active";
@@ -153,6 +156,16 @@ function IntegrationCard({
             {isConnected ? (
               <div className="flex flex-col gap-2 w-full">
                 <div className="flex gap-2">
+                  {onManualConnect ? (
+                    <button
+                      onClick={onManualConnect}
+                      className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all hover:opacity-80"
+                      style={{ background: "rgba(24,119,242,0.1)", color: "#1877F2", border: "1px solid rgba(24,119,242,0.25)" }}
+                    >
+                      <RefreshCw size={13} strokeWidth={2.5} />
+                      Reconectar
+                    </button>
+                  ) : (
                   <a
                     href={connectHref}
                     className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all hover:opacity-80"
@@ -161,6 +174,7 @@ function IntegrationCard({
                     <RefreshCw size={13} strokeWidth={2.5} />
                     Reconectar
                   </a>
+                  )}
                   <button
                     onClick={handleDisconnect}
                     disabled={disconnecting}
@@ -172,6 +186,15 @@ function IntegrationCard({
                   </button>
                 </div>
               </div>
+            ) : onManualConnect ? (
+              <button
+                onClick={onManualConnect}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all hover:opacity-90 hover:scale-[1.01]"
+                style={{ background: "linear-gradient(135deg, #1877F2, #0a5ab5)", color: "white" }}
+              >
+                <Key size={14} strokeWidth={2.5} />
+                Conectar {name}
+              </button>
             ) : (
               <a
                 href={connectHref}
@@ -195,6 +218,181 @@ function IntegrationCard({
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function MetaConnectModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [token, setToken] = useState("");
+  const [adAccountId, setAdAccountId] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [verified, setVerified] = useState<{ name: string; currency: string } | null>(null);
+  const [error, setError] = useState("");
+
+  async function handleVerify() {
+    if (!token.trim() || !adAccountId.trim()) {
+      setError("Completá los dos campos antes de verificar.");
+      return;
+    }
+    setVerifying(true);
+    setError("");
+    setVerified(null);
+    try {
+      const res = await fetch("/api/meta/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: token.trim(), adAccountId: adAccountId.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Token o Ad Account ID inválido.");
+      } else {
+        setVerified({ name: data.name, currency: data.currency });
+      }
+    } catch {
+      setError("Error de conexión. Intentá de nuevo.");
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  async function handleSave() {
+    if (!verified) return;
+    setSaving(true);
+    try {
+      await saveMetaToken({ token: token.trim(), adAccountId: adAccountId.trim(), accountName: verified.name });
+      toast.success("Meta Ads conectado correctamente");
+      onSuccess();
+      onClose();
+    } catch {
+      toast.error("Error al guardar. Intentá de nuevo.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(4px)" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="rounded-2xl w-full max-w-lg overflow-hidden flex flex-col"
+        style={{ background: "#111118", border: "1px solid rgba(24,119,242,0.3)" }}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: "1px solid rgba(24,119,242,0.15)" }}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: "rgba(24,119,242,0.12)" }}>
+              <Target size={18} color="#1877F2" strokeWidth={1.5} />
+            </div>
+            <div>
+              <p className="font-bold text-[#F1F5F9] text-sm">Conectar Meta Ads</p>
+              <p className="text-xs text-[#64748B]">System User Token — no expira</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-[#64748B] hover:text-[#F1F5F9] transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-5">
+          {/* Instrucciones */}
+          <div className="rounded-xl p-4 space-y-2 text-xs"
+            style={{ background: "rgba(24,119,242,0.06)", border: "1px solid rgba(24,119,242,0.2)" }}>
+            <p className="font-semibold text-[#1877F2]">¿Cómo obtener el token?</p>
+            <ol className="text-[#94A3B8] space-y-1 list-decimal list-inside leading-relaxed">
+              <li>Entrá a <strong className="text-[#F1F5F9]">business.facebook.com</strong> → Configuración → Usuarios del sistema</li>
+              <li>Seleccioná tu System User → <strong className="text-[#F1F5F9]">Generar token</strong></li>
+              <li>Permisos: <code className="bg-[rgba(139,92,246,0.15)] px-1 rounded">ads_read</code> + <code className="bg-[rgba(139,92,246,0.15)] px-1 rounded">read_insights</code></li>
+              <li>Copiá el token generado y pegalo abajo</li>
+            </ol>
+          </div>
+
+          {/* Token */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[#94A3B8] flex items-center gap-1.5">
+              <Key size={12} strokeWidth={2.5} /> System User Token
+            </label>
+            <textarea
+              value={token}
+              onChange={(e) => { setToken(e.target.value); setVerified(null); setError(""); }}
+              placeholder="EAAn..."
+              rows={3}
+              className="w-full rounded-xl px-4 py-3 text-xs font-mono text-[#F1F5F9] placeholder-[#475569] resize-none outline-none transition-all"
+              style={{ background: "#0a0a0f", border: "1px solid rgba(24,119,242,0.2)" }}
+            />
+          </div>
+
+          {/* Ad Account ID */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[#94A3B8]">Ad Account ID</label>
+            <input
+              value={adAccountId}
+              onChange={(e) => { setAdAccountId(e.target.value); setVerified(null); setError(""); }}
+              placeholder="820587217236514 o act_820587217236514"
+              className="w-full rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder-[#475569] outline-none transition-all"
+              style={{ background: "#0a0a0f", border: "1px solid rgba(24,119,242,0.2)" }}
+            />
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="rounded-xl px-4 py-3 text-xs text-[#ef4444] flex items-center gap-2"
+              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+              <AlertCircle size={13} strokeWidth={2} />
+              {error}
+            </div>
+          )}
+
+          {/* Verificado */}
+          {verified && (
+            <div className="rounded-xl px-4 py-3 space-y-1"
+              style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.25)" }}>
+              <div className="flex items-center gap-2 text-xs font-semibold text-[#22c55e]">
+                <CheckCircle2 size={13} strokeWidth={2.5} /> Cuenta verificada
+              </div>
+              <p className="text-sm font-bold text-[#F1F5F9]">{verified.name}</p>
+              <p className="text-xs text-[#64748B]">Moneda: {verified.currency}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-4 gap-3"
+          style={{ borderTop: "1px solid rgba(24,119,242,0.15)" }}>
+          <button onClick={onClose} className="text-xs text-[#64748B] hover:text-[#94A3B8] transition-colors">
+            Cancelar
+          </button>
+          <div className="flex gap-2">
+            {!verified ? (
+              <button
+                onClick={handleVerify}
+                disabled={verifying || !token.trim() || !adAccountId.trim()}
+                className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-80 disabled:opacity-40"
+                style={{ background: "rgba(24,119,242,0.85)", border: "1px solid rgba(24,119,242,0.4)" }}
+              >
+                {verifying ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} strokeWidth={2.5} />}
+                {verifying ? "Verificando..." : "Verificar conexión"}
+              </button>
+            ) : (
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-80 disabled:opacity-40"
+                style={{ background: "linear-gradient(135deg, #1877F2, #0a5ab5)" }}
+              >
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} strokeWidth={2.5} />}
+                {saving ? "Guardando..." : "Guardar integración"}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -245,6 +443,8 @@ function URLParamHandler() {
 }
 
 export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) {
+  const [showMetaModal, setShowMetaModal] = useState(false);
+
   const cards = [
     {
       icon: Store,
@@ -256,6 +456,7 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
       connectHref: "/api/auth/tiendanube",
       onDisconnect: () => disconnectIntegration("tiendanube"),
       comingSoon: false,
+      onManualConnect: undefined as (() => void) | undefined,
     },
     {
       icon: Mail,
@@ -267,6 +468,7 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
       connectHref: "/api/auth/gmail",
       onDisconnect: () => disconnectIntegration("gmail"),
       comingSoon: false,
+      onManualConnect: undefined as (() => void) | undefined,
     },
     {
       icon: Target,
@@ -275,9 +477,10 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
       color: "#1877F2",
       bgColor: "rgba(24,119,242,0.12)",
       integration: meta,
-      connectHref: "/api/auth/meta",
+      connectHref: "#",
       onDisconnect: () => disconnectIntegration("meta"),
-      comingSoon: true,
+      comingSoon: false,
+      onManualConnect: () => setShowMetaModal(true),
     },
   ];
 
@@ -286,6 +489,12 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
   return (
     <Suspense>
       <URLParamHandler />
+      {showMetaModal && (
+        <MetaConnectModal
+          onClose={() => setShowMetaModal(false)}
+          onSuccess={() => window.location.reload()}
+        />
+      )}
       <div className="p-4 sm:p-6 space-y-8">
 
         {/* Header */}
