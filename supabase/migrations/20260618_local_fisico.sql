@@ -110,11 +110,19 @@ CREATE OR REPLACE FUNCTION decrement_local_stock(
   p_workspace_id uuid,
   p_qty          integer
 )
-RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
+  -- p_qty must be positive; negative values could increment stock
+  IF p_qty <= 0 THEN RAISE EXCEPTION 'qty must be positive'; END IF;
+
+  -- Ownership is enforced by RLS on local_products (no SECURITY DEFINER needed).
+  -- The extra workspace_id check is defense-in-depth.
   UPDATE local_products
   SET stock = GREATEST(0, stock - p_qty)
-  WHERE id = p_product_id
-    AND workspace_id = p_workspace_id;
+  WHERE id            = p_product_id
+    AND workspace_id  = p_workspace_id;
 END;
 $$;
+
+REVOKE EXECUTE ON FUNCTION decrement_local_stock(uuid, uuid, integer) FROM PUBLIC;
+GRANT  EXECUTE ON FUNCTION decrement_local_stock(uuid, uuid, integer) TO authenticated;

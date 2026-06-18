@@ -5,16 +5,43 @@ import { checkUserRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getOrdersForRange, getAllProducts, getCustomers, getProductName } from "@/lib/tiendanube/client";
 
+// Discriminated schemas per tool — mirrors app/app/local/actions.ts validation
+const RegisterSaleActionSchema = z.object({
+  tool: z.literal("register_sale"),
+  params: z.object({
+    items: z.array(z.object({
+      product_name: z.string().min(1).max(200),
+      unit_price:   z.number().min(0).max(100_000_000),
+      unit_cost:    z.number().min(0).max(100_000_000).optional(),
+      quantity:     z.number().int().min(1).max(9999),
+    })).min(1).max(50),
+    payment_method: z.enum(["efectivo", "transferencia", "debito", "credito", "cuotas"]),
+    installments:   z.number().int().min(2).max(72).optional(),
+    notes:          z.string().max(500).optional(),
+    preview:        z.string().max(500).optional(),
+  }),
+});
+
+const AdjustStockActionSchema = z.object({
+  tool: z.literal("adjust_stock"),
+  params: z.object({
+    product_name: z.string().min(1).max(200).regex(/^[^%_]+$/, "Nombre inválido"),
+    new_stock:    z.number().int().min(0).max(1_000_000),
+    preview:      z.string().max(500).optional(),
+  }),
+});
+
+const ExecuteActionSchema = z.discriminatedUnion("tool", [
+  RegisterSaleActionSchema,
+  AdjustStockActionSchema,
+]);
+
 const BodySchema = z.object({
   messages: z.array(z.object({
     role: z.enum(["user", "assistant"]),
     content: z.string().max(4000),
   })).max(50),
-  // executeAction: acción confirmada por el usuario para ejecutar
-  executeAction: z.object({
-    tool:   z.enum(["register_sale", "adjust_stock"]),
-    params: z.record(z.string(), z.unknown()).default({}),
-  }).optional(),
+  executeAction: ExecuteActionSchema.optional(),
 });
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString("es-AR")}`;
@@ -253,15 +280,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Plan insuficiente" }, { status: 403 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sdb = supabase as any;
+
     if (executeAction.tool === "register_sale") {
-      const p = executeAction.params as {
-        items: { product_name: string; unit_price: number; unit_cost?: number; quantity: number }[];
-        payment_method: string;
-        installments?: number;
-        notes?: string;
-      };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const sdb = supabase as any;
+      // params is fully typed from discriminated Zod schema — no cast needed
+      const p = executeAction.params;
       const total = p.items.reduce((a, it) => a + it.unit_price * it.quantity, 0);
       const { data: sale, error: saleErr } = await sdb
         .from("local_sales")
@@ -277,7 +301,7 @@ export async function POST(request: Request) {
         .single();
       if (saleErr || !sale) return NextResponse.json({ error: "Error al guardar" }, { status: 500 });
       await sdb.from("local_sale_items").insert(
-        p.items.map((it: { product_name: string; unit_price: number; unit_cost?: number; quantity: number }) => ({
+        p.items.map((it) => ({
           sale_id:      (sale as { id: string }).id,
           product_id:   null,
           product_name: it.product_name,
@@ -290,14 +314,30 @@ export async function POST(request: Request) {
     }
 
     if (executeAction.tool === "adjust_stock") {
-      const p = executeAction.params as { product_name: string; new_stock: number };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
+      // params fully typed from discriminated schema — product_name validated (no %, _, max 200 chars)
+      const { product_name, new_stock } = executeAction.params;
+
+      // Resolve by exact name to avoid mass-update — require exactly one match
+      const { data: matches } = await sdb
         .from("local_products")
-        .update({ stock: Math.max(0, p.new_stock) })
-        .ilike("name", `%${p.product_name}%`)
+        .select("id, name")
+        .eq("name", product_name)
         .eq("workspace_id", workspaceId);
-      return NextResponse.json({ message: `✅ Stock de "${p.product_name}" actualizado a ${p.new_stock} unidades.` });
+
+      if (!matches || matches.length === 0) {
+        return NextResponse.json({ message: `No encontré ningún producto con el nombre exacto "${product_name}". Verificá en el catálogo.` });
+      }
+      if (matches.length > 1) {
+        return NextResponse.json({ message: `Hay ${matches.length} productos con ese nombre. Sé más específico.` });
+      }
+
+      await sdb
+        .from("local_products")
+        .update({ stock: new_stock })
+        .eq("id", matches[0].id)
+        .eq("workspace_id", workspaceId);
+
+      return NextResponse.json({ message: `✅ Stock de "${product_name}" actualizado a ${new_stock} unidades.` });
     }
   }
 
