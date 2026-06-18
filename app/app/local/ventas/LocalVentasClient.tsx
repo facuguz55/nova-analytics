@@ -221,7 +221,7 @@ export default function LocalVentasClient({ sales }: { sales: SaleRow[] }) {
               </span>
             </div>
             {detail.notes && (
-              <p className="text-xs text-[#64748B] mt-2 italic">"{detail.notes}"</p>
+              <p className="text-xs text-[#64748B] mt-2 italic">&ldquo;{detail.notes}&rdquo;</p>
             )}
             <div className="flex justify-between mt-4 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
               <span className="font-bold text-[#F1F5F9]">Total</span>
