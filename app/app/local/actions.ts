@@ -152,8 +152,16 @@ async function findOrCreateLocalCustomer(
 ): Promise<string | null> {
   if (!input.name?.trim() && !input.id) return null;
 
-  // Si ya tenemos el ID (cliente existente encontrado en el lookup), usarlo
-  if (input.id) return input.id;
+  // Verificar ownership antes de confiar en el ID — evita IDOR cross-tenant
+  if (input.id) {
+    const { data: owned } = await supabase
+      .from("local_customers")
+      .select("id")
+      .eq("id", input.id)
+      .eq("workspace_id", workspace_id)
+      .maybeSingle();
+    return owned ? (owned as { id: string }).id : null;
+  }
 
   const clean = input.dni?.replace(/\D/g, "") ?? "";
 
@@ -216,10 +224,19 @@ export type SaleItem = {
   quantity: number;
 };
 
+const SaleCustomerSchema = z.object({
+  id:    z.string().uuid().optional(),
+  dni:   z.string().max(20).optional(),
+  name:  z.string().min(1).max(200).optional(),
+  phone: z.string().max(50).optional(),
+  email: z.string().email().max(200).optional().or(z.literal("")),
+}).optional().nullable();
+
 const SaleSchema = z.object({
   payment_method: z.enum(["efectivo", "transferencia", "debito", "credito", "cuotas"]),
   installments:   z.coerce.number().int().min(1).max(72).optional(),
   notes:          z.string().max(500).optional(),
+  customer:       SaleCustomerSchema,
   items:          z.array(z.object({
     product_id:   z.string().uuid().nullable(),
     product_name: z.string().min(1).max(200),
@@ -255,9 +272,9 @@ export async function registerLocalSale(data: {
     0
   );
 
-  // Resolver cliente (find-or-create)
-  const customer_id = data.customer
-    ? await findOrCreateLocalCustomer(workspace_id, supabase, data.customer)
+  // Resolver cliente usando los datos ya validados por Zod (no data.customer crudo)
+  const customer_id = parsed.data.customer
+    ? await findOrCreateLocalCustomer(workspace_id, supabase, parsed.data.customer)
     : null;
 
   const { data: sale, error: saleErr } = await supabase
