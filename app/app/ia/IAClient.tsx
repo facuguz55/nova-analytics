@@ -37,6 +37,8 @@ function renderContent(text: string) {
   });
 }
 
+type PendingAction = { tool: string; params: Record<string, unknown>; preview: string };
+
 export default function IAClient({ connected, storeName }: { connected: boolean; storeName: string | null }) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -46,10 +48,11 @@ export default function IAClient({ connected, storeName }: { connected: boolean;
         : "¡Hola! Soy tu asistente de Nova Analytics. Todavía no veo tu TiendaNube conectada, así que no puedo analizar tus ventas reales. Conectala en Configuración → Integraciones y vuelvo a tener todo tu negocio a mano. Igual puedo ayudarte con estrategias de e-commerce mientras tanto.",
     },
   ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [input, setInput]               = useState("");
+  const [loading, setLoading]           = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef  = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,16 +69,16 @@ export default function IAClient({ connected, storeName }: { connected: boolean;
       const res = await fetch("/api/ia/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messages, userMsg],
-          // systemContext eliminado — se genera server-side en /api/ia/chat
-        }),
+        body: JSON.stringify({ messages: [...messages, userMsg] }),
       });
 
       if (!res.ok) throw new Error("Error en la respuesta");
 
-      const data = await res.json() as { message: string };
+      const data = await res.json() as { message: string; pendingAction?: PendingAction };
       setMessages((prev) => [...prev, { role: "assistant", content: data.message }]);
+      if (data.pendingAction) {
+        setPendingAction(data.pendingAction);
+      }
     } catch {
       setMessages((prev) => [...prev, {
         role: "assistant",
@@ -84,6 +87,34 @@ export default function IAClient({ connected, storeName }: { connected: boolean;
     } finally {
       setLoading(false);
     }
+  }
+
+  async function confirmAction() {
+    if (!pendingAction) return;
+    const action = pendingAction;
+    setPendingAction(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/ia/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages,
+          executeAction: { tool: action.tool, params: action.params },
+        }),
+      });
+      const data = await res.json() as { message: string };
+      setMessages((prev) => [...prev, { role: "assistant", content: data.message }]);
+    } catch {
+      setMessages((prev) => [...prev, { role: "assistant", content: "Error al ejecutar la acción." }]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function cancelAction() {
+    setPendingAction(null);
+    setMessages((prev) => [...prev, { role: "assistant", content: "Acción cancelada. ¿Necesitás algo más?" }]);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -202,6 +233,35 @@ export default function IAClient({ connected, storeName }: { connected: boolean;
         </div>
       )}
 
+      {/* Confirmación de acción */}
+      {pendingAction && (
+        <div
+          className="mx-4 sm:mx-6 mb-3 rounded-2xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-200"
+          style={{ background: "rgba(225,105,30,0.1)", border: "1px solid rgba(225,105,30,0.3)" }}
+        >
+          <p className="text-xs font-semibold text-[#e1691e] mb-1 uppercase tracking-wide">
+            Confirmar acción
+          </p>
+          <p className="text-sm text-[#F1F5F9] mb-3">{pendingAction.preview}</p>
+          <div className="flex gap-2">
+            <button
+              onClick={confirmAction}
+              className="flex-1 py-2 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
+              style={{ background: "#e1691e" }}
+            >
+              Confirmar
+            </button>
+            <button
+              onClick={cancelAction}
+              className="flex-1 py-2 rounded-xl text-sm font-medium transition-colors"
+              style={{ background: "rgba(255,255,255,0.06)", color: "#94A3B8" }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       <div
         className="px-4 sm:px-6 pb-5 flex-shrink-0"
@@ -216,7 +276,7 @@ export default function IAClient({ connected, storeName }: { connected: boolean;
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Preguntá sobre tus ventas, estrategias, productos..."
+            placeholder="Preguntá sobre tus ventas, o decí 'vendí un iPhone a $500K en efectivo'…"
             rows={1}
             className="flex-1 bg-transparent text-sm text-[#F1F5F9] outline-none resize-none placeholder:text-[#475569]"
             style={{ maxHeight: "120px" }}

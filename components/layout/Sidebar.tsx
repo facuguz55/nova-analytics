@@ -10,6 +10,7 @@ import {
   Megaphone, Mail, Plug, DollarSign, User,
   ChevronLeft, ChevronRight, LogOut, Sparkles,
   BellRing, Activity, Settings, X, Globe, Brain,
+  Store, Receipt, Lock,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -210,6 +211,96 @@ export default function Sidebar({
             </ul>
           </div>
         ))}
+
+        {/* LOCAL FÍSICO */}
+        <div>
+          {!collapsed && (
+            <p className="px-3 mb-1.5 text-[10px] font-semibold tracking-widest text-[#64748B] uppercase">
+              LOCAL FÍSICO
+            </p>
+          )}
+          {collapsed && <div className="mx-3 mb-2 h-px bg-[rgba(139,92,246,0.18)]" />}
+          <ul className="space-y-0.5">
+            {[
+              { href: "/app/local",          label: "Dashboard",  icon: Store   },
+              { href: "/app/local/ventas",   label: "Ventas",     icon: Receipt },
+              { href: "/app/local/productos",label: "Productos",  icon: Package },
+            ].map((item) => {
+              const hasAccess = workspacePlan === "pro" || workspacePlan === "agency";
+              const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/app/local");
+              const Icon = item.icon;
+              const ORANGE = "#e1691e";
+              const activeColor = isActive ? ORANGE : "#94A3B8";
+
+              if (!hasAccess) {
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href="/app/planes"
+                      title={collapsed ? `${item.label} (Pro)` : undefined}
+                      className={cn(
+                        "relative flex items-center gap-3 rounded-lg transition-all duration-150 opacity-60",
+                        collapsed ? "justify-center px-2 py-2.5" : "px-3 py-2"
+                      )}
+                      style={{ color: "#64748B" }}
+                    >
+                      <Icon size={16} strokeWidth={2} className="flex-shrink-0" />
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1 truncate text-sm">{item.label}</span>
+                          <Lock size={11} className="flex-shrink-0 text-[#64748B]" />
+                        </>
+                      )}
+                    </Link>
+                  </li>
+                );
+              }
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    title={collapsed ? item.label : undefined}
+                    className={cn(
+                      "relative flex items-center gap-3 rounded-lg transition-all duration-150",
+                      collapsed ? "justify-center px-2 py-2.5" : "px-3 py-2"
+                    )}
+                    style={{
+                      background: isActive ? "rgba(225,105,30,0.12)" : "transparent",
+                      color: activeColor,
+                      boxShadow: isActive ? "inset 0 0 12px rgba(225,105,30,0.06)" : "none",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLAnchorElement).style.background = "rgba(225,105,30,0.07)";
+                        (e.currentTarget as HTMLAnchorElement).style.color = "#F1F5F9";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
+                        (e.currentTarget as HTMLAnchorElement).style.color = "#94A3B8";
+                      }
+                    }}
+                  >
+                    {isActive && (
+                      <span
+                        className="absolute left-0 top-1/2 -translate-y-1/2 rounded-r-full"
+                        style={{ width: "3px", height: "20px", background: ORANGE, boxShadow: `0 0 8px ${ORANGE}` }}
+                      />
+                    )}
+                    <Icon size={16} strokeWidth={isActive ? 2.5 : 2} className="flex-shrink-0" color={isActive ? ORANGE : undefined} />
+                    {!collapsed && (
+                      <span className="flex-1 truncate text-sm" style={{ fontWeight: isActive ? 600 : 400 }}>
+                        {item.label}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
 
         {/* Configuración — un solo acceso, sin duplicados */}
         <div>

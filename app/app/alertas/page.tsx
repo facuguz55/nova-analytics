@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: "Alertas" };
 
 export default async function AlertasPage() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   // Alertas de la DB (tabla `alerts` -- solo alertas del sistema, no datos de TN)
   const { data: dbAlerts } = await supabase
@@ -47,8 +48,38 @@ export default async function AlertasPage() {
 
   type AlertItem = { id: string; type: string; title: string; body: string | null; read: boolean; created_at: string; auto: boolean };
 
+  // Alertas de stock bajo — Local Físico
+  let localAlerts: AlertItem[] = [];
+  const { data: userRow } = await supabase.from("users").select("workspace_id, workspaces(plan)").eq("id", user?.id ?? "").single();
+  const wsPlan = (userRow as { workspaces?: { plan?: string } } | null)?.workspaces?.plan ?? "free";
+  const wsId   = (userRow as { workspace_id?: string } | null)?.workspace_id ?? "";
+
+  if ((wsPlan === "pro" || wsPlan === "agency") && wsId) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: allLocalProducts } = await (supabase as any)
+      .from("local_products")
+      .select("id, name, stock, min_stock")
+      .eq("workspace_id", wsId);
+
+    type LocalProd = { id: string; name: string; stock: number; min_stock: number };
+    const lp = ((allLocalProducts ?? []) as unknown as LocalProd[]).filter((p) => p.stock <= p.min_stock);
+
+    localAlerts = lp.map((p) => ({
+      id:         `local-stock-${p.id}`,
+      type:       p.stock === 0 ? "danger" : "warning",
+      title:      p.stock === 0 ? `Local — Sin stock: ${p.name}` : `Local — Stock bajo: ${p.name}`,
+      body:       p.stock === 0
+        ? `Sin unidades disponibles en el local. Considerá reponer urgente.`
+        : `Quedan ${p.stock} unidad${p.stock !== 1 ? "es" : ""} (mínimo: ${p.min_stock}). Revisá si necesitás reponer.`,
+      read:       false,
+      created_at: new Date().toISOString(),
+      auto:       true,
+    }));
+  }
+
   const allAlerts: AlertItem[] = [
     ...autoAlerts,
+    ...localAlerts,
     ...(dbAlerts ?? []).map((a) => ({
       id: String((a as Record<string, unknown>).id ?? ""),
       type: String((a as Record<string, unknown>).type ?? "info"),
