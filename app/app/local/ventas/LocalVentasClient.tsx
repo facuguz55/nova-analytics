@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Plus, Search, X, ChevronDown, ShoppingBag } from "lucide-react";
+import { Plus, Search, X, ChevronDown, ShoppingBag, User } from "lucide-react";
 
 type ItemRow = { product_name: string; unit_price: number; unit_cost: number; quantity: number };
 type SaleRow = {
@@ -12,6 +12,8 @@ type SaleRow = {
   installments: number | null;
   notes: string | null;
   created_at: string;
+  customer_id: string | null;
+  local_customers: { name: string; dni: string | null } | null;
   local_sale_items: ItemRow[];
 };
 
@@ -53,7 +55,9 @@ export default function LocalVentasClient({ sales }: { sales: SaleRow[] }) {
       list = list.filter(
         (s) =>
           s.local_sale_items.some((it) => it.product_name.toLowerCase().includes(q)) ||
-          s.notes?.toLowerCase().includes(q)
+          s.notes?.toLowerCase().includes(q) ||
+          s.local_customers?.name.toLowerCase().includes(q) ||
+          s.local_customers?.dni?.includes(q)
       );
     }
     return list;
@@ -121,7 +125,7 @@ export default function LocalVentasClient({ sales }: { sales: SaleRow[] }) {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                {["Fecha", "Productos", "Método", "Ganancia", "Total"].map((h) => (
+                {["Fecha", "Cliente", "Productos", "Método", "Ganancia", "Total"].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-[#64748B] font-medium text-xs uppercase tracking-wide">
                     {h}
                   </th>
@@ -144,7 +148,18 @@ export default function LocalVentasClient({ sales }: { sales: SaleRow[] }) {
                     <td className="px-4 py-3 text-[#94A3B8] whitespace-nowrap">
                       {new Date(s.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                     </td>
-                    <td className="px-4 py-3 text-[#F1F5F9] max-w-[220px] truncate">
+                    <td className="px-4 py-3">
+                      {s.local_customers ? (
+                        <div className="flex items-center gap-1.5">
+                          <User size={12} className="text-[#e1691e] flex-shrink-0" />
+                          <span className="text-sm text-[#F1F5F9] truncate max-w-[120px]">{s.local_customers.name}</span>
+                          {s.local_customers.dni && <span className="text-xs text-[#64748B]">·{s.local_customers.dni}</span>}
+                        </div>
+                      ) : (
+                        <span className="text-[#475569] text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-[#F1F5F9] max-w-[200px] truncate">
                       {itemSummary || "—"}
                     </td>
                     <td className="px-4 py-3">
@@ -190,9 +205,19 @@ export default function LocalVentasClient({ sales }: { sales: SaleRow[] }) {
                 <X size={20} />
               </button>
             </div>
-            <p className="text-xs text-[#64748B] mb-4">
+            <p className="text-xs text-[#64748B] mb-3">
               {new Date(detail.created_at).toLocaleString("es-AR")}
             </p>
+            {detail.local_customers && (
+              <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl"
+                style={{ background: "rgba(225,105,30,0.08)", border: "1px solid rgba(225,105,30,0.2)" }}>
+                <User size={13} className="text-[#e1691e] flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-[#F1F5F9] truncate">{detail.local_customers.name}</p>
+                  {detail.local_customers.dni && <p className="text-xs text-[#64748B]">DNI {detail.local_customers.dni}</p>}
+                </div>
+              </div>
+            )}
             <div className="space-y-2 mb-4">
               {detail.local_sale_items.map((it, i) => (
                 <div key={i} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>

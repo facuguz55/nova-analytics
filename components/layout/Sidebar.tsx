@@ -32,6 +32,7 @@ interface SidebarProps {
   workspacePlan: string;
   activeProviders: string[];
   alertCount?: number;
+  isSuperAdmin?: boolean;
 }
 
 export default function Sidebar({
@@ -40,6 +41,7 @@ export default function Sidebar({
   workspaceName,
   workspacePlan,
   alertCount = 0,
+  isSuperAdmin = false,
 }: SidebarProps) {
   const [collapsed,  setCollapsed]  = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -110,7 +112,7 @@ export default function Sidebar({
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-5">
-        {ALL_NAV_SECTIONS.map((section) => {
+        {ALL_NAV_SECTIONS.filter((s) => !s.adminOnly || isSuperAdmin).map((section) => {
           const hasAccess = !section.requiresPlan || workspacePlan === "pro" || workspacePlan === "agency";
           const sectionColor = section.accentColor ?? ACTIVE_COLOR;
           const isPinned = pinned.includes(section.label);

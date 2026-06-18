@@ -101,6 +101,111 @@ export async function deleteLocalProduct(id: string) {
   revalidatePath("/app/local/productos");
 }
 
+// ── CLIENTES ──────────────────────────────────────────────────────────────────
+
+const CustomerSchema = z.object({
+  name:  z.string().min(1).max(200),
+  dni:   z.string().max(20).optional(),
+  phone: z.string().max(50).optional(),
+  email: z.string().email().max(200).optional().or(z.literal("")),
+  notes: z.string().max(500).optional(),
+});
+
+export type LocalCustomer = {
+  id: string; name: string; dni: string | null;
+  phone: string | null; email: string | null; created_at: string;
+  sales_count: number;
+};
+
+export async function lookupCustomerByDNI(dni: string): Promise<{
+  id: string; name: string; phone: string | null; email: string | null; sales_count: number;
+} | null> {
+  const clean = dni.replace(/\D/g, "");
+  if (clean.length < 7) return null;
+
+  const workspace_id = await getWorkspaceId();
+  const supabase: AnySupabase = await db();
+
+  const { data } = await supabase
+    .from("local_customers")
+    .select("id, name, phone, email")
+    .eq("workspace_id", workspace_id)
+    .eq("dni", clean)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  const { count } = await supabase
+    .from("local_sales")
+    .select("id", { count: "exact", head: true })
+    .eq("workspace_id", workspace_id)
+    .eq("customer_id", (data as { id: string }).id);
+
+  const c = data as { id: string; name: string; phone: string | null; email: string | null };
+  return { ...c, sales_count: count ?? 0 };
+}
+
+async function findOrCreateLocalCustomer(
+  workspace_id: string,
+  supabase: AnySupabase,
+  input: { id?: string; dni?: string; name?: string; phone?: string; email?: string }
+): Promise<string | null> {
+  if (!input.name?.trim() && !input.id) return null;
+
+  // Si ya tenemos el ID (cliente existente encontrado en el lookup), usarlo
+  if (input.id) return input.id;
+
+  const clean = input.dni?.replace(/\D/g, "") ?? "";
+
+  // Buscar por DNI si fue provisto
+  if (clean.length >= 7) {
+    const { data: existing } = await supabase
+      .from("local_customers")
+      .select("id")
+      .eq("workspace_id", workspace_id)
+      .eq("dni", clean)
+      .maybeSingle();
+
+    if (existing) {
+      // Actualizar datos si hay nuevos
+      if (input.name || input.phone) {
+        await supabase
+          .from("local_customers")
+          .update({
+            ...(input.name  ? { name:  input.name.trim()  } : {}),
+            ...(input.phone ? { phone: input.phone.trim() } : {}),
+          })
+          .eq("id", (existing as { id: string }).id);
+      }
+      return (existing as { id: string }).id;
+    }
+  }
+
+  // Crear nuevo cliente
+  const parsed = CustomerSchema.safeParse({
+    name:  input.name,
+    dni:   clean || undefined,
+    phone: input.phone,
+    email: input.email,
+  });
+  if (!parsed.success) return null;
+
+  const { data: created, error } = await supabase
+    .from("local_customers")
+    .insert({
+      workspace_id,
+      name:  parsed.data.name,
+      dni:   parsed.data.dni ?? null,
+      phone: parsed.data.phone ?? null,
+      email: parsed.data.email || null,
+    })
+    .select("id")
+    .single();
+
+  if (error || !created) return null;
+  return (created as { id: string }).id;
+}
+
 // ── VENTAS ────────────────────────────────────────────────────────────────────
 
 export type SaleItem = {
@@ -129,6 +234,13 @@ export async function registerLocalSale(data: {
   installments?: number;
   notes?: string;
   items: SaleItem[];
+  customer?: {
+    id?: string;
+    dni?: string;
+    name?: string;
+    phone?: string;
+    email?: string;
+  } | null;
 }) {
   const parsed = SaleSchema.safeParse(data);
   if (!parsed.success) throw new Error("Datos de venta inválidos");
@@ -143,6 +255,11 @@ export async function registerLocalSale(data: {
     0
   );
 
+  // Resolver cliente (find-or-create)
+  const customer_id = data.customer
+    ? await findOrCreateLocalCustomer(workspace_id, supabase, data.customer)
+    : null;
+
   const { data: sale, error: saleErr } = await supabase
     .from("local_sales")
     .insert({
@@ -152,6 +269,7 @@ export async function registerLocalSale(data: {
       installments:   parsed.data.installments ?? null,
       notes:          parsed.data.notes ?? null,
       created_by:     user!.id,
+      customer_id,
     })
     .select("id")
     .single();

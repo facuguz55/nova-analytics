@@ -26,8 +26,9 @@ export default async function LocalVentasPage() {
   const { data: salesRaw } = await supabase
     .from("local_sales")
     .select(`
-      id, total, payment_method, installments, notes, created_at,
-      local_sale_items(product_name, unit_price, unit_cost, quantity)
+      id, total, payment_method, installments, notes, created_at, customer_id,
+      local_sale_items(product_name, unit_price, unit_cost, quantity),
+      local_customers(name, dni)
     `)
     .eq("workspace_id", workspaceId)
     .order("created_at", { ascending: false })
@@ -41,6 +42,8 @@ export default async function LocalVentasPage() {
     installments: number | null;
     notes: string | null;
     created_at: string;
+    customer_id: string | null;
+    local_customers: { name: string; dni: string | null } | null;
     local_sale_items: ItemRow[];
   };
 

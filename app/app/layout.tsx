@@ -63,6 +63,7 @@ export default async function DashboardLayout({
           workspacePlan={plan}
           activeProviders={Array.from(activeProviders)}
           alertCount={alerts}
+          isSuperAdmin={isSuperAdmin}
         />
       </div>
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative z-10">
