@@ -7,6 +7,7 @@ import BottomNav from "@/components/layout/BottomNav";
 import FloatingAI from "@/components/layout/FloatingAI";
 import PaywallCard from "@/components/paywall/PaywallCard";
 import AnimatedBackground from "@/components/layout/AnimatedBackground";
+import PinnedBar from "@/components/layout/PinnedBar";
 import { Analytics } from "@vercel/analytics/next";
 
 export default async function DashboardLayout({
@@ -70,6 +71,7 @@ export default async function DashboardLayout({
           avatarUrl={userRow?.avatar_url ?? null}
           alertCount={alerts}
         />
+        <PinnedBar />
         {/* pb-16 en mobile para que no tape el BottomNav */}
         <main className="relative flex-1 overflow-y-auto pb-16 sm:pb-0">
           {isLocked ? (

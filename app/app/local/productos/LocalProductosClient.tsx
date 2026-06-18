@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Edit2, Trash2, AlertTriangle, X, Check, Package } from "lucide-react";
+import { Plus, Edit2, Trash2, AlertTriangle, X, Check, Package, RefreshCw } from "lucide-react";
 import {
   createLocalProduct,
   updateLocalProduct,
   updateLocalProductStock,
   deleteLocalProduct,
+  syncFromTiendaNube,
 } from "../actions";
 
 type Product = {
@@ -29,9 +30,10 @@ export default function LocalProductosClient({ products: initialProducts }: { pr
   const [form, setForm]         = useState({ ...EMPTY });
   const [editStockId, setEditStockId] = useState<string | null>(null);
   const [newStock, setNewStock]       = useState(0);
-  const [error, setError]       = useState("");
-  const [tnToggle, setTnToggle] = useState(false); // solo UI, sin lógica real
-  const [isPending, startTransition] = useTransition();
+  const [error, setError]             = useState("");
+  const [syncMsg, setSyncMsg]         = useState<{ text: string; ok: boolean } | null>(null);
+  const [syncing, setSyncing]         = useState(false);
+  const [isPending, startTransition]  = useTransition();
 
   function openNew() {
     setEditId(null);
@@ -84,6 +86,26 @@ export default function LocalProductosClient({ products: initialProducts }: { pr
     });
   }
 
+  async function handleTNSync() {
+    setSyncing(true);
+    setSyncMsg(null);
+    try {
+      const { created, skipped } = await syncFromTiendaNube();
+      setSyncMsg({
+        text: created === 0
+          ? `Todo al día — ${skipped} producto${skipped !== 1 ? "s" : ""} ya importado${skipped !== 1 ? "s" : ""}`
+          : `${created} producto${created !== 1 ? "s" : ""} importado${created !== 1 ? "s" : ""} · ${skipped} ya existían`,
+        ok: true,
+      });
+      // Recargar productos importados refrescando la página
+      window.location.reload();
+    } catch (e) {
+      setSyncMsg({ text: e instanceof Error ? e.message : "Error al sincronizar", ok: false });
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   function handleDelete(id: string) {
     if (!confirm("¿Eliminar este producto?")) return;
     startTransition(async () => {
@@ -103,22 +125,15 @@ export default function LocalProductosClient({ products: initialProducts }: { pr
           <p className="text-sm text-[#94A3B8] mt-0.5">{products.length} producto{products.length !== 1 ? "s" : ""}</p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Toggle TiendaNube sync — solo UI */}
           <button
-            onClick={() => setTnToggle((v) => !v)}
-            className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-[#64748B] transition-colors hover:bg-white/5"
-            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+            onClick={handleTNSync}
+            disabled={syncing}
+            className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:bg-white/5 disabled:opacity-50"
+            style={{ border: "1px solid rgba(255,255,255,0.1)", color: "#94A3B8" }}
+            title="Importar productos desde TiendaNube (no sobreescribe los existentes)"
           >
-            <span
-              className="w-8 h-4 rounded-full transition-all relative"
-              style={{ background: tnToggle ? "#a855f7" : "rgba(255,255,255,0.1)" }}
-            >
-              <span
-                className="absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all"
-                style={{ left: tnToggle ? "18px" : "2px" }}
-              />
-            </span>
-            Sync TiendaNube
+            <RefreshCw size={13} strokeWidth={2} className={syncing ? "animate-spin" : ""} />
+            {syncing ? "Importando…" : "Importar de TiendaNube"}
           </button>
           <button
             onClick={openNew}
@@ -129,6 +144,23 @@ export default function LocalProductosClient({ products: initialProducts }: { pr
           </button>
         </div>
       </div>
+
+      {/* Feedback del sync */}
+      {syncMsg && (
+        <div
+          className="mb-4 flex items-center justify-between px-4 py-2.5 rounded-xl text-sm"
+          style={{
+            background: syncMsg.ok ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
+            border: `1px solid ${syncMsg.ok ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)"}`,
+            color: syncMsg.ok ? "#22c55e" : "#ef4444",
+          }}
+        >
+          <span>{syncMsg.text}</span>
+          <button onClick={() => setSyncMsg(null)} className="ml-4 opacity-60 hover:opacity-100">
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {/* Tabla */}
       {products.length === 0 ? (

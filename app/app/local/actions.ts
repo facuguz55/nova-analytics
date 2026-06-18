@@ -3,6 +3,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
+import { getAllProducts } from "@/lib/tiendanube/client";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabase = any;
@@ -182,4 +184,87 @@ export async function registerLocalSale(data: {
   revalidatePath("/app/local/ventas");
   revalidatePath("/app/alertas");
   return { id: (sale as { id: string }).id };
+}
+
+// ── SYNC TIENDANUBE → LOCAL ───────────────────────────────────────────────────
+
+export async function syncFromTiendaNube(): Promise<{ created: number; skipped: number }> {
+  const workspace_id = await getWorkspaceId();
+
+  const connection = await getTiendaNubeConnection();
+  if (!connection) throw new Error("No hay conexión con TiendaNube activa. Configurá la integración primero.");
+
+  const tnProducts = await getAllProducts(connection.opts);
+
+  const supabase: AnySupabase = await db();
+
+  // Traer SKUs y nombres ya existentes en el catálogo local
+  const { data: existing } = await supabase
+    .from("local_products")
+    .select("sku, name")
+    .eq("workspace_id", workspace_id);
+
+  type ExistingRow = { sku: string | null; name: string };
+  const rows = (existing ?? []) as ExistingRow[];
+  const existingSKUs  = new Set(rows.map((r) => r.sku).filter((s): s is string => !!s));
+  const existingNames = new Set(rows.map((r) => r.name));
+
+  type LocalProductInsert = {
+    workspace_id: string;
+    name: string;
+    sku: string | null;
+    cost: number;
+    price: number;
+    stock: number;
+    min_stock: number;
+    category: null;
+  };
+
+  const toInsert: LocalProductInsert[] = [];
+  let total = 0;
+
+  for (const product of tnProducts) {
+    const baseName =
+      typeof product.name === "string" ? product.name : product.name.es ?? "Producto";
+
+    for (const variant of product.variants) {
+      total++;
+      const sku = variant.sku ?? null;
+
+      const name =
+        product.variants.length === 1
+          ? baseName
+          : sku
+          ? `${baseName} (${sku})`
+          : `${baseName} #${variant.id}`;
+
+      // Deduplicar: si ya existe por SKU o por nombre, saltar
+      if (sku && existingSKUs.has(sku)) continue;
+      if (!sku && existingNames.has(name)) continue;
+
+      toInsert.push({
+        workspace_id,
+        name,
+        sku,
+        cost:      parseFloat(variant.cost  ?? "0") || 0,
+        price:     parseFloat(variant.price) || 0,
+        stock:     variant.stock ?? 0,
+        min_stock: 3,
+        category:  null,
+      });
+
+      if (sku) existingSKUs.add(sku);
+      else     existingNames.add(name);
+    }
+  }
+
+  if (toInsert.length > 0) {
+    const { error } = await supabase.from("local_products").insert(toInsert);
+    if (error) throw new Error(`Error al importar productos: ${error.message}`);
+  }
+
+  revalidatePath("/app/local/productos");
+  revalidatePath("/app/local");
+
+  return { created: toInsert.length, skipped: total - toInsert.length };
 }
