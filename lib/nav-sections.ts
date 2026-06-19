@@ -2,7 +2,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard, Bell, BarChart2, ShoppingCart, Package, Users,
   TrendingUp, Target, Megaphone, Mail, Globe, Brain, Store, Receipt,
-  Building2,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -51,14 +50,6 @@ export const ALL_NAV_SECTIONS: NavSection[] = [
       { href: "/app/local/ventas",    label: "Ventas",     icon: Receipt },
       { href: "/app/local/clientes",  label: "Clientes",   icon: Users },
       { href: "/app/local/productos", label: "Productos",  icon: Package },
-    ],
-  },
-  {
-    label: "HQ ADMIN",
-    accentColor: "#f59e0b",
-    adminOnly: true,
-    items: [
-      { href: "/admin/hq", label: "Panel HQ", icon: Building2 },
     ],
   },
 ];
