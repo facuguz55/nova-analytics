@@ -58,7 +58,7 @@ export const ALL_NAV_SECTIONS: NavSection[] = [
     accentColor: "#f59e0b",
     adminOnly: true,
     items: [
-      { href: "/app/hq", label: "Clientes HQ", icon: Building2 },
+      { href: "/admin/hq", label: "Panel HQ", icon: Building2 },
     ],
   },
 ];
