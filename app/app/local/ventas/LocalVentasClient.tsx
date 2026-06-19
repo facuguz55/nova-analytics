@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
-import { Plus, Search, X, ChevronDown, ShoppingBag, User } from "lucide-react";
+import { Plus, Search, X, ChevronDown, ShoppingBag, User, Trash2 } from "lucide-react";
+import { deleteLocalSale } from "@/app/app/local/actions";
 
 type ItemRow = { product_name: string; unit_price: number; unit_cost: number; quantity: number };
 type SaleRow = {
@@ -42,10 +43,23 @@ function saleProfit(sale: SaleRow) {
   );
 }
 
-export default function LocalVentasClient({ sales }: { sales: SaleRow[] }) {
-  const [search, setSearch]   = useState("");
-  const [method, setMethod]   = useState("all");
-  const [detail, setDetail]   = useState<SaleRow | null>(null);
+export default function LocalVentasClient({ sales: initialSales }: { sales: SaleRow[] }) {
+  const [sales, setSales]         = useState(initialSales);
+  const [search, setSearch]       = useState("");
+  const [method, setMethod]       = useState("all");
+  const [detail, setDetail]       = useState<SaleRow | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [pending, startTransition]  = useTransition();
+
+  function handleDelete() {
+    if (!detail) return;
+    startTransition(async () => {
+      await deleteLocalSale(detail.id);
+      setSales((prev) => prev.filter((s) => s.id !== detail.id));
+      setDetail(null);
+      setConfirming(false);
+    });
+  }
 
   const filtered = useMemo(() => {
     let list = sales;
@@ -193,7 +207,7 @@ export default function LocalVentasClient({ sales }: { sales: SaleRow[] }) {
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
-          onClick={(e) => e.target === e.currentTarget && setDetail(null)}
+          onClick={(e) => { if (e.target === e.currentTarget) { setDetail(null); setConfirming(false); } }}
         >
           <div
             className="w-full max-w-md rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-4 duration-200"
@@ -201,7 +215,7 @@ export default function LocalVentasClient({ sales }: { sales: SaleRow[] }) {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-[#F1F5F9]">Detalle de venta</h3>
-              <button onClick={() => setDetail(null)} className="text-[#64748B] hover:text-[#94A3B8]">
+              <button onClick={() => { setDetail(null); setConfirming(false); }} className="text-[#64748B] hover:text-[#94A3B8]">
                 <X size={20} />
               </button>
             </div>
@@ -251,6 +265,39 @@ export default function LocalVentasClient({ sales }: { sales: SaleRow[] }) {
             <div className="flex justify-between mt-4 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
               <span className="font-bold text-[#F1F5F9]">Total</span>
               <span className="font-bold text-xl text-[#F1F5F9]">{fmt(Number(detail.total))}</span>
+            </div>
+
+            {/* Eliminar */}
+            <div className="mt-4 pt-3" style={{ borderTop: "1px solid rgba(239,68,68,0.12)" }}>
+              {!confirming ? (
+                <button
+                  onClick={() => setConfirming(true)}
+                  className="flex items-center gap-2 text-xs text-[#64748B] hover:text-[#ef4444] transition-colors"
+                >
+                  <Trash2 size={13} strokeWidth={2} />
+                  Eliminar venta
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-[#ef4444] flex-1">¿Eliminar esta venta?</p>
+                  <button
+                    onClick={() => setConfirming(false)}
+                    className="px-3 py-1.5 rounded-lg text-xs text-[#64748B] transition-colors"
+                    style={{ background: "rgba(255,255,255,0.05)" }}
+                    disabled={pending}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={pending}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                    style={{ background: "#ef4444" }}
+                  >
+                    {pending ? "Eliminando…" : "Sí, eliminar"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

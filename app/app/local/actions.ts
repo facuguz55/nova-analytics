@@ -321,6 +321,21 @@ export async function registerLocalSale(data: {
   return { id: (sale as { id: string }).id };
 }
 
+export async function deleteLocalSale(id: string) {
+  const workspace_id = await getWorkspaceId();
+  const supabase: AnySupabase = await db();
+
+  const { error } = await supabase
+    .from("local_sales")
+    .delete()
+    .eq("id", id)
+    .eq("workspace_id", workspace_id);
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/app/local");
+  revalidatePath("/app/local/ventas");
+}
+
 // ── SYNC TIENDANUBE → LOCAL ───────────────────────────────────────────────────
 
 export async function syncFromTiendaNube(): Promise<{ created: number; skipped: number }> {
