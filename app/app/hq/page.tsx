@@ -4,47 +4,52 @@ import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/supabase/cached-queries";
 import HQClient from "./HQClient";
 
-export const metadata: Metadata = { title: "HQ — Clientes por Tienda" };
+export const metadata: Metadata = { title: "HQ Admin — Vista Global" };
 
 export default async function HQPage() {
   const user = await getUser();
   if (!user) redirect("/login");
 
   const supabase = await createClient();
+
   const { data: userRow } = await supabase
     .from("users")
     .select("role")
     .eq("id", user.id)
     .single();
 
-  const role = (userRow as { role: string } | null)?.role ?? "client";
-  if (role !== "super_admin") redirect("/app/dashboard");
+  if ((userRow as { role: string } | null)?.role !== "super_admin") redirect("/app/dashboard");
 
-  // Todos los clientes de todas las tiendas (super_admin bypasses workspace isolation)
-  const { data: customersRaw } = await supabase
-    .from("local_customers")
-    .select(`
-      id, name, dni, phone, email, created_at, workspace_id,
-      workspaces(name),
-      local_sales!customer_id(id, total, created_at)
-    `)
-    .order("created_at", { ascending: false });
+  type WsRow = { id: string; name: string; plan: string; status: string; created_at: string };
+  type IntRow = { workspace_id: string; provider: string; status: string; metadata: Record<string, string> | null };
 
-  type SaleMini      = { id: string; total: number; created_at: string };
-  type CustomerRow   = {
-    id: string; name: string; dni: string | null; phone: string | null;
-    email: string | null; created_at: string; workspace_id: string;
-    workspaces: { name: string } | null;
-    local_sales: SaleMini[];
-  };
+  const [wsRes, intRes] = await Promise.allSettled([
+    supabase.from("workspaces").select("id, name, plan, status, created_at").order("created_at", { ascending: false }),
+    supabase.from("integrations").select("workspace_id, provider, status, metadata").eq("status", "active"),
+  ]);
 
-  // Workspaces únicos del resultado
-  const customers = (customersRaw ?? []) as unknown as CustomerRow[];
-  const wsMap = new Map<string, string>();
-  customers.forEach((c) => {
-    if (c.workspace_id && c.workspaces?.name) wsMap.set(c.workspace_id, c.workspaces.name);
+  const workspaces = (wsRes.status === "fulfilled" ? wsRes.value.data ?? [] : []) as WsRow[];
+  const integrations = (intRes.status === "fulfilled" ? intRes.value.data ?? [] : []) as IntRow[];
+
+  // Mapa workspace_id → providers activos
+  const intMap = new Map<string, { providers: string[]; tnStoreName: string | null }>();
+  integrations.forEach((i) => {
+    const prev = intMap.get(i.workspace_id) ?? { providers: [], tnStoreName: null };
+    intMap.set(i.workspace_id, {
+      providers: [...prev.providers, i.provider],
+      tnStoreName: i.provider === "tiendanube" ? (i.metadata?.store_name ?? null) : prev.tnStoreName,
+    });
   });
-  const workspaces = Array.from(wsMap.entries()).map(([id, name]) => ({ id, name }));
 
-  return <HQClient customers={customers} workspaces={workspaces} />;
+  const enriched = workspaces.map((ws) => {
+    const info = intMap.get(ws.id) ?? { providers: [], tnStoreName: null };
+    return {
+      ...ws,
+      providers: info.providers,
+      hasTiendanube: info.providers.includes("tiendanube"),
+      storeName: info.tnStoreName,
+    };
+  });
+
+  return <HQClient workspaces={enriched} />;
 }

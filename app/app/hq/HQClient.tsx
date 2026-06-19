@@ -1,58 +1,58 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, User, X, Phone, ShoppingBag, CreditCard, Store, Building2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Building2, Search, ShoppingBag, CheckCircle2, XCircle,
+  ChevronRight, Mail, Target, Store, Crown, Zap, Clock,
+} from "lucide-react";
 
-type SaleMini    = { id: string; total: number; created_at: string };
-type CustomerRow = {
-  id: string; name: string; dni: string | null; phone: string | null;
-  email: string | null; created_at: string; workspace_id: string;
-  workspaces: { name: string } | null;
-  local_sales: SaleMini[];
+type WsEnriched = {
+  id: string;
+  name: string;
+  plan: string;
+  status: string;
+  created_at: string;
+  providers: string[];
+  hasTiendanube: boolean;
+  storeName: string | null;
 };
 
-const fmt = (n: number) => `$${Math.round(n).toLocaleString("es-AR")}`;
+const PLAN_BADGE: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  agency: { label: "Agency", color: "#f59e0b", icon: <Crown size={10} /> },
+  pro:    { label: "Pro",    color: "#8B5CF6", icon: <Zap size={10} /> },
+  trial:  { label: "Trial", color: "#3b82f6", icon: <Clock size={10} /> },
+  free:   { label: "Free",  color: "#64748B", icon: null },
+};
+
+const PROVIDER_ICONS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  tiendanube: { label: "TiendaNube", color: "#2563EB", icon: <ShoppingBag size={11} /> },
+  gmail:      { label: "Gmail",      color: "#e1691e", icon: <Mail size={11} /> },
+  meta:       { label: "Meta",       color: "#1877F2", icon: <Target size={11} /> },
+};
+
 const CARD: React.CSSProperties = { background: "#111118", border: "1px solid rgba(124,58,237,0.15)" };
 
-function stats(c: CustomerRow) {
-  const s = c.local_sales ?? [];
-  return {
-    count: s.length,
-    total: s.reduce((a, x) => a + Number(x.total), 0),
-    lastAt: s.length > 0 ? s.slice().sort((a, b) => b.created_at.localeCompare(a.created_at))[0].created_at : null,
-  };
-}
-
-export default function HQClient({
-  customers,
-  workspaces,
-}: {
-  customers: CustomerRow[];
-  workspaces: { id: string; name: string }[];
-}) {
-  const [search,    setSearch]    = useState("");
-  const [wsFilter,  setWsFilter]  = useState("all");
-  const [detail,    setDetail]    = useState<CustomerRow | null>(null);
+export default function HQClient({ workspaces }: { workspaces: WsEnriched[] }) {
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [planFilter, setPlanFilter] = useState("all");
 
   const filtered = useMemo(() => {
-    let list = customers;
-    if (wsFilter !== "all") list = list.filter((c) => c.workspace_id === wsFilter);
+    let list = workspaces;
+    if (planFilter !== "all") list = list.filter((w) => w.plan === planFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
-      list = list.filter((c) =>
-        c.name.toLowerCase().includes(q) ||
-        (c.dni ?? "").includes(q) ||
-        (c.phone ?? "").includes(q) ||
-        (c.workspaces?.name ?? "").toLowerCase().includes(q)
+      list = list.filter(
+        (w) => w.name.toLowerCase().includes(q) || (w.storeName ?? "").toLowerCase().includes(q)
       );
     }
     return list;
-  }, [customers, wsFilter, search]);
+  }, [workspaces, planFilter, search]);
 
-  // Stats globales
-  const totalCustomers = customers.length;
-  const totalSpent     = customers.reduce((a, c) => a + stats(c).total, 0);
-  const totalSales     = customers.reduce((a, c) => a + stats(c).count, 0);
+  const totalTN      = workspaces.filter((w) => w.hasTiendanube).length;
+  const totalAgency  = workspaces.filter((w) => w.plan === "agency").length;
+  const totalPro     = workspaces.filter((w) => w.plan === "pro").length;
 
   return (
     <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
@@ -60,21 +60,22 @@ export default function HQClient({
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Building2 size={20} className="text-[#f59e0b]" />
-          <h1 className="text-2xl font-bold text-[#F1F5F9]">HQ — Clientes</h1>
+          <h1 className="text-2xl font-bold text-[#F1F5F9]">HQ Admin</h1>
         </div>
-        <p className="text-sm text-[#94A3B8]">Vista global de todos los clientes del local físico</p>
+        <p className="text-sm text-[#94A3B8]">Vista global de todos los negocios y sus integraciones</p>
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { label: "Tiendas activas", value: workspaces.length, color: "#f59e0b" },
-          { label: "Clientes totales",  value: totalCustomers,    color: "#e1691e" },
-          { label: "Ventas registradas", value: totalSales,       color: "#22c55e" },
+          { label: "Tiendas totales",      value: workspaces.length, color: "#f59e0b" },
+          { label: "Con TiendaNube",        value: totalTN,           color: "#2563EB" },
+          { label: "Plan Agency",           value: totalAgency,       color: "#f59e0b" },
+          { label: "Plan Pro",              value: totalPro,          color: "#8B5CF6" },
         ].map(({ label, value, color }) => (
           <div key={label} className="rounded-2xl p-4" style={CARD}>
-            <p className="text-2xl font-bold text-[#F1F5F9]">{value.toLocaleString("es-AR")}</p>
-            <p className="text-xs text-[#64748B] mt-1">{label}</p>
+            <p className="text-2xl font-bold" style={{ color }}>{value}</p>
+            <p className="text-xs text-[#64748B] mt-0.5">{label}</p>
           </div>
         ))}
       </div>
@@ -86,157 +87,136 @@ export default function HQClient({
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre, DNI, teléfono o tienda…"
+            placeholder="Buscar por nombre de tienda…"
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-[#F1F5F9] placeholder-[#64748B] focus:outline-none"
             style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
           />
         </div>
         <select
-          value={wsFilter}
-          onChange={(e) => setWsFilter(e.target.value)}
+          value={planFilter}
+          onChange={(e) => setPlanFilter(e.target.value)}
           className="px-4 py-2.5 rounded-xl text-sm text-[#F1F5F9] focus:outline-none"
           style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.2)" }}
         >
-          <option value="all">Todas las tiendas</option>
-          {workspaces.map((ws) => (
-            <option key={ws.id} value={ws.id}>{ws.name}</option>
-          ))}
+          <option value="all">Todos los planes</option>
+          <option value="agency">Agency</option>
+          <option value="pro">Pro</option>
+          <option value="trial">Trial</option>
+          <option value="free">Free</option>
         </select>
       </div>
 
-      {/* Tabla */}
+      {/* Grid de workspaces */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 rounded-2xl" style={CARD}>
-          <User size={40} className="text-[#334155] mb-3" />
-          <p className="text-[#64748B] text-sm">No hay clientes que coincidan</p>
+          <Store size={40} className="text-[#334155] mb-3" />
+          <p className="text-[#64748B] text-sm">No hay tiendas que coincidan</p>
         </div>
       ) : (
-        <div className="rounded-2xl overflow-hidden" style={CARD}>
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                {["Tienda", "Cliente", "DNI", "Contacto", "Compras", "Total", "Última visita"].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-[#64748B] font-medium text-xs uppercase tracking-wide whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => {
-                const { count, total, lastAt } = stats(c);
-                return (
-                  <tr key={c.id} onClick={() => setDetail(c)}
-                    className="cursor-pointer hover:bg-white/[0.03] transition-colors"
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <Store size={12} className="text-[#f59e0b] flex-shrink-0" />
-                        <span className="text-xs text-[#94A3B8] truncate max-w-[100px]">{c.workspaces?.name ?? "—"}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                          style={{ background: "linear-gradient(135deg, #e1691e, #c2531a)" }}>
-                          {c.name[0]?.toUpperCase()}
-                        </div>
-                        <span className="font-medium text-[#F1F5F9] truncate max-w-[140px]">{c.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-[#94A3B8]">{c.dni || "—"}</td>
-                    <td className="px-4 py-3 text-[#94A3B8] text-xs">{c.phone || c.email || "—"}</td>
-                    <td className="px-4 py-3">
-                      <span className="font-semibold" style={{ color: count > 0 ? "#e1691e" : "#64748B" }}>{count}</span>
-                    </td>
-                    <td className="px-4 py-3 font-medium text-[#F1F5F9]">{total > 0 ? fmt(total) : "—"}</td>
-                    <td className="px-4 py-3 text-[#64748B] text-xs">
-                      {lastAt ? new Date(lastAt).toLocaleDateString("es-AR") : "—"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Modal detalle */}
-      {detail && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
-          onClick={(e) => e.target === e.currentTarget && setDetail(null)}>
-          <div className="w-full max-w-md rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-4 duration-200 max-h-[85vh] overflow-y-auto"
-            style={{ background: "#111118", border: "1px solid rgba(124,58,237,0.25)" }}>
-            <div className="flex items-start justify-between mb-1">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white"
-                  style={{ background: "linear-gradient(135deg, #e1691e, #c2531a)" }}>
-                  {detail.name[0]?.toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="font-bold text-[#F1F5F9] text-lg">{detail.name}</h3>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <Store size={11} className="text-[#f59e0b]" />
-                    <span className="text-xs text-[#94A3B8]">{detail.workspaces?.name}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filtered.map((ws) => {
+            const planInfo = PLAN_BADGE[ws.plan] ?? PLAN_BADGE.free;
+            return (
+              <button
+                key={ws.id}
+                onClick={() => router.push(`/app/hq/${ws.id}`)}
+                className="text-left rounded-2xl p-4 transition-all duration-150 group"
+                style={{
+                  ...CARD,
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,158,11,0.4)";
+                  (e.currentTarget as HTMLButtonElement).style.background = "rgba(17,17,24,0.95)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(124,58,237,0.15)";
+                  (e.currentTarget as HTMLButtonElement).style.background = "#111118";
+                }}
+              >
+                {/* Card header */}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                      style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}
+                    >
+                      {ws.name[0]?.toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-[#F1F5F9] truncate text-sm">{ws.name}</p>
+                      {ws.storeName && (
+                        <p className="text-[11px] text-[#64748B] truncate">{ws.storeName}</p>
+                      )}
+                    </div>
                   </div>
+                  <ChevronRight
+                    size={16}
+                    className="text-[#475569] flex-shrink-0 mt-0.5 transition-colors group-hover:text-[#f59e0b]"
+                  />
                 </div>
-              </div>
-              <button onClick={() => setDetail(null)} className="text-[#64748B] hover:text-[#94A3B8]"><X size={20} /></button>
-            </div>
-            <p className="text-xs text-[#64748B] mb-4 ml-[60px]">Desde {new Date(detail.created_at).toLocaleDateString("es-AR")}</p>
 
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {detail.dni && (
-                <div className="px-3 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
-                  <p className="text-[10px] text-[#64748B] uppercase tracking-wide">DNI</p>
-                  <p className="text-sm font-mono text-[#F1F5F9]">{detail.dni}</p>
+                {/* Plan badge */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                    style={{
+                      background: `${planInfo.color}18`,
+                      color: planInfo.color,
+                      border: `1px solid ${planInfo.color}33`,
+                    }}
+                  >
+                    {planInfo.icon}
+                    {planInfo.label}
+                  </span>
+                  {ws.status === "active" ? (
+                    <CheckCircle2 size={12} className="text-[#22c55e]" />
+                  ) : (
+                    <XCircle size={12} className="text-[#64748B]" />
+                  )}
                 </div>
-              )}
-              {detail.phone && (
-                <div className="px-3 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
-                  <p className="text-[10px] text-[#64748B] uppercase tracking-wide">Teléfono</p>
-                  <div className="flex items-center gap-1"><Phone size={11} className="text-[#64748B]" /><p className="text-sm text-[#F1F5F9]">{detail.phone}</p></div>
-                </div>
-              )}
-            </div>
 
-            {(() => {
-              const { count, total } = stats(detail);
-              return (
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="px-3 py-3 rounded-xl text-center" style={{ background: "rgba(225,105,30,0.08)", border: "1px solid rgba(225,105,30,0.2)" }}>
-                    <ShoppingBag size={16} className="text-[#e1691e] mx-auto mb-1" />
-                    <p className="text-xl font-bold text-[#F1F5F9]">{count}</p>
-                    <p className="text-xs text-[#94A3B8]">compra{count !== 1 ? "s" : ""}</p>
-                  </div>
-                  <div className="px-3 py-3 rounded-xl text-center" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)" }}>
-                    <CreditCard size={16} className="text-[#22c55e] mx-auto mb-1" />
-                    <p className="text-xl font-bold text-[#F1F5F9]">{fmt(total)}</p>
-                    <p className="text-xs text-[#94A3B8]">total gastado</p>
-                  </div>
+                {/* Integraciones */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {ws.providers.length === 0 ? (
+                    <span className="text-[10px] text-[#475569]">Sin integraciones activas</span>
+                  ) : (
+                    ws.providers.map((p) => {
+                      const pInfo = PROVIDER_ICONS[p];
+                      if (!pInfo) return null;
+                      return (
+                        <span
+                          key={p}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium"
+                          style={{
+                            background: `${pInfo.color}14`,
+                            color: pInfo.color,
+                            border: `1px solid ${pInfo.color}28`,
+                          }}
+                        >
+                          {pInfo.icon}
+                          {pInfo.label}
+                        </span>
+                      );
+                    })
+                  )}
                 </div>
-              );
-            })()}
 
-            {detail.local_sales.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-2">Historial</p>
-                <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                  {detail.local_sales
-                    .slice()
-                    .sort((a, b) => b.created_at.localeCompare(a.created_at))
-                    .map((s) => (
-                      <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-xl"
-                        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                        <p className="text-xs text-[#94A3B8]">
-                          {new Date(s.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
-                        </p>
-                        <p className="text-sm font-semibold text-[#F1F5F9]">{fmt(Number(s.total))}</p>
-                      </div>
-                    ))}
+                {/* Footer */}
+                <div className="mt-3 pt-3 flex items-center justify-between" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                  <span className="text-[10px] text-[#475569]">
+                    Desde {new Date(ws.created_at).toLocaleDateString("es-AR")}
+                  </span>
+                  <span
+                    className="text-[10px] font-medium"
+                    style={{ color: ws.hasTiendanube ? "#2563EB" : "#475569" }}
+                  >
+                    {ws.hasTiendanube ? "Ver datos TN →" : "Sin TiendaNube"}
+                  </span>
                 </div>
-              </div>
-            )}
-          </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

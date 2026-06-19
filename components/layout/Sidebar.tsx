@@ -43,9 +43,10 @@ export default function Sidebar({
   alertCount = 0,
   isSuperAdmin = false,
 }: SidebarProps) {
-  const [collapsed,  setCollapsed]  = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-  const [showConfig, setShowConfig] = useState(false);
+  const [collapsed,     setCollapsed]     = useState(false);
+  const [loggingOut,    setLoggingOut]    = useState(false);
+  const [showConfig,    setShowConfig]    = useState(false);
+  const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const pathname = usePathname();
   const router   = useRouter();
   const { pinned, toggle: togglePin } = usePinnedSections();
@@ -120,7 +121,11 @@ export default function Sidebar({
           return (
             <div key={section.label}>
               {!collapsed && (
-                <div className="group flex items-center justify-between px-3 mb-1.5">
+                <div
+                  className="flex items-center justify-between px-3 mb-1.5"
+                  onMouseEnter={() => setHoveredSection(section.label)}
+                  onMouseLeave={() => setHoveredSection(null)}
+                >
                   <p className="text-[10px] font-semibold tracking-widest text-[#64748B] uppercase">
                     {section.label}
                   </p>
@@ -129,16 +134,14 @@ export default function Sidebar({
                     title={isPinned ? "Desanclar sección" : "Anclar accesos rápidos arriba"}
                     className="flex items-center justify-center w-5 h-5 rounded transition-all"
                     style={{
-                      opacity: isPinned ? 1 : 0,
+                      opacity: isPinned || hoveredSection === section.label ? 1 : 0,
                       color: isPinned ? sectionColor : "#64748B",
                     }}
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.opacity = "1";
                       (e.currentTarget as HTMLButtonElement).style.color = sectionColor;
                       (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.06)";
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.opacity = isPinned ? "1" : "0";
                       (e.currentTarget as HTMLButtonElement).style.color = isPinned ? sectionColor : "#64748B";
                       (e.currentTarget as HTMLButtonElement).style.background = "transparent";
                     }}
