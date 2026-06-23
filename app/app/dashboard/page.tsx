@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_after as after } from "next/server";
 import { getUser, getCachedUserRow, getCachedFinancialConfig } from "@/lib/supabase/cached-queries";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
@@ -103,15 +104,13 @@ async function getDashboardData() {
         recurrenteCount = customersRes.value.filter((c) => c.orders_count > 1).length;
       }
 
-      // Trigger sync full en background sin bloquear el render
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-      if (appUrl) {
-        fetch(`${appUrl}/api/tiendanube/sync`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode: "full" }),
-        }).catch(() => {});
-      }
+      // Trigger sync full DESPUÉS de enviar la respuesta (after() espera que termine antes de matar la función)
+      const syncOpts = connection.opts;
+      const syncWorkspaceId = workspaceId;
+      after(async () => {
+        const { syncAll } = await import("@/lib/tiendanube/sync");
+        await syncAll(syncWorkspaceId, syncOpts, "full").catch(console.error);
+      });
     }
   }
 
