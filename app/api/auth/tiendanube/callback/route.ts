@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { unstable_after as after } from "next/server";
+import { NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { encrypt } from "@/lib/encryption";

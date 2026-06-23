@@ -4,10 +4,6 @@ const nextConfig: NextConfig = {
   // Deshabilitar source maps en producción — no exponer código fuente al browser
   productionBrowserSourceMaps: false,
 
-  // Habilita unstable_after() — corre código después de enviar la respuesta (sync en background)
-  experimental: {
-    after: true,
-  },
 
   // Security headers
   async headers() {
