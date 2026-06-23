@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 export async function signOut() {
@@ -42,6 +42,7 @@ export async function updateFinancialConfig(formData: FormData) {
     .update(parsed.data)
     .eq("workspace_id", (userRow as any).workspace_id);
 
+  revalidateTag("financial-config");
   revalidatePath("/app/configuracion/financiera");
 }
 
@@ -61,6 +62,7 @@ export async function updateProfile(formData: FormData) {
     .update({ name: parsed.data.name })
     .eq("id", user.id);
 
+  revalidateTag("user-row");
   revalidatePath("/app/configuracion/cuenta");
 }
 
@@ -149,6 +151,7 @@ export async function disconnectIntegration(provider: string) {
     metadata: { provider },
   });
 
+  revalidateTag("integrations");
   revalidatePath("/app/configuracion/integraciones");
 }
 
@@ -198,6 +201,7 @@ export async function saveMetaToken(input: { token: string; adAccountId: string;
     metadata: { provider: "meta", account_id: cleanAccountId },
   });
 
+  revalidateTag("integrations");
   revalidatePath("/app/configuracion/integraciones");
   revalidatePath("/app/meta-ads");
 }
@@ -272,6 +276,7 @@ export async function saveCotizacion(formData: FormData) {
     usd_adjustment: parsed.data.usd_adjustment,
   }).eq("workspace_id", (userRow as any).workspace_id);
 
+  revalidateTag("financial-config");
   revalidatePath("/app/configuracion/cotizaciones");
   revalidatePath("/app/configuracion/financiera");
 }
@@ -310,6 +315,7 @@ export async function saveComisiones(formData: FormData) {
   const db = supabase as unknown as { from: (t: string) => any };
   await db.from("financial_config").update(update).eq("workspace_id", (userRow as any).workspace_id);
 
+  revalidateTag("financial-config");
   revalidatePath("/app/configuracion/comisiones");
   revalidatePath("/app/configuracion/financiera");
 }
@@ -459,6 +465,7 @@ export async function markAlertRead(alertId: string) {
     .eq("id", alertId)
     .eq("workspace_id", workspaceId);
 
+  revalidateTag("alert-count");
   revalidatePath("/app/alertas");
 }
 

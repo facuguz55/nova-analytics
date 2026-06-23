@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { createServiceClient } from "@/lib/supabase/service";
+import { getUser, getCachedUserRow } from "@/lib/supabase/cached-queries";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getOrdersForRange, calcOrderRevenue, type TNOrder } from "@/lib/tiendanube/client";
 import { formatCurrency } from "@/lib/utils";
@@ -26,11 +28,8 @@ function statusLabel(o: TNOrder) {
   return { label: o.status,     color: "#94A3B8", bg: "rgba(148,163,184,0.1)" };
 }
 
-// Parsear y validar los parámetros de fecha desde la URL
 function resolveDateRange(params: { preset?: string; since?: string; until?: string }): {
-  since: string;
-  until: string;
-  preset: Preset;
+  since: string; until: string; preset: Preset;
 } {
   const validPresets: Preset[] = ["today", "yesterday", "7d", "15d", "30d", "60d", "90d", "custom"];
   const preset = validPresets.includes(params.preset as Preset)
@@ -38,29 +37,19 @@ function resolveDateRange(params: { preset?: string; since?: string; until?: str
     : "30d";
 
   if (preset === "custom" && params.since && params.until) {
-    // Validar formato YYYY-MM-DD
     const re = /^\d{4}-\d{2}-\d{2}$/;
-    if (re.test(params.since) && re.test(params.until)) {
+    if (re.test(params.since) && re.test(params.until))
       return { since: params.since, until: params.until, preset: "custom" };
-    }
   }
 
-  if (preset !== "custom") {
-    // Si vienen since/until explícitos Y coinciden con el preset, usarlos.
-    // Si no, computar desde el preset.
-    if (params.since && params.until) {
-      const re = /^\d{4}-\d{2}-\d{2}$/;
-      if (re.test(params.since) && re.test(params.until)) {
-        return { since: params.since, until: params.until, preset };
-      }
-    }
-    const dates = presetToDates(preset);
-    return { ...dates, preset };
+  if (preset !== "custom" && params.since && params.until) {
+    const re = /^\d{4}-\d{2}-\d{2}$/;
+    if (re.test(params.since) && re.test(params.until))
+      return { since: params.since, until: params.until, preset };
   }
 
-  // Fallback: últimos 30 días
-  const d = presetToDates("30d");
-  return { ...d, preset: "30d" };
+  const dates = presetToDates(preset === "custom" ? "30d" : preset);
+  return { ...dates, preset: preset === "custom" ? "30d" : preset };
 }
 
 export default async function OrdenesPage({
@@ -73,17 +62,73 @@ export default async function OrdenesPage({
   const q = (params.q ?? "").toLowerCase();
   const statusFilter = params.status ?? "all";
 
-  const connection = await getTiendaNubeConnection();
+  const user = await getUser();
+  if (!user) return null;
+
+  const userRow = await getCachedUserRow(user.id);
+  if (!userRow) return null;
+
+  const workspaceId = userRow.workspace_id;
+  const db = createServiceClient() as any;
 
   let allOrders: TNOrder[] = [];
   let error: string | null = null;
+  let isConnected = false;
 
-  if (connection) {
-    const result = await Promise.allSettled([
-      getOrdersForRange(connection.opts, { since, until }),
-    ]);
-    if (result[0].status === "fulfilled") allOrders = result[0].value;
-    else error = "Error al conectar con TiendaNube";
+  // ¿Hay datos sincronizados?
+  const { count: syncedCount } = await db
+    .from("tn_orders")
+    .select("id", { count: "exact", head: true })
+    .eq("workspace_id", workspaceId);
+
+  const hasSyncedData = (syncedCount ?? 0) > 0;
+
+  if (hasSyncedData) {
+    // ── Leer de Supabase (~50ms) ──────────────────────────────────────
+    const { data, error: dbErr } = await db
+      .from("tn_orders")
+      .select("external_id, number, customer_name, customer_email, total, subtotal, discount, shipping, status, payment_status, currency, created_at")
+      .eq("workspace_id", workspaceId)
+      .gte("created_at", `${since}T00:00:00.000Z`)
+      .lte("created_at", `${until}T23:59:59.999Z`)
+      .order("created_at", { ascending: false });
+
+    if (dbErr) {
+      error = "Error al leer órdenes";
+    } else {
+      allOrders = (data ?? []).map((o: any) => ({
+        id:             parseInt(o.external_id),
+        number:         o.number,
+        status:         o.status,
+        payment_status: o.payment_status,
+        total:          String(o.total),
+        subtotal:       String(o.subtotal ?? 0),
+        discount:       String(o.discount ?? 0),
+        shipping:       String(o.shipping ?? 0),
+        currency:       o.currency ?? "ARS",
+        customer:       o.customer_name
+          ? { id: 0, name: o.customer_name, email: o.customer_email ?? "", phone: undefined }
+          : null,
+        products:       [],
+        created_at:     o.created_at,
+        updated_at:     o.created_at,
+        paid_at:        null,
+        cancelled_at:   null,
+      }));
+      isConnected = true;
+    }
+  } else {
+    // ── Fallback: API de TiendaNube ───────────────────────────────────
+    const connection = await getTiendaNubeConnection();
+    isConnected = !!connection;
+
+    if (connection) {
+      const result = await Promise.allSettled([
+        getOrdersForRange(connection.opts, { since, until }),
+      ]);
+      if (result[0].status === "fulfilled") allOrders = result[0].value;
+      else error = "Error al conectar con TiendaNube";
+    }
   }
 
   // Filtrar por búsqueda
@@ -118,12 +163,9 @@ export default async function OrdenesPage({
     { value: "cancelled", label: "Canceladas", count: allOrders.filter((o) => o.status === "cancelled" || o.payment_status === "voided" || o.payment_status === "refunded").length },
   ];
 
-  // Construir base URL para filtros de estado (preservando since/until/preset)
   function statusHref(status: string) {
     const p = new URLSearchParams();
-    p.set("preset", preset);
-    p.set("since", since);
-    p.set("until", until);
+    p.set("preset", preset); p.set("since", since); p.set("until", until);
     if (q) p.set("q", q);
     if (status !== "all") p.set("status", status);
     return `?${p.toString()}`;
@@ -137,7 +179,8 @@ export default async function OrdenesPage({
           <h1 className="text-2xl font-black text-[#F1F5F9]" style={{ letterSpacing: "-0.02em" }}>Órdenes</h1>
           <p className="text-sm text-[#94A3B8] mt-0.5">
             {since === until ? since : `${since} → ${until}`}
-            {" · "}directo desde TiendaNube
+            {" · "}
+            {hasSyncedData ? "desde tu base de datos" : "directo desde TiendaNube"}
           </p>
         </div>
       </div>
@@ -147,27 +190,26 @@ export default async function OrdenesPage({
         <DateRangeSelector activePreset={preset} since={since} until={until} />
       </Suspense>
 
-      {!connection && (
+      {!isConnected && (
         <div className="rounded-2xl p-8 text-center" style={{ background: "#111118", border: "1px dashed rgba(139,92,246,0.3)" }}>
           <Store size={40} color="#8b5cf6" className="mx-auto mb-3" />
           <p className="text-[#F1F5F9] font-semibold mb-1">Conectá tu TiendaNube</p>
           <Link href="/app/configuracion/integraciones"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white mt-2"
-            style={{ background: "#8b5cf6" }}
-          >
+            style={{ background: "#8b5cf6" }}>
             Ir a Integraciones <ArrowRight size={14} />
           </Link>
         </div>
       )}
 
-      {connection && error && (
+      {isConnected && error && (
         <div className="rounded-xl p-4 flex items-center gap-3" style={{ background: "#1a0a0a", border: "1px solid rgba(239,68,68,0.3)" }}>
           <AlertTriangle size={18} color="#ef4444" />
           <p className="text-sm text-[#fca5a5]">{error}</p>
         </div>
       )}
 
-      {connection && !error && (
+      {isConnected && !error && (
         <>
           {/* Stats */}
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
@@ -193,7 +235,6 @@ export default async function OrdenesPage({
 
           {/* Filtros de estado + búsqueda */}
           <div className="flex flex-wrap items-center gap-3">
-            {/* Status tabs */}
             <div className="flex items-center gap-0.5 rounded-xl p-1"
               style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)" }}>
               {STATUS_FILTERS.map((f) => {
@@ -201,10 +242,7 @@ export default async function OrdenesPage({
                 return (
                   <Link key={f.value} href={statusHref(f.value)}
                     className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
-                    style={{
-                      background: active ? "#8b5cf6" : "transparent",
-                      color: active ? "white" : "#94A3B8",
-                    }}>
+                    style={{ background: active ? "#8b5cf6" : "transparent", color: active ? "white" : "#94A3B8" }}>
                     {f.label}
                     <span className="rounded-full px-1.5 text-[10px] font-bold"
                       style={{ background: active ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.07)", color: active ? "white" : "#64748B" }}>
@@ -217,7 +255,6 @@ export default async function OrdenesPage({
 
             {/* Búsqueda */}
             <form action="" method="get" className="flex items-center gap-2">
-              {/* Preservar params de fecha al buscar */}
               <input type="hidden" name="preset" value={preset} />
               <input type="hidden" name="since" value={since} />
               <input type="hidden" name="until" value={until} />
@@ -225,23 +262,20 @@ export default async function OrdenesPage({
               <div className="flex items-center gap-2 rounded-xl px-3 py-2"
                 style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.2)", minWidth: "220px" }}>
                 <ShoppingCart size={12} color="#64748B" strokeWidth={2} />
-                <input
-                  type="text"
-                  name="q"
-                  defaultValue={q}
+                <input type="text" name="q" defaultValue={q}
                   placeholder="Cliente, email, #orden..."
-                  className="flex-1 bg-transparent text-sm text-[#F1F5F9] outline-none placeholder:text-[#475569]"
-                />
+                  className="flex-1 bg-transparent text-sm text-[#F1F5F9] outline-none placeholder:text-[#475569]" />
               </div>
-              <button type="submit"
-                className="rounded-xl px-3 py-2 text-xs font-semibold text-white"
+              <button type="submit" className="rounded-xl px-3 py-2 text-xs font-semibold text-white"
                 style={{ background: "#8b5cf6" }}>
                 Buscar
               </button>
             </form>
 
             <ExportCSVButton orders={filtered as any} />
-            <span className="text-xs text-[#64748B] ml-auto">{filtered.length} resultado{filtered.length !== 1 ? "s" : ""}</span>
+            <span className="text-xs text-[#64748B] ml-auto">
+              {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}
+            </span>
           </div>
 
           {/* Tabla de órdenes */}
@@ -250,18 +284,17 @@ export default async function OrdenesPage({
             {filtered.length === 0 ? (
               <div className="p-10 text-center">
                 <p className="text-sm text-[#64748B]">
-                  {q ? `Sin resultados para "${q}"` : `Sin órdenes${statusFilter !== "all" ? ` con estado "${STATUS_FILTERS.find(f => f.value === statusFilter)?.label}"` : ""} en este período`}
+                  {q
+                    ? `Sin resultados para "${q}"`
+                    : `Sin órdenes${statusFilter !== "all" ? ` con estado "${STATUS_FILTERS.find(f => f.value === statusFilter)?.label}"` : ""} en este período`}
                 </p>
               </div>
             ) : (
               filtered.slice(0, 200).map((o, i) => {
                 const { label, color, bg } = statusLabel(o);
                 return (
-                  <div
-                    key={o.id}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(139,92,246,0.04)] transition-colors"
-                    style={{ borderBottom: i < filtered.length - 1 ? "1px solid rgba(139,92,246,0.07)" : "none" }}
-                  >
+                  <div key={o.id} className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(139,92,246,0.04)] transition-colors"
+                    style={{ borderBottom: i < Math.min(filtered.length, 200) - 1 ? "1px solid rgba(139,92,246,0.07)" : "none" }}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-[#a78bfa]">#{o.number ?? o.id}</span>

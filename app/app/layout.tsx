@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getUser } from "@/lib/supabase/cached-queries";
+import { getUser, getCachedUserRow, getCachedIntegrations, getCachedAlertCount } from "@/lib/supabase/cached-queries";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
 import BottomNav from "@/components/layout/BottomNav";
@@ -15,39 +14,28 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
   const user = await getUser();
   if (!user) redirect("/login");
 
-  type UserRow = { name: string | null; email: string; avatar_url: string | null; role: string; workspaces: { id: string; name: string; plan: string; status: string; onboarding_completed: boolean } | null };
-  type IntRow = { provider: string; status: string };
+  const userRow = await getCachedUserRow(user.id);
+  if (!userRow) redirect("/login");
 
-  const [userRes, intRes, alertRes] = await Promise.allSettled([
-    supabase.from("users").select("*, workspaces(id, name, plan, status, onboarding_completed)").eq("id", user.id).single(),
-    supabase.from("integrations").select("provider, status").eq("status", "active"),
-    supabase.from("alerts").select("id", { count: "exact", head: true }).eq("read", false),
+  const workspaceId = userRow.workspace_id;
+  const workspace = userRow.workspaces;
+
+  const [integrations, alertCount] = await Promise.all([
+    getCachedIntegrations(workspaceId),
+    getCachedAlertCount(workspaceId),
   ]);
 
-  const rawUserRow = userRes.status === "fulfilled" ? userRes.value.data : null;
-  const rawIntegrations = intRes.status === "fulfilled" ? intRes.value.data : null;
-  const alertCount = alertRes.status === "fulfilled" ? alertRes.value.count : 0;
-
-  const userRow = rawUserRow as unknown as UserRow | null;
-  const integrations = (rawIntegrations ?? []) as unknown as IntRow[];
-  const workspace = userRow?.workspaces ?? null;
-
   const activeProviders = new Set(integrations.map((i) => i.provider));
-
-  const isSuperAdmin = userRow?.role === "super_admin";
+  const isSuperAdmin = userRow.role === "super_admin";
   const plan = workspace?.plan ?? "free";
 
-  // Redirigir al onboarding si no fue completado aún
   const onboardingCompleted = workspace?.onboarding_completed ?? false;
   if (!isSuperAdmin && !onboardingCompleted) redirect("/onboarding");
 
-  // El middleware ya verifica trial_ends_at — acá solo bloqueamos planes sin acceso
   const isLocked = !isSuperAdmin && !["trial", "active", "pro", "agency"].includes(plan);
-
   const alerts = alertCount ?? 0;
 
   return (
@@ -56,9 +44,9 @@ export default async function DashboardLayout({
       {/* Sidebar solo en sm+ */}
       <div className="hidden sm:flex h-full relative z-10">
         <Sidebar
-          userName={userRow?.name ?? user.email?.split("@")[0] ?? "Usuario"}
-          userEmail={userRow?.email ?? user.email ?? ""}
-          avatarUrl={userRow?.avatar_url ?? null}
+          userName={userRow.name ?? user.email?.split("@")[0] ?? "Usuario"}
+          userEmail={userRow.email ?? user.email ?? ""}
+          avatarUrl={userRow.avatar_url ?? null}
           workspaceName={workspace?.name ?? "Mi Tienda"}
           workspacePlan={plan}
           activeProviders={Array.from(activeProviders)}
@@ -68,8 +56,8 @@ export default async function DashboardLayout({
       </div>
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative z-10">
         <Navbar
-          userName={userRow?.name ?? user.email?.split("@")[0] ?? "Usuario"}
-          avatarUrl={userRow?.avatar_url ?? null}
+          userName={userRow.name ?? user.email?.split("@")[0] ?? "Usuario"}
+          avatarUrl={userRow.avatar_url ?? null}
           alertCount={alerts}
         />
         <PinnedBar />
@@ -79,7 +67,7 @@ export default async function DashboardLayout({
             <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "rgba(10,10,15,0.95)" }}>
               <PaywallCard
                 workspaceId={workspace?.id ?? ""}
-                userEmail={userRow?.email ?? user.email ?? ""}
+                userEmail={userRow.email ?? user.email ?? ""}
               />
             </div>
           ) : (

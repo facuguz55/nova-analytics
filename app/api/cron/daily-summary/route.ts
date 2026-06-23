@@ -65,6 +65,17 @@ export async function GET(req: Request) {
       const opts        = { accessToken, storeId: int.store_id };
       const storeName   = int.metadata?.store_name ?? "Tu tienda";
 
+      // ── 0. SYNC INCREMENTAL ────────────────────────────────────────
+      try {
+        const { syncOrders, syncCustomers } = await import("@/lib/tiendanube/sync");
+        await Promise.allSettled([
+          syncOrders(cfg.workspace_id, opts, "incremental"),
+          syncCustomers(cfg.workspace_id, opts, 3),
+        ]);
+      } catch (syncErr) {
+        console.error("[cron] sync error:", syncErr);
+      }
+
       const today    = new Date();
       const todayStr = today.toISOString().split("T")[0];
       const result: { workspaceId: string; summary?: string; vip?: string } = {
