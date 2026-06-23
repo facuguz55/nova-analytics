@@ -6,10 +6,10 @@ import { syncAll } from "@/lib/tiendanube/sync";
 export const maxDuration = 300;
 export const runtime = "nodejs";
 
-// Endpoint de uso único para sync inicial — protegido por service role key
+// Endpoint de uso único para sync inicial — protegido por token estático
+const SYNC_TOKEN = "nova-sync-2026-init";
 function isAuthorized(req: Request): boolean {
-  const key = req.headers.get("x-service-key");
-  return key === process.env.SUPABASE_SERVICE_ROLE_KEY;
+  return req.headers.get("x-sync-token") === SYNC_TOKEN;
 }
 
 export async function POST(req: Request) {
