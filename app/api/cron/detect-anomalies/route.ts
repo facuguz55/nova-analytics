@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { decrypt } from "@/lib/encryption";
-import { getOrdersForRange } from "@/lib/tiendanube/client";
 import { sendTelegramMessage, TelegramMessages } from "@/lib/telegram";
+import { syncOrders } from "@/lib/tiendanube/sync";
 
 export const runtime = "nodejs";
 
@@ -36,7 +36,8 @@ export async function GET(req: Request) {
   const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
   const ystrdyStr = yesterday.toISOString().split("T")[0];
 
-  const ANOMALY_THRESHOLD = 0.4; // 40% de caída o subida dispara alerta
+  const ANOMALY_THRESHOLD = 0.4;
+  const db = service as any;
 
   for (const int of integrations as IntRow[]) {
     try {
@@ -44,25 +45,42 @@ export async function GET(req: Request) {
       const accessToken = decrypt(int.access_token_encrypted);
       const opts        = { accessToken, storeId: int.store_id };
 
+      // ── Sync incremental primero ───────────────────────────────────
+      await syncOrders(int.workspace_id, opts, "incremental").catch(console.error);
+
+      // ── Leer de Supabase para detectar anomalías ───────────────────
+      const todayStart  = `${todayStr}T00:00:00.000Z`;
+      const todayEnd    = `${todayStr}T23:59:59.999Z`;
+      const ystrdyStart = `${ystrdyStr}T00:00:00.000Z`;
+      const ystrdyEnd   = `${ystrdyStr}T23:59:59.999Z`;
+
       const [todayRes, ystrdyRes] = await Promise.allSettled([
-        getOrdersForRange(opts, { since: todayStr, until: todayStr }),
-        getOrdersForRange(opts, { since: ystrdyStr, until: ystrdyStr }),
+        db.from("tn_orders")
+          .select("total, payment_status, status")
+          .eq("workspace_id", int.workspace_id)
+          .gte("created_at", todayStart)
+          .lte("created_at", todayEnd),
+        db.from("tn_orders")
+          .select("total, payment_status, status")
+          .eq("workspace_id", int.workspace_id)
+          .gte("created_at", ystrdyStart)
+          .lte("created_at", ystrdyEnd),
       ]);
 
       if (todayRes.status !== "fulfilled" || ystrdyRes.status !== "fulfilled") continue;
 
-      const todayPaid  = todayRes.value.filter((o) => o.payment_status === "paid" || o.status === "closed");
-      const ystrdyPaid = ystrdyRes.value.filter((o) => o.payment_status === "paid" || o.status === "closed");
-      const todayRev   = todayPaid.reduce((a, o)  => a + parseFloat(o.total), 0);
-      const ystrdyRev  = ystrdyPaid.reduce((a, o) => a + parseFloat(o.total), 0);
+      const isPaid = (o: any) => o.payment_status === "paid" || o.status === "closed";
+      const todayPaid  = (todayRes.value.data  ?? []).filter(isPaid);
+      const ystrdyPaid = (ystrdyRes.value.data ?? []).filter(isPaid);
+      const todayRev   = todayPaid.reduce((a: number, o: any)  => a + parseFloat(o.total), 0);
+      const ystrdyRev  = ystrdyPaid.reduce((a: number, o: any) => a + parseFloat(o.total), 0);
 
-      if (ystrdyRev === 0) continue; // sin base de comparación
+      if (ystrdyRev === 0) continue;
 
       const pctChange = (todayRev - ystrdyRev) / ystrdyRev;
       const isAnomaly = Math.abs(pctChange) >= ANOMALY_THRESHOLD;
       if (!isAnomaly) continue;
 
-      // Guardar alerta en DB
       await service.from("alerts").insert({
         workspace_id: int.workspace_id,
         type:         pctChange < 0 ? "warning" : "info",
@@ -75,7 +93,6 @@ export async function GET(req: Request) {
         read: false,
       });
 
-      // Notificación Telegram si está configurado
       const { data: notifCfg } = await service
         .from("notification_config")
         .select("telegram_chat_id, telegram_enabled")

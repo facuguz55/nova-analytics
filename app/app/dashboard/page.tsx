@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { unstable_after as after } from "next/server";
 import { getUser, getCachedUserRow, getCachedFinancialConfig } from "@/lib/supabase/cached-queries";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
@@ -104,13 +103,9 @@ async function getDashboardData() {
         recurrenteCount = customersRes.value.filter((c) => c.orders_count > 1).length;
       }
 
-      // Trigger sync full DESPUÉS de enviar la respuesta (after() espera que termine antes de matar la función)
-      const syncOpts = connection.opts;
-      const syncWorkspaceId = workspaceId;
-      after(async () => {
-        const { syncAll } = await import("@/lib/tiendanube/sync");
-        await syncAll(syncWorkspaceId, syncOpts, "full").catch(console.error);
-      });
+      // El sync se dispara en el callback de OAuth al conectar TiendaNube.
+      // Si llegamos acá sin datos sincronizados es porque la conexión es muy reciente
+      // o el sync falló — el cron nocturno lo va a recuperar.
     }
   }
 

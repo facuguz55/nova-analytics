@@ -42,7 +42,7 @@ export async function updateFinancialConfig(formData: FormData) {
     .update(parsed.data)
     .eq("workspace_id", (userRow as any).workspace_id);
 
-  revalidateTag("financial-config");
+  revalidateTag(`financial-config-${(userRow as any).workspace_id}`);
   revalidatePath("/app/configuracion/financiera");
 }
 
@@ -62,7 +62,7 @@ export async function updateProfile(formData: FormData) {
     .update({ name: parsed.data.name })
     .eq("id", user.id);
 
-  revalidateTag("user-row");
+  revalidateTag(`user-row-${user.id}`);
   revalidatePath("/app/configuracion/cuenta");
 }
 
@@ -151,7 +151,7 @@ export async function disconnectIntegration(provider: string) {
     metadata: { provider },
   });
 
-  revalidateTag("integrations");
+  revalidateTag(`integrations-${(userRow as any).workspace_id}`);
   revalidatePath("/app/configuracion/integraciones");
 }
 
@@ -201,7 +201,7 @@ export async function saveMetaToken(input: { token: string; adAccountId: string;
     metadata: { provider: "meta", account_id: cleanAccountId },
   });
 
-  revalidateTag("integrations");
+  revalidateTag(`integrations-${(userRow as any).workspace_id}`);
   revalidatePath("/app/configuracion/integraciones");
   revalidatePath("/app/meta-ads");
 }
@@ -276,7 +276,7 @@ export async function saveCotizacion(formData: FormData) {
     usd_adjustment: parsed.data.usd_adjustment,
   }).eq("workspace_id", (userRow as any).workspace_id);
 
-  revalidateTag("financial-config");
+  revalidateTag(`financial-config-${(userRow as any).workspace_id}`);
   revalidatePath("/app/configuracion/cotizaciones");
   revalidatePath("/app/configuracion/financiera");
 }
@@ -315,7 +315,7 @@ export async function saveComisiones(formData: FormData) {
   const db = supabase as unknown as { from: (t: string) => any };
   await db.from("financial_config").update(update).eq("workspace_id", (userRow as any).workspace_id);
 
-  revalidateTag("financial-config");
+  revalidateTag(`financial-config-${(userRow as any).workspace_id}`);
   revalidatePath("/app/configuracion/comisiones");
   revalidatePath("/app/configuracion/financiera");
 }
@@ -465,7 +465,7 @@ export async function markAlertRead(alertId: string) {
     .eq("id", alertId)
     .eq("workspace_id", workspaceId);
 
-  revalidateTag("alert-count");
+  revalidateTag(`alert-count-${workspaceId}`);
   revalidatePath("/app/alertas");
 }
 

@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { decrypt } from "@/lib/encryption";
-import { getOrdersForRange, getCustomers } from "@/lib/tiendanube/client";
+import { getCustomers } from "@/lib/tiendanube/client";
 import { sendTelegramMessage, TelegramMessages } from "@/lib/telegram";
+import { syncOrders, syncCustomers } from "@/lib/tiendanube/sync";
 
 export const runtime = "nodejs";
 
 // Vercel Hobby: máximo 2 cron jobs
-// Este cron corre a las 20:00 y hace: resumen diario + check VIP inactivos
+// Este cron corre a las 20:00 y hace:
+//   1. Sync incremental de TODOS los workspaces con TN conectado
+//   2. Resumen diario + check VIP (solo workspaces con notification_config)
 
 function isAuthorized(req: Request): boolean {
   const authHeader = req.headers.get("authorization");
@@ -22,7 +25,14 @@ export async function GET(req: Request) {
   }
 
   const service = createServiceClient();
+  const db = service as any;
 
+  type IntRow = {
+    workspace_id: string;
+    access_token_encrypted: string | null;
+    store_id: string | null;
+    metadata: Record<string, string> | null;
+  };
   type NotifRow = {
     workspace_id: string;
     telegram_chat_id: string | null;
@@ -31,22 +41,45 @@ export async function GET(req: Request) {
     daily_summary_time: string;
     alert_vip_inactive_days: number;
   };
-  type IntRow = {
-    workspace_id: string;
-    access_token_encrypted: string | null;
-    store_id: string | null;
-    metadata: Record<string, string> | null;
-  };
 
+  // ── PASO 1: Sync incremental de TODOS los workspaces activos ──────────
+  const { data: allIntegrations } = await service
+    .from("integrations")
+    .select("workspace_id, access_token_encrypted, store_id, metadata")
+    .eq("provider", "tiendanube")
+    .eq("status", "active");
+
+  const syncResults: { workspaceId: string; synced?: number; error?: string }[] = [];
+
+  for (const int of (allIntegrations ?? []) as IntRow[]) {
+    try {
+      if (!int.access_token_encrypted || !int.store_id) continue;
+      const accessToken = decrypt(int.access_token_encrypted);
+      const opts = { accessToken, storeId: int.store_id };
+
+      const [ordersResult, customersResult] = await Promise.allSettled([
+        syncOrders(int.workspace_id, opts, "incremental"),
+        syncCustomers(int.workspace_id, opts, 3),
+      ]);
+
+      const synced = (ordersResult.status === "fulfilled" ? ordersResult.value.synced : 0)
+                   + (customersResult.status === "fulfilled" ? customersResult.value.synced : 0);
+      syncResults.push({ workspaceId: int.workspace_id, synced });
+    } catch (err) {
+      syncResults.push({ workspaceId: int.workspace_id, error: String(err) });
+    }
+  }
+
+  // ── PASO 2: Notificaciones (solo workspaces con notification_config) ──
   const { data: configs } = await service
     .from("notification_config")
     .select("workspace_id, telegram_chat_id, telegram_enabled, daily_summary_enabled, daily_summary_time, alert_vip_inactive_days");
 
   if (!configs || configs.length === 0) {
-    return NextResponse.json({ message: "Sin configuraciones de notificación" });
+    return NextResponse.json({ syncResults, message: "Sin configuraciones de notificación" });
   }
 
-  const results: { workspaceId: string; summary?: string; vip?: string }[] = [];
+  const notifResults: { workspaceId: string; summary?: string; vip?: string }[] = [];
 
   for (const cfg of configs as NotifRow[]) {
     try {
@@ -65,39 +98,31 @@ export async function GET(req: Request) {
       const opts        = { accessToken, storeId: int.store_id };
       const storeName   = int.metadata?.store_name ?? "Tu tienda";
 
-      // ── 0. SYNC INCREMENTAL ────────────────────────────────────────
-      try {
-        const { syncOrders, syncCustomers } = await import("@/lib/tiendanube/sync");
-        await Promise.allSettled([
-          syncOrders(cfg.workspace_id, opts, "incremental"),
-          syncCustomers(cfg.workspace_id, opts, 3),
-        ]);
-      } catch (syncErr) {
-        console.error("[cron] sync error:", syncErr);
-      }
-
       const today    = new Date();
       const todayStr = today.toISOString().split("T")[0];
       const result: { workspaceId: string; summary?: string; vip?: string } = {
         workspaceId: cfg.workspace_id,
       };
 
-      // ── 1. RESUMEN DIARIO ──────────────────────────────────────────
+      // ── Resumen diario (lee de Supabase — ya sincronizado en paso 1) ──
       if (cfg.daily_summary_enabled) {
         try {
-          const [ordersRes, customersRes] = await Promise.allSettled([
-            getOrdersForRange(opts, { since: todayStr, until: todayStr }),
-            getCustomers(opts, 1, 100),
+          const [ordersRes, newCustRes] = await Promise.allSettled([
+            db.from("tn_orders")
+              .select("total, payment_status, status")
+              .eq("workspace_id", cfg.workspace_id)
+              .gte("created_at", `${todayStr}T00:00:00.000Z`)
+              .lte("created_at", `${todayStr}T23:59:59.999Z`),
+            db.from("tn_customers")
+              .select("id", { count: "exact", head: true })
+              .eq("workspace_id", cfg.workspace_id)
+              .gte("created_at_tn", `${todayStr}T00:00:00.000Z`),
           ]);
 
-          const orders      = ordersRes.status === "fulfilled" ? ordersRes.value : [];
-          const customers   = customersRes.status === "fulfilled" ? customersRes.value : [];
-          const paidOrders  = orders.filter((o) => o.payment_status === "paid" || o.status === "closed");
-          const revenue     = paidOrders.reduce((a, o) => a + parseFloat(o.total), 0);
-          const newCustomers = customers.filter((c) => {
-            return new Date(c.created_at).toISOString().split("T")[0] === todayStr;
-          }).length;
-
+          const orders = ordersRes.status === "fulfilled" ? (ordersRes.value.data ?? []) : [];
+          const paidOrders = orders.filter((o: any) => o.payment_status === "paid" || o.status === "closed");
+          const revenue = paidOrders.reduce((a: number, o: any) => a + parseFloat(o.total), 0);
+          const newCustomers = newCustRes.status === "fulfilled" ? (newCustRes.value.count ?? 0) : 0;
           const dateLabel = today.toLocaleDateString("es-AR", { weekday: "long", day: "2-digit", month: "long" });
 
           if (cfg.telegram_enabled && cfg.telegram_chat_id) {
@@ -116,29 +141,25 @@ export async function GET(req: Request) {
         }
       }
 
-      // ── 2. CLIENTES VIP INACTIVOS ─────────────────────────────────
+      // ── Clientes VIP inactivos (lee de Supabase) ─────────────────────
       try {
         const inactiveDays = cfg.alert_vip_inactive_days ?? 30;
-        const [p1, p2] = await Promise.allSettled([
-          getCustomers(opts, 1, 100),
-          getCustomers(opts, 2, 100),
-        ]);
-        const allCustomers = [
-          ...(p1.status === "fulfilled" ? p1.value : []),
-          ...(p2.status === "fulfilled" ? p2.value : []),
-        ];
+        const { data: vipRaw } = await db
+          .from("tn_customers")
+          .select("external_id, name, email, orders_count, total_spent, created_at_tn")
+          .eq("workspace_id", cfg.workspace_id)
+          .gt("orders_count", 1)
+          .order("total_spent", { ascending: false })
+          .limit(200);
 
-        const vipCustomers = allCustomers.filter((c) => c.orders_count > 1);
-        const now          = Date.now();
-
+        const now = Date.now();
         let vipCount = 0;
-        for (const vip of vipCustomers) {
-          const lastActivity = new Date(vip.created_at).getTime();
-          const daysSince    = Math.floor((now - lastActivity) / 86400000);
 
+        for (const vip of (vipRaw ?? []) as any[]) {
+          const lastActivity = new Date(vip.created_at_tn ?? 0).getTime();
+          const daysSince    = Math.floor((now - lastActivity) / 86400000);
           if (daysSince < inactiveDays) continue;
 
-          // Deduplicar — solo alertar una vez por semana por cliente
           const { data: existing } = await service
             .from("alerts")
             .select("id")
@@ -173,11 +194,11 @@ export async function GET(req: Request) {
         result.vip = "error";
       }
 
-      results.push(result);
+      notifResults.push(result);
     } catch (err) {
-      results.push({ workspaceId: cfg.workspace_id, summary: `error: ${String(err)}` });
+      notifResults.push({ workspaceId: cfg.workspace_id, summary: `error: ${String(err)}` });
     }
   }
 
-  return NextResponse.json({ results });
+  return NextResponse.json({ syncResults, notifResults });
 }
