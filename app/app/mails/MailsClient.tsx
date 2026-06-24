@@ -1,11 +1,47 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Mail, Send, Sparkles, Loader2, Inbox,
   CheckCircle2, Copy, X, Search, RefreshCw, Circle, ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
+
+// ── Category helpers ───────────────────────────────────────────────────────
+
+type MailCategory = "consulta" | "reclamo" | "pedido" | "agradecimiento" | "urgente" | "notificacion" | "otro";
+
+const CATEGORY_LABEL: Record<MailCategory, string> = {
+  consulta: "Consulta",
+  reclamo: "Reclamo",
+  pedido: "Pedido",
+  agradecimiento: "Gracias",
+  urgente: "Urgente",
+  notificacion: "Notif.",
+  otro: "Otro",
+};
+
+const CATEGORY_STYLE: Record<MailCategory, { color: string; bg: string; border: string }> = {
+  consulta:       { color: "#60a5fa", bg: "rgba(96,165,250,0.1)",   border: "rgba(96,165,250,0.25)" },
+  reclamo:        { color: "#f87171", bg: "rgba(248,113,113,0.1)",  border: "rgba(248,113,113,0.25)" },
+  pedido:         { color: "#34d399", bg: "rgba(52,211,153,0.1)",   border: "rgba(52,211,153,0.25)" },
+  agradecimiento: { color: "#86efac", bg: "rgba(134,239,172,0.08)", border: "rgba(134,239,172,0.2)" },
+  urgente:        { color: "#fb923c", bg: "rgba(251,146,60,0.1)",   border: "rgba(251,146,60,0.25)" },
+  notificacion:   { color: "#94a3b8", bg: "rgba(148,163,184,0.08)", border: "rgba(148,163,184,0.15)" },
+  otro:           { color: "#64748b", bg: "rgba(100,116,139,0.06)", border: "rgba(100,116,139,0.12)" },
+};
+
+function CategoryBadge({ category, className = "" }: { category: MailCategory; className?: string }) {
+  const s = CATEGORY_STYLE[category];
+  return (
+    <span
+      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-semibold flex-shrink-0 ${className}`}
+      style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}
+    >
+      {CATEGORY_LABEL[category]}
+    </span>
+  );
+}
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -226,28 +262,33 @@ export default function MailsClient({
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [atendidos, setAtendidos] = useState<Set<string>>(new Set());
   const [localRead, setLocalRead] = useState<Set<string>>(new Set());
+  const [classifications, setClassifications] = useState<Record<string, MailCategory>>({});
 
-  const selectMessage = useCallback(async (msg: EmailMessage) => {
-    if (loadingId) return;
-    setLoadingId(msg.id);
-    setReplyBody("");
-    setAiSuggestion("");
-    setAiNoReply(null);
-    setLocalRead(prev => new Set([...prev, msg.id]));
-    try {
-      const res = await fetch(`/api/mails/message?id=${msg.id}`);
-      if (!res.ok) throw new Error();
-      const data = await res.json() as FullMessage;
-      setSelected({ ...msg, ...data });
-    } catch {
-      toast.error("No se pudo cargar el email");
-    } finally {
-      setLoadingId(null);
-    }
-  }, [loadingId]);
+  // Clasificar todos los emails al montar (un solo call batch a Haiku)
+  useEffect(() => {
+    if (!messages.length) return;
+    const payload = messages.map(m => ({
+      id: m.id,
+      from: m.from,
+      subject: m.subject,
+      snippet: m.snippet,
+    }));
+    fetch("/api/mails/classify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: payload }),
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then((data: { classifications: Array<{ id: string; category: MailCategory }> } | null) => {
+        if (!data) return;
+        const map: Record<string, MailCategory> = {};
+        for (const c of data.classifications) map[c.id] = c.category;
+        setClassifications(map);
+      })
+      .catch(() => { /* clasificación es best-effort */ });
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function handleAISuggest() {
-    if (!selected) return;
+  async function fetchAISuggestion(msg: FullMessage) {
     setAiLoading(true);
     setAiSuggestion("");
     setAiNoReply(null);
@@ -256,27 +297,47 @@ export default function MailsClient({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: selected.from,
-          subject: selected.subject,
-          body: selected.body || selected.snippet,
+          from: msg.from,
+          subject: msg.subject,
+          body: msg.body || msg.snippet,
         }),
       });
-
-      // Email automático / no-reply detectado — no gastar tokens
       if (res.status === 422) {
         const data = await res.json() as { message?: string };
         setAiNoReply(data.message ?? "Este email no admite respuesta automática.");
         return;
       }
-
       const data = await res.json() as { suggestion?: string };
       if (data.suggestion) setAiSuggestion(data.suggestion);
-      else toast.error("No se pudo generar sugerencia");
+    } catch { /* silencioso — el usuario puede regenerar manualmente */ }
+    finally { setAiLoading(false); }
+  }
+
+  const selectMessage = useCallback(async (msg: EmailMessage) => {
+    if (loadingId) return;
+    setLoadingId(msg.id);
+    setReplyBody("");
+    setAiSuggestion("");
+    setAiNoReply(null);
+    setAiLoading(true);
+    setLocalRead(prev => new Set([...prev, msg.id]));
+    try {
+      const res = await fetch(`/api/mails/message?id=${msg.id}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json() as FullMessage;
+      const fullMsg = { ...msg, ...data };
+      setSelected(fullMsg);
+      fetchAISuggestion(fullMsg);
     } catch {
-      toast.error("Error al generar sugerencia");
-    } finally {
+      toast.error("No se pudo cargar el email");
       setAiLoading(false);
+    } finally {
+      setLoadingId(null);
     }
+  }, [loadingId]);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleAISuggest() {
+    if (selected) fetchAISuggestion(selected);
   }
 
   async function handleSend() {
@@ -469,6 +530,9 @@ export default function MailsClient({
 
                 <div className="flex items-center gap-1.5 mb-0.5 pl-[14px]">
                   <p className="text-[11px] text-[#94A3B8] truncate flex-1">{msg.subject}</p>
+                  {classifications[msg.id] && (
+                    <CategoryBadge category={classifications[msg.id]} />
+                  )}
                   {atendidos.has(msg.id) && (
                     <span
                       className="flex-shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
@@ -517,7 +581,12 @@ export default function MailsClient({
               </button>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h2 className="font-bold text-[#F1F5F9] text-base truncate">{selected.subject}</h2>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-bold text-[#F1F5F9] text-base truncate">{selected.subject}</h2>
+                    {classifications[selected.id] && (
+                      <CategoryBadge category={classifications[selected.id]} />
+                    )}
+                  </div>
                   <p className="text-xs font-semibold text-[#a78bfa] mt-0.5">{parseFrom(selected.from).name}</p>
                   <p className="text-[11px] text-[#64748B]">{parseFrom(selected.from).email}</p>
                   <p className="text-[11px] text-[#475569] mt-0.5">
@@ -567,8 +636,8 @@ export default function MailsClient({
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all hover:opacity-80 disabled:opacity-50"
                     style={{ background: "rgba(139,92,246,0.12)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}
                   >
-                    {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} strokeWidth={2.5} />}
-                    {aiLoading ? "Generando..." : "Generar sugerencia"}
+                    {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <RefreshCw size={11} strokeWidth={2.5} />}
+                    {aiLoading ? "Generando..." : "Regenerar"}
                   </button>
                 </div>
 
