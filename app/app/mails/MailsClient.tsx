@@ -257,7 +257,7 @@ export default function MailsClient({
   const [aiNoReply, setAiNoReply] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [filter, setFilter] = useState<"all" | "unread" | "others">("all");
   const [atendidos, setAtendidos] = useState<Set<string>>(new Set());
   const [localRead, setLocalRead] = useState<Set<string>>(new Set());
   const [classifications, setClassifications] = useState<Record<string, MailCategory>>({});
@@ -388,11 +388,17 @@ export default function MailsClient({
     );
   }
 
-  const unreadCount = messages.filter(m => m.isUnread && !localRead.has(m.id)).length;
+  const classifiedLoaded = Object.keys(classifications).length > 0;
+  const isClient = (id: string) => !classifiedLoaded || classifications[id] !== "otro";
 
-  const baseFiltered = filter === "unread"
-    ? messages.filter(m => m.isUnread && !localRead.has(m.id))
-    : messages;
+  const clientMessages = messages.filter(m => isClient(m.id));
+  const othersMessages = messages.filter(m => classifiedLoaded && classifications[m.id] === "otro");
+  const unreadCount = clientMessages.filter(m => m.isUnread && !localRead.has(m.id)).length;
+
+  const baseFiltered =
+    filter === "unread"  ? clientMessages.filter(m => m.isUnread && !localRead.has(m.id)) :
+    filter === "others"  ? othersMessages :
+    clientMessages;
 
   const filtered = search.trim()
     ? baseFiltered.filter(m => {
@@ -463,19 +469,23 @@ export default function MailsClient({
         </div>
 
         {/* Filtros */}
-        <div className="px-3 pb-2 flex gap-1.5 flex-shrink-0">
-          {(["all", "unread"] as const).map(f => (
+        <div className="px-3 pb-2 flex gap-1.5 flex-shrink-0 flex-wrap">
+          {([
+            { key: "all",    label: `Clientes (${clientMessages.length})` },
+            { key: "unread", label: `No leídos (${unreadCount})` },
+            { key: "others", label: `Otros (${othersMessages.length})` },
+          ] as const).map(({ key, label }) => (
             <button
-              key={f}
-              onClick={() => setFilter(f)}
+              key={key}
+              onClick={() => setFilter(key)}
               className="px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all"
               style={{
-                background: filter === f ? "#8b5cf6" : "transparent",
-                color: filter === f ? "white" : "#94A3B8",
-                border: `1px solid ${filter === f ? "#8b5cf6" : "rgba(139,92,246,0.2)"}`,
+                background: filter === key ? "#8b5cf6" : "transparent",
+                color: filter === key ? "white" : "#94A3B8",
+                border: `1px solid ${filter === key ? "#8b5cf6" : "rgba(139,92,246,0.2)"}`,
               }}
             >
-              {f === "all" ? `Todos (${messages.length})` : `No leídos (${unreadCount})`}
+              {label}
             </button>
           ))}
         </div>
