@@ -4,7 +4,7 @@ import { checkUserRateLimit } from "@/lib/rate-limit";
 import { sanitizePlainText } from "@/lib/security/sanitize";
 import { z } from "zod";
 
-const CATEGORIES = ["consulta", "reclamo", "pedido", "agradecimiento", "urgente", "notificacion", "otro"] as const;
+const CATEGORIES = ["consulta", "reclamo", "pedido", "agradecimiento", "urgente", "otro"] as const;
 export type MailCategory = typeof CATEGORIES[number];
 
 const Schema = z.object({
@@ -49,12 +49,24 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 400,
-      system: `Clasificá cada email en una de estas categorías: consulta, reclamo, pedido, agradecimiento, urgente, notificacion, otro.
+      system: `Sos un clasificador de emails para una tienda de e-commerce.
+
+REGLA PRINCIPAL: Si el email proviene de una empresa, servicio, plataforma, sistema automático, newsletter, banco, app, proveedor o cualquier entidad no-humana → categorizalo siempre como "otro".
+
+Solo si el remitente es claramente una persona real (cliente individual) usá estas categorías:
+- consulta: pregunta sobre producto, precio, stock, envío
+- reclamo: queja, problema, insatisfacción, devolución
+- pedido: quiere comprar, solicita presupuesto, hace un encargo
+- agradecimiento: mensaje positivo, felicitación, gracias
+- urgente: tono urgente, necesita respuesta inmediata
+
+En caso de duda sobre si es persona o empresa → "otro".
+
 Respondé ÚNICAMENTE con un JSON array, sin texto adicional:
 [{"id":"<id exacto del email>","category":"<categoría>"}]`,
       messages: [{
         role: "user",
-        content: `Clasificá estos emails de e-commerce:\n${items}`,
+        content: `Clasificá estos emails:\n${items}`,
       }],
     }),
   });

@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 // ── Category helpers ───────────────────────────────────────────────────────
 
-type MailCategory = "consulta" | "reclamo" | "pedido" | "agradecimiento" | "urgente" | "notificacion" | "otro";
+type MailCategory = "consulta" | "reclamo" | "pedido" | "agradecimiento" | "urgente" | "otro";
 
 const CATEGORY_LABEL: Record<MailCategory, string> = {
   consulta: "Consulta",
@@ -17,7 +17,6 @@ const CATEGORY_LABEL: Record<MailCategory, string> = {
   pedido: "Pedido",
   agradecimiento: "Gracias",
   urgente: "Urgente",
-  notificacion: "Notif.",
   otro: "Otro",
 };
 
@@ -27,7 +26,6 @@ const CATEGORY_STYLE: Record<MailCategory, { color: string; bg: string; border: 
   pedido:         { color: "#34d399", bg: "rgba(52,211,153,0.1)",   border: "rgba(52,211,153,0.25)" },
   agradecimiento: { color: "#86efac", bg: "rgba(134,239,172,0.08)", border: "rgba(134,239,172,0.2)" },
   urgente:        { color: "#fb923c", bg: "rgba(251,146,60,0.1)",   border: "rgba(251,146,60,0.25)" },
-  notificacion:   { color: "#94a3b8", bg: "rgba(148,163,184,0.08)", border: "rgba(148,163,184,0.15)" },
   otro:           { color: "#64748b", bg: "rgba(100,116,139,0.06)", border: "rgba(100,116,139,0.12)" },
 };
 
