@@ -6,7 +6,8 @@ import FinancieraClient from "./FinancieraClient";
 import CotizacionesClient from "../cotizaciones/CotizacionesClient";
 import ComisionesClient from "../comisiones/ComisionesClient";
 import CostosAdicionalesClient, { type AdditionalCost } from "../costos-adicionales/CostosAdicionalesClient";
-import EnviosContent, { type ShippingCost } from "./EnviosContent";
+import EnviosContent from "./EnviosContent";
+import { type ShippingCost } from "./shipping-defaults";
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 

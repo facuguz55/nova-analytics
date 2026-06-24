@@ -4,7 +4,7 @@ import { getUser } from "@/lib/supabase/cached-queries";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getProducts } from "@/lib/tiendanube/client";
 import FinancieraHub from "./FinancieraHub";
-import { DEFAULT_SHIPPING_COSTS } from "./EnviosContent";
+import { DEFAULT_SHIPPING_COSTS } from "./shipping-defaults";
 
 export const metadata: Metadata = { title: "Configuración Financiera" };
 
