@@ -58,8 +58,11 @@ export default async function FinancieraPage({
   const costs = costsRes.status === "fulfilled" ? ((costsRes.value as any)?.data ?? []) : [];
   const ratesData = ratesRes.status === "fulfilled" ? ratesRes.value : null;
   const savedShipping = shippingRes.status === "fulfilled" ? ((shippingRes.value as any)?.data ?? []) : [];
-  // Si no hay costos guardados, usar los defaults de mercado
   const shippingCosts = savedShipping.length > 0 ? savedShipping : DEFAULT_SHIPPING_COSTS;
+  const activeShipping = (shippingCosts as { cost: number; is_active: boolean }[]).filter(r => r.is_active && r.cost > 0);
+  const avgShippingCost = activeShipping.length
+    ? activeShipping.reduce((s, r) => s + Number(r.cost), 0) / activeShipping.length
+    : 0;
 
   const connection = await getTiendaNubeConnection();
 
@@ -151,6 +154,7 @@ export default async function FinancieraPage({
         custom_tax:        cfg?.custom_tax        ?? 0,
       }}
       additionalCosts={costs}
+      avgShippingCost={avgShippingCost}
       storeName={connection?.storeName ?? null}
       isConnected={!!connection}
       shippingCosts={shippingCosts}

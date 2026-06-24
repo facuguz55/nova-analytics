@@ -39,6 +39,7 @@ interface Props {
   cotizacionesConfig: CotizacionesConfig;
   comisionesConfig: ComisionesConfig;
   additionalCosts: AdditionalCost[];
+  avgShippingCost: number;
   storeName: string | null;
   isConnected: boolean;
   shippingCosts: ShippingCost[];
@@ -61,6 +62,7 @@ export default function FinancieraHub({
   cotizacionesConfig,
   comisionesConfig,
   additionalCosts,
+  avgShippingCost,
   storeName,
   isConnected,
   shippingCosts,
@@ -115,7 +117,7 @@ export default function FinancieraHub({
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {activeTab === "general" && (
-          <FinancieraClient config={generalConfig} avgCostPct={avgCostPct} productStats={productStats} />
+          <FinancieraClient config={generalConfig} avgCostPct={avgCostPct} productStats={productStats} avgShippingCost={avgShippingCost} />
         )}
 
         {activeTab === "cotizaciones" && (

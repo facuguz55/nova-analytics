@@ -17,10 +17,12 @@ export default function FinancieraClient({
   config,
   avgCostPct,
   productStats = { total: 0, withCost: 0 },
+  avgShippingCost = 0,
 }: {
   config: Config;
   avgCostPct: number;
   productStats?: { total: number; withCost: number };
+  avgShippingCost?: number;
 }) {
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -55,8 +57,9 @@ export default function FinancieraClient({
   const afterTax   = EXAMPLE - tax;
   const platform   = afterTax * (live.platform_fee / 100);
   const afterPlat  = afterTax - platform;
-  const cogs       = avgCostPct > 0 ? afterPlat * 0 + EXAMPLE * (avgCostPct / 100) : 0;
-  const profit     = afterPlat - cogs;
+  const cogs       = avgCostPct > 0 ? EXAMPLE * (avgCostPct / 100) : 0;
+  const shipping   = avgShippingCost;
+  const profit     = afterPlat - cogs - shipping;
   const marginPct  = (profit / EXAMPLE) * 100;
 
   const fields = [
@@ -169,6 +172,7 @@ export default function FinancieraClient({
               { label: `IVA (${live.tax_rate}%)`,           value: -tax,       minus: true,  color: "#f59e0b" },
               { label: `Comisión plataforma (${live.platform_fee}%)`, value: -platform, minus: true, color: "#8b5cf6" },
               ...(avgCostPct > 0 ? [{ label: `Costo productos (≈${avgCostPct.toFixed(0)}%)`, value: -cogs, minus: true, color: "#c026d3" }] : []),
+              ...(shipping > 0 ? [{ label: `Costo envío promedio`, value: -shipping, minus: true, color: "#22d3ee" }] : []),
             ].map((row) => (
               <div key={row.label} className="flex items-center justify-between py-2.5" style={{ borderBottom: "1px solid rgba(139,92,246,0.07)" }}>
                 <span className="text-sm" style={{ color: row.strong ? "#F1F5F9" : "#94A3B8", fontWeight: row.strong ? 700 : 400 }}>{row.label}</span>
@@ -185,6 +189,7 @@ export default function FinancieraClient({
                   { v: tax, c: "#f59e0b" },
                   { v: platform, c: "#8b5cf6" },
                   { v: cogs, c: "#c026d3" },
+                  { v: shipping, c: "#22d3ee" },
                   { v: Math.max(profit, 0), c: "#22c55e" },
                 ].map((seg, i) => seg.v > 0 && (
                   <div key={i} className="bar-fill h-full" style={{ width: `${(seg.v / EXAMPLE) * 100}%`, background: seg.c, boxShadow: `0 0 8px ${seg.c}`, animationDelay: `${0.2 + i * 0.08}s` }} />
@@ -193,7 +198,9 @@ export default function FinancieraClient({
               <div className="flex items-center gap-3 mt-2 flex-wrap">
                 {[
                   { l: "IVA", c: "#f59e0b" }, { l: "Plataforma", c: "#8b5cf6" },
-                  ...(avgCostPct > 0 ? [{ l: "Costo", c: "#c026d3" }] : []), { l: "Ganancia", c: "#22c55e" },
+                  ...(avgCostPct > 0 ? [{ l: "Costo", c: "#c026d3" }] : []),
+                  ...(shipping > 0 ? [{ l: "Envío", c: "#22d3ee" }] : []),
+                  { l: "Ganancia", c: "#22c55e" },
                 ].map((lg) => (
                   <span key={lg.l} className="flex items-center gap-1 text-[10px] text-[#64748B]">
                     <span className="w-2 h-2 rounded-full" style={{ background: lg.c }} /> {lg.l}
