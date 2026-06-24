@@ -28,7 +28,7 @@ async function fetchInbox(accessToken: string): Promise<GmailMessage[]> {
       messages.map((m) =>
         fetch(
           `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date&metadataHeaders=To`,
-          { headers: { Authorization: `Bearer ${accessToken}` } }
+          { headers: { Authorization: `Bearer ${accessToken}` }, next: { revalidate: 60 } }
         ).then((r) => r.ok ? r.json() : null)
       )
     );
@@ -41,19 +41,37 @@ async function fetchInbox(accessToken: string): Promise<GmailMessage[]> {
 export default async function MailsPage() {
   const supabase = await createClient();
 
-  const { data: rawUser } = await supabase
-    .from("users")
-    .select("workspace_id")
-    .single();
-  const workspaceId = (rawUser as { workspace_id: string | null } | null)?.workspace_id;
+  // Query directa a integrations — RLS scopa automáticamente al workspace del usuario.
+  // Evita la query previa a la tabla users para obtener workspace_id.
+  type IntRow = {
+    workspace_id: string;
+    access_token_encrypted: string | null;
+    refresh_token_encrypted: string | null;
+    expires_at: string | null;
+    status: string;
+    metadata: { email?: string } | null;
+  };
 
-  const gmail = workspaceId ? await getGmailToken(workspaceId) : null;
-  const isConnected = !!gmail;
-  let messages: GmailMessage[] = [];
+  const { data: raw } = await supabase
+    .from("integrations")
+    .select("workspace_id, access_token_encrypted, refresh_token_encrypted, expires_at, status, metadata")
+    .eq("provider", "gmail")
+    .maybeSingle();
 
-  if (gmail) {
-    messages = await fetchInbox(gmail.accessToken);
+  const integration = raw as IntRow | null;
+  const isConnected = integration?.status === "active" && !!integration?.access_token_encrypted;
+
+  let gmail = null;
+  if (isConnected && integration) {
+    gmail = await getGmailToken(integration.workspace_id, {
+      accessTokenEncrypted: integration.access_token_encrypted!,
+      refreshTokenEncrypted: integration.refresh_token_encrypted,
+      expiresAt: integration.expires_at,
+      email: integration.metadata?.email ?? "",
+    });
   }
+
+  const messages = gmail ? await fetchInbox(gmail.accessToken) : [];
 
   function getHeader(msg: GmailMessage, name: string) {
     return msg.payload?.headers?.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ?? "";

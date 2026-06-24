@@ -6,45 +6,73 @@ export interface GmailConnection {
   email: string;
 }
 
+export interface PreloadedIntegration {
+  accessTokenEncrypted: string;
+  refreshTokenEncrypted: string | null;
+  expiresAt: string | null;
+  email: string;
+}
+
 /**
  * Devuelve un access token válido para el workspace, refrescándolo si expiró.
+ * Acepta datos pre-cargados para evitar una query extra a Supabase.
  * Retorna null si Gmail no está conectado o el refresh falló.
  */
-export async function getGmailToken(workspaceId: string): Promise<GmailConnection | null> {
+export async function getGmailToken(
+  workspaceId: string,
+  preloaded?: PreloadedIntegration
+): Promise<GmailConnection | null> {
   const service = createServiceClient();
 
-  const { data: raw } = await service
-    .from("integrations")
-    .select("access_token_encrypted, refresh_token_encrypted, expires_at, status, metadata")
-    .eq("provider", "gmail")
-    .eq("workspace_id", workspaceId)
-    .maybeSingle();
+  let accessTokenEncrypted: string;
+  let refreshTokenEncrypted: string | null;
+  let expiresAt: string | null;
+  let email: string;
 
-  if (!raw) return null;
+  if (preloaded) {
+    accessTokenEncrypted = preloaded.accessTokenEncrypted;
+    refreshTokenEncrypted = preloaded.refreshTokenEncrypted;
+    expiresAt = preloaded.expiresAt;
+    email = preloaded.email;
+  } else {
+    const { data: raw } = await service
+      .from("integrations")
+      .select("access_token_encrypted, refresh_token_encrypted, expires_at, status, metadata")
+      .eq("provider", "gmail")
+      .eq("workspace_id", workspaceId)
+      .maybeSingle();
 
-  const row = raw as {
-    access_token_encrypted: string | null;
-    refresh_token_encrypted: string | null;
-    expires_at: string | null;
-    status: string;
-    metadata: { email?: string } | null;
-  };
+    if (!raw) return null;
 
-  if (row.status !== "active" || !row.access_token_encrypted) return null;
+    const row = raw as {
+      access_token_encrypted: string | null;
+      refresh_token_encrypted: string | null;
+      expires_at: string | null;
+      status: string;
+      metadata: { email?: string } | null;
+    };
+
+    if (row.status !== "active" || !row.access_token_encrypted) return null;
+
+    accessTokenEncrypted = row.access_token_encrypted;
+    refreshTokenEncrypted = row.refresh_token_encrypted;
+    expiresAt = row.expires_at;
+    email = row.metadata?.email ?? "";
+  }
 
   let accessToken: string;
   try {
-    accessToken = decrypt(row.access_token_encrypted);
+    accessToken = decrypt(accessTokenEncrypted);
   } catch {
     return null;
   }
 
-  const expiresAt = row.expires_at ? new Date(row.expires_at) : null;
-  const isExpired = !expiresAt || expiresAt.getTime() < Date.now() + 5 * 60 * 1000;
+  const expiresAtDate = expiresAt ? new Date(expiresAt) : null;
+  const isExpired = !expiresAtDate || expiresAtDate.getTime() < Date.now() + 5 * 60 * 1000;
 
-  if (isExpired && row.refresh_token_encrypted) {
+  if (isExpired && refreshTokenEncrypted) {
     try {
-      const refreshToken = decrypt(row.refresh_token_encrypted);
+      const refreshToken = decrypt(refreshTokenEncrypted);
       const res = await fetch("https://oauth2.googleapis.com/token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -70,5 +98,5 @@ export async function getGmailToken(workspaceId: string): Promise<GmailConnectio
     } catch { /* usar token existente como fallback */ }
   }
 
-  return { accessToken, email: row.metadata?.email ?? "" };
+  return { accessToken, email };
 }

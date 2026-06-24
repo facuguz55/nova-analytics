@@ -423,7 +423,14 @@ export default function MailsClient({
 
         {/* Lista */}
         <div className="flex-1 overflow-y-auto divide-y divide-[rgba(139,92,246,0.07)]">
-          {messages.length === 0 && <MailSkeleton />}
+          {messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 gap-3 text-center px-4">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(139,92,246,0.08)" }}>
+                <Inbox size={18} color="#8b5cf6" strokeWidth={1.5} />
+              </div>
+              <p className="text-xs text-[#64748B]">Tu bandeja está vacía</p>
+            </div>
+          )}
           {filtered.length === 0 && messages.length > 0 && (
             <div className="px-4 py-8 text-center text-xs text-[#64748B]">Sin resultados</div>
           )}
