@@ -37,12 +37,14 @@ export async function updateFinancialConfig(formData: FormData) {
     .single();
   if (!userRow) throw new Error("Sin workspace");
 
+  const workspaceId = (userRow as any).workspace_id;
   const db = supabase as unknown as { from: (t: string) => any };
-  await db.from("financial_config")
-    .update(parsed.data)
-    .eq("workspace_id", (userRow as any).workspace_id);
+  const { error } = await db.from("financial_config")
+    .upsert({ workspace_id: workspaceId, ...parsed.data }, { onConflict: "workspace_id" });
 
-  revalidateTag(`financial-config-${(userRow as any).workspace_id}`);
+  if (error) throw new Error("Error al guardar en base de datos");
+
+  revalidateTag(`financial-config-${workspaceId}`);
   revalidatePath("/app/configuracion/financiera");
 }
 
