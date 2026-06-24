@@ -51,11 +51,11 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.hcaptcha.com https://*.hcaptcha.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.hcaptcha.com https://*.hcaptcha.com https://tracker.metricool.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.hcaptcha.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' blob: data: https:",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://api.resend.com https://api.tiendanube.com https://gmail.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://accounts.google.com https://www.tiendanube.com https://api.mercadopago.com https://*.hcaptcha.com",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://api.resend.com https://api.tiendanube.com https://gmail.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://accounts.google.com https://www.tiendanube.com https://api.mercadopago.com https://*.hcaptcha.com https://tracker.metricool.com",
               "frame-src https://*.hcaptcha.com",
               "object-src 'none'",
               "base-uri 'self'",
