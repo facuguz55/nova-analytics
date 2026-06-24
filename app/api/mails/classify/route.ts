@@ -21,7 +21,6 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // 30 clasificaciones por hora (1 call clasifica hasta 25 emails)
   const rl = await checkUserRateLimit(user.id, "mail_classify", 30, 3600, true);
   if (!rl.ok) return NextResponse.json({ error: rl.error }, { status: 429 });
 
@@ -35,8 +34,9 @@ export async function POST(request: Request) {
 
   const { messages } = parsed.data;
 
+  // Formato simple numerado — evita que Claude tenga que reproducir IDs hex exactos
   const items = messages.map((m, i) =>
-    `${i + 1}. [ID:${m.id}] De: ${sanitizePlainText(m.from).slice(0, 80)} | Asunto: ${sanitizePlainText(m.subject).slice(0, 120)} | Preview: ${sanitizePlainText(m.snippet).slice(0, 150)}`
+    `${i + 1}. De: ${sanitizePlainText(m.from).slice(0, 80)} | Asunto: ${sanitizePlainText(m.subject).slice(0, 120)} | Preview: ${sanitizePlainText(m.snippet).slice(0, 150)}`
   ).join("\n");
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -48,25 +48,25 @@ export async function POST(request: Request) {
     },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 400,
-      system: `Sos un clasificador de emails para una tienda de e-commerce.
+      max_tokens: 200,
+      system: `Clasificá cada email de una tienda de e-commerce.
 
-REGLA PRINCIPAL: Si el email proviene de una empresa, servicio, plataforma, sistema automático, newsletter, banco, app, proveedor o cualquier entidad no-humana → categorizalo siempre como "otro".
+REGLA PRINCIPAL: Si viene de empresa, servicio, plataforma, sistema automático, newsletter, banco, app o cualquier entidad no-humana → "otro".
 
-Solo si el remitente es claramente una persona real (cliente individual) usá estas categorías:
+Solo si el remitente es una persona real (cliente) usá:
 - consulta: pregunta sobre producto, precio, stock, envío
-- reclamo: queja, problema, insatisfacción, devolución
-- pedido: quiere comprar, solicita presupuesto, hace un encargo
-- agradecimiento: mensaje positivo, felicitación, gracias
-- urgente: tono urgente, necesita respuesta inmediata
+- reclamo: queja, problema, devolución
+- pedido: quiere comprar o solicita presupuesto
+- agradecimiento: mensaje positivo o gracias
+- urgente: necesita respuesta inmediata
 
-En caso de duda sobre si es persona o empresa → "otro".
+En caso de duda → "otro".
 
-Respondé ÚNICAMENTE con un JSON array, sin texto adicional:
-[{"id":"<id exacto del email>","category":"<categoría>"}]`,
+Respondé SOLO con un JSON array de strings en el mismo orden que los emails recibidos, sin texto adicional:
+["categoria1","categoria2","categoria3"]`,
       messages: [{
         role: "user",
-        content: `Clasificá estos emails:\n${items}`,
+        content: `Clasificá estos ${messages.length} emails:\n${items}`,
       }],
     }),
   });
@@ -77,10 +77,10 @@ Respondé ÚNICAMENTE con un JSON array, sin texto adicional:
   const text = data.content.find(c => c.type === "text")?.text?.trim() ?? "[]";
 
   try {
-    const raw = JSON.parse(text) as Array<{ id: string; category: string }>;
-    const classifications = raw.map(c => ({
-      id: c.id,
-      category: (CATEGORIES.includes(c.category as MailCategory) ? c.category : "otro") as MailCategory,
+    const categories = JSON.parse(text) as string[];
+    const classifications = messages.map((m, i) => ({
+      id: m.id,
+      category: (CATEGORIES.includes(categories[i] as MailCategory) ? categories[i] : "otro") as MailCategory,
     }));
     return NextResponse.json({ classifications });
   } catch {
