@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { decrypt } from "@/lib/encryption";
+import { getGmailToken } from "@/lib/google/gmail";
 import { checkUserRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { z } from "zod";
 
@@ -55,41 +55,19 @@ export async function POST(request: Request) {
 
   const { to, subject, body, threadId, inReplyTo } = parsed.data;
 
-  // Filtro explícito por workspace_id — NO depender solo de RLS (ver connection.ts)
   const { data: rawUser } = await supabase
     .from("users").select("workspace_id").eq("id", user.id).single();
   const workspaceId = (rawUser as { workspace_id: string | null } | null)?.workspace_id;
   if (!workspaceId) return NextResponse.json({ error: "Gmail not connected" }, { status: 400 });
 
-  const { data: raw } = await supabase
-    .from("integrations")
-    .select("access_token_encrypted, status, metadata")
-    .eq("provider", "gmail")
-    .eq("workspace_id", workspaceId)
-    .maybeSingle();
-
-  const integration = raw as {
-    access_token_encrypted: string | null;
-    status: string;
-    metadata: { email?: string } | null;
-  } | null;
-
-  if (!integration?.access_token_encrypted)
-    return NextResponse.json({ error: "Gmail not connected" }, { status: 400 });
-
-  let token: string;
-  try {
-    token = decrypt(integration.access_token_encrypted);
-  } catch {
-    return NextResponse.json({ error: "Gmail not connected" }, { status: 400 });
-  }
-  const fromEmail = integration.metadata?.email ?? "";
+  const gmail = await getGmailToken(workspaceId);
+  if (!gmail) return NextResponse.json({ error: "Gmail not connected" }, { status: 400 });
 
   // Construir los headers MIME con valores ya validados y sin CRLF
   const safeSubject = subject.startsWith("Re:") ? subject : `Re: ${subject}`;
 
   const lines = [
-    `From: ${fromEmail}`,
+    `From: ${gmail.email}`,
     `To: ${to}`,
     `Subject: ${safeSubject}`,
     `Content-Type: text/plain; charset=utf-8`,
@@ -103,7 +81,7 @@ export async function POST(request: Request) {
   const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${gmail.accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ raw: raw64, threadId }),
