@@ -261,10 +261,11 @@ export default function MailsClient({
   const [atendidos, setAtendidos] = useState<Set<string>>(new Set());
   const [localRead, setLocalRead] = useState<Set<string>>(new Set());
   const [classifications, setClassifications] = useState<Record<string, MailCategory>>({});
+  const [classifying, setClassifying] = useState(true);
 
   // Clasificar todos los emails al montar (un solo call batch a Haiku)
   useEffect(() => {
-    if (!messages.length) return;
+    if (!messages.length) { setClassifying(false); return; }
     const payload = messages.map(m => ({
       id: m.id,
       from: m.from,
@@ -283,7 +284,8 @@ export default function MailsClient({
         for (const c of data.classifications) map[c.id] = c.category;
         setClassifications(map);
       })
-      .catch(() => { /* clasificación es best-effort */ });
+      .catch(() => { /* clasificación es best-effort */ })
+      .finally(() => setClassifying(false));
   }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchAISuggestion(msg: FullMessage) {
@@ -471,14 +473,14 @@ export default function MailsClient({
         {/* Filtros */}
         <div className="px-3 pb-2 flex gap-1.5 flex-shrink-0 flex-wrap">
           {([
-            { key: "all",    label: `Clientes (${clientMessages.length})` },
+            { key: "all",    label: classifying ? `Clientes…` : `Clientes (${clientMessages.length})` },
             { key: "unread", label: `No leídos (${unreadCount})` },
-            { key: "others", label: `Otros (${othersMessages.length})` },
+            { key: "others", label: classifying ? `Otros…`    : `Otros (${othersMessages.length})` },
           ] as const).map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
-              className="px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all"
+              className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all ${classifying && key !== "unread" ? "animate-pulse" : ""}`}
               style={{
                 background: filter === key ? "#8b5cf6" : "transparent",
                 color: filter === key ? "white" : "#94A3B8",
