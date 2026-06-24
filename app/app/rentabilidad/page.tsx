@@ -12,7 +12,7 @@ export default async function RentabilidadPage() {
   if (!user) return null;
   const supabase = await createClient();
 
-  type FinConfig = { tax_rate: number; platform_fee: number; agency_fee: number; usd_rate: number };
+  type FinConfig = { tax_rate: number; platform_fee: number; custom_commission: number; usd_rate: number };
   const { data: rawUserRow } = await supabase.from("users").select("workspace_id").eq("id", user.id).single();
   const userRow = rawUserRow as unknown as { workspace_id: string | null } | null;
 
@@ -24,7 +24,7 @@ export default async function RentabilidadPage() {
 
   const connection = connectionResult.status === "fulfilled" ? connectionResult.value : null;
   const rawConfig = configResult.status === "fulfilled" ? configResult.value.data : null;
-  const cfg = (rawConfig as unknown as FinConfig | null) ?? { tax_rate: 21, platform_fee: 2, agency_fee: 0, usd_rate: 1200 };
+  const cfg = (rawConfig as unknown as FinConfig | null) ?? { tax_rate: 21, platform_fee: 2, custom_commission: 0, usd_rate: 1200 };
 
   const shippingRows = shippingResult.status === "fulfilled"
     ? ((shippingResult.value.data ?? []) as { cost: number; is_active: boolean }[])

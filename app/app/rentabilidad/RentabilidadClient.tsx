@@ -17,7 +17,7 @@ import type { TNOrder, TNProduct } from "@/lib/tiendanube/client";
 interface FinConfig {
   tax_rate: number;
   platform_fee: number;
-  agency_fee: number;
+  custom_commission: number;
   usd_rate: number;
 }
 
@@ -108,8 +108,9 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
     const revenuePreTax = totalRevenue / taxFactor;
     const taxAmount = totalRevenue - revenuePreTax;
     const platformFeeAmount = revenuePreTax * (cfg.platform_fee / 100);
-    const agencyFeeAmount = revenuePreTax * ((cfg.agency_fee ?? 0) / 100);
-    const netRevenue = revenuePreTax - platformFeeAmount - agencyFeeAmount;
+    const extraFeeAmount = revenuePreTax * ((cfg.custom_commission ?? 0) / 100);
+
+    const netRevenue = revenuePreTax - platformFeeAmount - extraFeeAmount;
 
     let cogs = 0, noCostCount = 0;
     for (const order of paidOrders) {
@@ -125,7 +126,7 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
     const netMarginPct = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
     return {
-      totalRevenue, revenuePreTax, taxAmount, platformFeeAmount, agencyFeeAmount,
+      totalRevenue, revenuePreTax, taxAmount, platformFeeAmount, extraFeeAmount,
       netRevenue, cogs, totalShippingCost, netProfit, netMarginPct,
       ordersCount: paidOrders.length, noCostCount,
     };
@@ -142,7 +143,7 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
       return { date: `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`, ganancia: 0, ts: d.getTime() };
     });
     const taxFactor = 1 + cfg.tax_rate / 100;
-    const feeFactor = 1 - cfg.platform_fee / 100 - (cfg.agency_fee ?? 0) / 100;
+    const feeFactor = 1 - cfg.platform_fee / 100 - (cfg.custom_commission ?? 0) / 100;
     for (const o of paidOrders) {
       const t = new Date(o.created_at).getTime();
       const idx = Math.floor((t - base.getTime()) / dayMs);
@@ -183,14 +184,14 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
     { name: "Costo productos", value: m.cogs,                                 color: "#c026d3" },
     { name: "Costo envíos",    value: m.totalShippingCost,                    color: "#22d3ee" },
     { name: `IVA ${cfg.tax_rate}%`, value: m.taxAmount,                       color: "#f59e0b" },
-    { name: "Comisiones",      value: m.platformFeeAmount + m.agencyFeeAmount, color: "#8b5cf6" },
+    { name: "Comisiones",      value: m.platformFeeAmount + m.extraFeeAmount, color: "#8b5cf6" },
   ].filter((d) => d.value > 0), [m, cfg.tax_rate]);
 
   const waterfall = [
     { label: "Ingresos brutos", value: m.totalRevenue, kind: "in" as const },
     { label: `IVA (${cfg.tax_rate}%)`, value: -m.taxAmount, kind: "out" as const },
     { label: `Comisión plataforma (${cfg.platform_fee}%)`, value: -m.platformFeeAmount, kind: "out" as const },
-    ...(cfg.agency_fee > 0 ? [{ label: `Comisión agencia (${cfg.agency_fee}%)`, value: -m.agencyFeeAmount, kind: "out" as const }] : []),
+    ...((cfg.custom_commission ?? 0) > 0 ? [{ label: `Comisión extra (${cfg.custom_commission}%)`, value: -m.extraFeeAmount, kind: "out" as const }] : []),
     ...(m.cogs > 0 ? [{ label: "Costo de productos", value: -m.cogs, kind: "out" as const }] : []),
     ...(m.totalShippingCost > 0 ? [{ label: "Costo de envíos", value: -m.totalShippingCost, kind: "out" as const }] : []),
     { label: "Ganancia neta", value: m.netProfit, kind: "total" as const },
@@ -273,7 +274,7 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
               {[
                 { n: "1", t: "Partimos de tus ingresos brutos", d: `Suma de todas las órdenes pagas del período: ${fmt(m.totalRevenue)}`, c: "#F1F5F9" },
                 { n: "2", t: `Restamos el IVA (${cfg.tax_rate}%)`, d: `El precio incluye IVA. Lo sacamos: −${fmt(m.taxAmount)} → quedan ${fmt(m.revenuePreTax)} netos`, c: "#f59e0b" },
-                { n: "3", t: `Restamos comisiones (${cfg.platform_fee + (cfg.agency_fee ?? 0)}%)`, d: `Plataforma + agencia sobre el neto: −${fmt(m.platformFeeAmount + m.agencyFeeAmount)}`, c: "#8b5cf6" },
+                { n: "3", t: `Restamos comisiones (${cfg.platform_fee + (cfg.custom_commission ?? 0)}%)`, d: `Plataforma + comisión extra sobre el neto: −${fmt(m.platformFeeAmount + m.extraFeeAmount)}`, c: "#8b5cf6" },
                 { n: "4", t: "Restamos el costo de los productos", d: m.cogs > 0 ? `Costo de lo vendido (desde TiendaNube): −${fmt(m.cogs)}` : "Sin costos cargados — cargalos en TiendaNube para incluirlos", c: "#c026d3" },
                 { n: "5", t: "Restamos el costo de envíos", d: m.totalShippingCost > 0 ? `Promedio por envío $${Math.round(avgShippingCost).toLocaleString("es-AR")} × ${m.ordersCount} órdenes = −${fmt(m.totalShippingCost)}` : "Sin costos de envío configurados — configuralos en Costos de Envío", c: "#22d3ee" },
                 { n: "=", t: "Tu ganancia neta", d: `${fmt(m.netProfit)} — un margen del ${m.netMarginPct.toFixed(1)}% sobre la venta`, c: "#22c55e" },

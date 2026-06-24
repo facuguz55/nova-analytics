@@ -29,9 +29,9 @@ export default async function FinancieraPage({
   // Fetch all financial data in parallel
   const db = supabase as unknown as { from: (t: string) => any };
 
-  const [cfgRes, costsRes, ratesRes, shippingRes] = await Promise.allSettled([
+  const [cfgRes, costsRes, shippingRes] = await Promise.allSettled([
     db.from("financial_config")
-      .select("usd_rate, tax_rate, platform_fee, usd_type, usd_adjustment, custom_commission, custom_tax")
+      .select("usd_rate, tax_rate, platform_fee, custom_commission")
       .eq("workspace_id", workspaceId)
       .single(),
     workspaceId
@@ -40,12 +40,6 @@ export default async function FinancieraPage({
           .eq("workspace_id", workspaceId)
           .order("created_at", { ascending: false })
       : Promise.resolve({ data: [] }),
-    fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/cotizaciones`,
-      { next: { revalidate: 3600 } }
-    )
-      .then((r) => (r.ok ? r.json() : null))
-      .catch(() => null),
     workspaceId
       ? db.from("shipping_costs")
           .select("method, label, cost, is_active")
@@ -56,7 +50,6 @@ export default async function FinancieraPage({
 
   const cfg = cfgRes.status === "fulfilled" ? (cfgRes.value as any)?.data : null;
   const costs = costsRes.status === "fulfilled" ? ((costsRes.value as any)?.data ?? []) : [];
-  const ratesData = ratesRes.status === "fulfilled" ? ratesRes.value : null;
   const savedShipping = shippingRes.status === "fulfilled" ? ((shippingRes.value as any)?.data ?? []) : [];
   const shippingCosts = savedShipping.length > 0 ? savedShipping : DEFAULT_SHIPPING_COSTS;
   const activeShipping = (shippingCosts as { cost: number; is_active: boolean }[]).filter(r => r.is_active && r.cost > 0);
@@ -137,21 +130,10 @@ export default async function FinancieraPage({
       avgCostPct={avgCostPct}
       productStats={productStats}
       generalConfig={{
-        usd_rate:     cfg?.usd_rate     ?? 1200,
-        tax_rate:     cfg?.tax_rate     ?? 21,
-        platform_fee: cfg?.platform_fee ?? 2,
-      }}
-      cotizacionesConfig={{
-        usdRate:       cfg?.usd_rate       ?? 1100,
-        usdType:       cfg?.usd_type       ?? "oficial",
-        usdAdjustment: cfg?.usd_adjustment ?? 0,
-        ratesData,
-      }}
-      comisionesConfig={{
-        tax_rate:          cfg?.tax_rate          ?? 10,
+        usd_rate:          cfg?.usd_rate          ?? 1200,
+        tax_rate:          cfg?.tax_rate          ?? 21,
         platform_fee:      cfg?.platform_fee      ?? 2,
         custom_commission: cfg?.custom_commission ?? 0,
-        custom_tax:        cfg?.custom_tax        ?? 0,
       }}
       additionalCosts={costs}
       avgShippingCost={avgShippingCost}

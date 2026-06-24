@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DollarSign, Percent, Save, Info, Package, Building2, TrendingUp } from "lucide-react";
+import { DollarSign, Percent, Save, Info, Package, Building2, TrendingUp, HandCoins } from "lucide-react";
 import { updateFinancialConfig } from "@/app/app/actions";
 import { toast } from "sonner";
 
 interface Config {
-  usd_rate: number;
-  tax_rate: number;
-  platform_fee: number;
+  usd_rate:          number;
+  tax_rate:          number;
+  platform_fee:      number;
+  custom_commission: number;
 }
 
 const EXAMPLE = 100000; // venta de ejemplo en ARS
@@ -56,7 +57,8 @@ export default function FinancieraClient({
   const tax        = EXAMPLE - EXAMPLE / (1 + live.tax_rate / 100);
   const afterTax   = EXAMPLE - tax;
   const platform   = afterTax * (live.platform_fee / 100);
-  const afterPlat  = afterTax - platform;
+  const extra      = afterTax * ((live.custom_commission ?? 0) / 100);
+  const afterPlat  = afterTax - platform - extra;
   const cogs       = avgCostPct > 0 ? EXAMPLE * (avgCostPct / 100) : 0;
   const shipping   = avgShippingCost;
   const profit     = afterPlat - cogs - shipping;
@@ -93,6 +95,16 @@ export default function FinancieraClient({
       color: "#8b5cf6",
       step: "0.5",
     },
+    {
+      label: "Comisión extra",
+      name: "custom_commission",
+      value: live.custom_commission ?? 0,
+      suffix: "%",
+      help: "Comisión adicional: agencia de publicidad, logística tercerizada, etc. Dejala en 0 si no aplica.",
+      icon: HandCoins,
+      color: "#c084fc",
+      step: "0.5",
+    },
   ];
 
   return (
@@ -105,7 +117,7 @@ export default function FinancieraClient({
             Parámetros financieros
           </h1>
           <p className="text-sm text-[#94A3B8] mt-1 max-w-2xl">
-            Estos 3 valores alimentan <strong className="text-[#c084fc]">todos</strong> los cálculos de ganancia y rentabilidad.
+            Estos valores alimentan <strong className="text-[#c084fc]">todos</strong> los cálculos de ganancia y rentabilidad.
             Mirá cómo impactan en la simulación de la derecha mientras los cambiás.
           </p>
         </div>
@@ -171,6 +183,7 @@ export default function FinancieraClient({
               { label: "Venta bruta",                       value: EXAMPLE,    minus: false, color: "#F1F5F9", strong: true },
               { label: `IVA (${live.tax_rate}%)`,           value: -tax,       minus: true,  color: "#f59e0b" },
               { label: `Comisión plataforma (${live.platform_fee}%)`, value: -platform, minus: true, color: "#8b5cf6" },
+              ...((live.custom_commission ?? 0) > 0 ? [{ label: `Comisión extra (${live.custom_commission}%)`, value: -extra, minus: true, color: "#c084fc" }] : []),
               ...(avgCostPct > 0 ? [{ label: `Costo productos (≈${avgCostPct.toFixed(0)}%)`, value: -cogs, minus: true, color: "#c026d3" }] : []),
               ...(shipping > 0 ? [{ label: `Costo envío promedio`, value: -shipping, minus: true, color: "#22d3ee" }] : []),
             ].map((row) => (
@@ -188,6 +201,7 @@ export default function FinancieraClient({
                 {[
                   { v: tax, c: "#f59e0b" },
                   { v: platform, c: "#8b5cf6" },
+                  { v: extra, c: "#c084fc" },
                   { v: cogs, c: "#c026d3" },
                   { v: shipping, c: "#22d3ee" },
                   { v: Math.max(profit, 0), c: "#22c55e" },
@@ -198,6 +212,7 @@ export default function FinancieraClient({
               <div className="flex items-center gap-3 mt-2 flex-wrap">
                 {[
                   { l: "IVA", c: "#f59e0b" }, { l: "Plataforma", c: "#8b5cf6" },
+                  ...((live.custom_commission ?? 0) > 0 ? [{ l: "Extra", c: "#c084fc" }] : []),
                   ...(avgCostPct > 0 ? [{ l: "Costo", c: "#c026d3" }] : []),
                   ...(shipping > 0 ? [{ l: "Envío", c: "#22d3ee" }] : []),
                   { l: "Ganancia", c: "#22c55e" },

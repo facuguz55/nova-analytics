@@ -13,9 +13,10 @@ export async function signOut() {
 }
 
 const FinancialSchema = z.object({
-  usd_rate:     z.coerce.number().min(0).max(99999),
-  tax_rate:     z.coerce.number().min(0).max(100),
-  platform_fee: z.coerce.number().min(0).max(100),
+  usd_rate:          z.coerce.number().min(0).max(99999),
+  tax_rate:          z.coerce.number().min(0).max(100),
+  platform_fee:      z.coerce.number().min(0).max(100),
+  custom_commission: z.coerce.number().min(0).max(100),
 });
 
 export async function updateFinancialConfig(formData: FormData) {

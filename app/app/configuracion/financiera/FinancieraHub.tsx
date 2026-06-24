@@ -1,57 +1,35 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { DollarSign, TrendingUp, Percent, PlusCircle, Truck } from "lucide-react";
+import { DollarSign, Wallet } from "lucide-react";
 import FinancieraClient from "./FinancieraClient";
-import CotizacionesClient from "../cotizaciones/CotizacionesClient";
-import ComisionesClient from "../comisiones/ComisionesClient";
-import CostosAdicionalesClient, { type AdditionalCost } from "../costos-adicionales/CostosAdicionalesClient";
-import EnviosContent from "./EnviosContent";
+import CostosTab from "./CostosTab";
+import { type AdditionalCost } from "../costos-adicionales/CostosAdicionalesClient";
 import { type ShippingCost } from "./shipping-defaults";
 
-// ── Tipos ────────────────────────────────────────────────────────────────────
-
 interface GeneralConfig {
-  usd_rate: number;
-  tax_rate: number;
-  platform_fee: number;
-}
-
-interface CotizacionesConfig {
-  usdRate: number;
-  usdType: string;
-  usdAdjustment: number;
-  ratesData: unknown;
-}
-
-interface ComisionesConfig {
-  tax_rate: number;
-  platform_fee: number;
+  usd_rate:          number;
+  tax_rate:          number;
+  platform_fee:      number;
   custom_commission: number;
-  custom_tax: number;
 }
 
 interface Props {
-  activeTab: string;
-  workspaceId: string;
-  avgCostPct: number;
-  productStats: { total: number; withCost: number };
-  generalConfig: GeneralConfig;
-  cotizacionesConfig: CotizacionesConfig;
-  comisionesConfig: ComisionesConfig;
+  activeTab:       string;
+  workspaceId:     string;
+  avgCostPct:      number;
+  productStats:    { total: number; withCost: number };
+  generalConfig:   GeneralConfig;
   additionalCosts: AdditionalCost[];
   avgShippingCost: number;
-  storeName: string | null;
-  isConnected: boolean;
-  shippingCosts: ShippingCost[];
+  storeName:       string | null;
+  isConnected:     boolean;
+  shippingCosts:   ShippingCost[];
 }
 
 const TABS = [
-  { key: "general",    label: "General",           icon: DollarSign },
-  { key: "cotizaciones", label: "Cotizaciones",    icon: TrendingUp },
-  { key: "comisiones", label: "Comisiones",        icon: Percent },
-  { key: "costos",     label: "Costos Adicionales", icon: PlusCircle },
-  { key: "envios",     label: "Envíos",            icon: Truck },
+  { key: "general", label: "General", icon: DollarSign },
+  { key: "costos",  label: "Costos",  icon: Wallet },
 ];
 
 export default function FinancieraHub({
@@ -60,8 +38,6 @@ export default function FinancieraHub({
   avgCostPct,
   productStats,
   generalConfig,
-  cotizacionesConfig,
-  comisionesConfig,
   additionalCosts,
   avgShippingCost,
   storeName,
@@ -94,20 +70,13 @@ export default function FinancieraHub({
               <button
                 key={t.key}
                 onClick={() => goTab(t.key)}
-                className="flex items-center gap-1.5 px-3 h-full text-xs font-semibold transition-all whitespace-nowrap relative"
+                className="flex items-center gap-1.5 px-4 h-full text-xs font-semibold transition-all whitespace-nowrap relative"
                 style={{ color: active ? "#F1F5F9" : "#64748B" }}
               >
-                <Icon
-                  size={12}
-                  strokeWidth={active ? 2.5 : 2}
-                  color={active ? "#a78bfa" : undefined}
-                />
+                <Icon size={12} strokeWidth={active ? 2.5 : 2} color={active ? "#a78bfa" : undefined} />
                 {t.label}
                 {active && (
-                  <span
-                    className="absolute bottom-0 left-0 right-0 rounded-t-full"
-                    style={{ height: "2px", background: "#8b5cf6" }}
-                  />
+                  <span className="absolute bottom-0 left-0 right-0 rounded-t-full" style={{ height: "2px", background: "#8b5cf6" }} />
                 )}
               </button>
             );
@@ -118,38 +87,20 @@ export default function FinancieraHub({
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {activeTab === "general" && (
-          <FinancieraClient config={generalConfig} avgCostPct={avgCostPct} productStats={productStats} avgShippingCost={avgShippingCost} />
-        )}
-
-        {activeTab === "cotizaciones" && (
-          <CotizacionesClient
-            ratesData={cotizacionesConfig.ratesData as any}
-            initialUsdType={cotizacionesConfig.usdType}
-            initialAdjustment={cotizacionesConfig.usdAdjustment}
-            workspaceId={workspaceId}
+          <FinancieraClient
+            config={generalConfig}
+            avgCostPct={avgCostPct}
+            productStats={productStats}
+            avgShippingCost={avgShippingCost}
           />
         )}
-
-        {activeTab === "comisiones" && (
-          <ComisionesClient
-            config={comisionesConfig}
+        {(activeTab === "costos" || activeTab === "envios" || activeTab === "comisiones" || activeTab === "cotizaciones") && (
+          <CostosTab
             workspaceId={workspaceId}
-          />
-        )}
-
-        {activeTab === "costos" && (
-          <CostosAdicionalesClient
-            costs={additionalCosts}
-            workspaceId={workspaceId}
-          />
-        )}
-
-        {activeTab === "envios" && (
-          <EnviosContent
             isConnected={isConnected}
             storeName={storeName}
-            workspaceId={workspaceId}
-            initialCosts={shippingCosts}
+            shippingCosts={shippingCosts}
+            additionalCosts={additionalCosts}
           />
         )}
       </div>
