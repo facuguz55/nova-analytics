@@ -56,8 +56,8 @@ export default async function FinancieraPage({
   let avgCostPct = 0;
   const productStats = { total: 0, withCost: 0 };
 
-  if (connection) {
-    // Fetch sin caché, loop hasta traer todos los productos
+  // Solo fetchear productos en la tab "general" — evita llamadas pesadas al cambiar de tab
+  if (tab === "general" && connection) {
     const allProds: import("@/lib/tiendanube/client").TNProduct[] = [];
     for (let page = 1; page <= 15; page++) {
       const batch = await fetch(
@@ -67,22 +67,20 @@ export default async function FinancieraPage({
             Authentication: `bearer ${connection.opts.accessToken}`,
             "User-Agent": "Nova Analytics (novaagency.info)",
           },
-          cache: "no-store",
+          next: { revalidate: 300 },
         }
       )
         .then((r) => (r.ok ? (r.json() as Promise<import("@/lib/tiendanube/client").TNProduct[]>) : []))
         .catch(() => []);
 
       allProds.push(...batch);
-      if (batch.length < 100) break; // última página
+      if (batch.length < 100) break;
     }
 
-    const uniqueProds = allProds;
-
-    productStats.total = uniqueProds.length;
+    productStats.total = allProds.length;
 
     const ratios: number[] = [];
-    for (const p of uniqueProds) {
+    for (const p of allProds) {
       for (const v of p.variants) {
         const cost  = parseFloat(v.cost ?? "0");
         const price = parseFloat(v.price);
@@ -97,7 +95,7 @@ export default async function FinancieraPage({
       avgCostPct = (ratios.reduce((a, b) => a + b, 0) / ratios.length) * 100;
     }
 
-    // Fallback: si la API no devuelve costos, leer desde tn_products en Supabase
+    // Fallback: leer desde tn_products en Supabase si TiendaNube no devuelve costos
     if (avgCostPct === 0) {
       const { data: local } = await db
         .from("tn_products")

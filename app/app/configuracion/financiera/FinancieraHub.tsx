@@ -75,13 +75,13 @@ export default function FinancieraHub({
 
       {/* Tab bar */}
       <div
-        className="flex items-center gap-1 px-6 flex-shrink-0 overflow-x-auto"
+        className="flex items-center flex-shrink-0"
         style={{ borderBottom: "1px solid rgba(139,92,246,0.15)", background: "#0a0a0f", height: "52px" }}
       >
-        <span className="text-xs font-black text-[#F1F5F9] mr-4 whitespace-nowrap" style={{ letterSpacing: "-0.01em" }}>
+        <span className="text-xs font-black text-[#F1F5F9] whitespace-nowrap flex-shrink-0 pl-6 pr-4" style={{ letterSpacing: "-0.01em" }}>
           Configuración Financiera
         </span>
-        <div className="flex items-center gap-0.5 h-full">
+        <div className="flex items-center gap-0.5 h-full overflow-x-auto flex-1" style={{ scrollbarWidth: "none" }}>
           {TABS.map((t) => {
             const active = activeTab === t.key;
             const Icon = t.icon;
