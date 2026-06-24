@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   Lock, Eye, EyeOff, Bell, CreditCard, Plug, DollarSign,
-  ChevronRight, Shield, CheckCircle2, User,
+  ChevronRight, Shield, CheckCircle2, User, Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { changePassword } from "@/app/app/actions";
@@ -32,6 +32,7 @@ const SHORTCUTS = [
   { href: "/app/configuracion/integraciones", icon: Plug,       label: "Integraciones",     desc: "TiendaNube, Meta Ads, Gmail" },
   { href: "/app/configuracion/financiera",    icon: DollarSign, label: "Finanzas",           desc: "Tipo de cambio, IVA, comisiones" },
   { href: "/app/configuracion/notificaciones",icon: Bell,       label: "Notificaciones",     desc: "Telegram, resumen diario" },
+  { href: "/app/configuracion/ia",            icon: Sparkles,   label: "Contexto de IA",     desc: "Info de la tienda para sugerencias de email" },
   { href: "/app/configuracion/cuenta",        icon: User,       label: "Perfil completo",    desc: "Avatar, nombre, eliminar cuenta" },
   { href: "/billing",                         icon: CreditCard, label: "Suscripción",        desc: "Plan activo y facturación" },
 ];
