@@ -16,14 +16,23 @@ export default async function RentabilidadPage() {
   const { data: rawUserRow } = await supabase.from("users").select("workspace_id").eq("id", user.id).single();
   const userRow = rawUserRow as unknown as { workspace_id: string | null } | null;
 
-  const [connectionResult, configResult] = await Promise.allSettled([
+  const [connectionResult, configResult, shippingResult] = await Promise.allSettled([
     getTiendaNubeConnection(),
     supabase.from("financial_config").select("*").eq("workspace_id", userRow?.workspace_id ?? "").single(),
+    supabase.from("shipping_costs").select("cost, is_active").eq("workspace_id", userRow?.workspace_id ?? ""),
   ]);
 
   const connection = connectionResult.status === "fulfilled" ? connectionResult.value : null;
   const rawConfig = configResult.status === "fulfilled" ? configResult.value.data : null;
   const cfg = (rawConfig as unknown as FinConfig | null) ?? { tax_rate: 21, platform_fee: 2, agency_fee: 0, usd_rate: 1200 };
+
+  const shippingRows = shippingResult.status === "fulfilled"
+    ? ((shippingResult.value.data ?? []) as { cost: number; is_active: boolean }[])
+    : [];
+  const activeShipping = shippingRows.filter(r => r.is_active && r.cost > 0);
+  const avgShippingCost = activeShipping.length
+    ? activeShipping.reduce((s, r) => s + Number(r.cost), 0) / activeShipping.length
+    : 0;
 
   let rawOrders: Awaited<ReturnType<typeof getOrdersForRange>> = [];
   let products: import("@/lib/tiendanube/client").TNProduct[] = [];
@@ -43,6 +52,7 @@ export default async function RentabilidadPage() {
       rawOrders={rawOrders}
       products={products}
       cfg={cfg}
+      avgShippingCost={avgShippingCost}
     />
   );
 }

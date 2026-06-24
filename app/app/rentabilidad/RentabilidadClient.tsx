@@ -26,6 +26,7 @@ interface Props {
   rawOrders: TNOrder[];
   products: TNProduct[];
   cfg: FinConfig;
+  avgShippingCost: number;
 }
 
 const DATE_PRESETS = [
@@ -68,7 +69,7 @@ function prodName(p: TNProduct): string {
   return typeof p.name === "string" ? p.name : (p.name?.es ?? "Producto");
 }
 
-export default function RentabilidadClient({ connected, rawOrders, products, cfg }: Props) {
+export default function RentabilidadClient({ connected, rawOrders, products, cfg, avgShippingCost }: Props) {
   const [preset, setPreset] = useState("30d");
   const [showHow, setShowHow] = useState(false);
 
@@ -119,12 +120,13 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
       }
     }
 
-    const netProfit = netRevenue - cogs;
+    const totalShippingCost = avgShippingCost * paidOrders.length;
+    const netProfit = netRevenue - cogs - totalShippingCost;
     const netMarginPct = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
     return {
       totalRevenue, revenuePreTax, taxAmount, platformFeeAmount, agencyFeeAmount,
-      netRevenue, cogs, netProfit, netMarginPct,
+      netRevenue, cogs, totalShippingCost, netProfit, netMarginPct,
       ordersCount: paidOrders.length, noCostCount,
     };
   }, [paidOrders, productMap, cfg]);
@@ -150,7 +152,7 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
         const info = productMap.get(item.product_id);
         if (info && info.cost > 0) cogs += info.cost * item.quantity;
       }
-      arr[idx].ganancia += (parseFloat(o.total) / taxFactor) * feeFactor - cogs;
+      arr[idx].ganancia += (parseFloat(o.total) / taxFactor) * feeFactor - cogs - avgShippingCost;
     }
     return arr;
   }, [paidOrders, productMap, cfg, from, to]);
@@ -177,9 +179,10 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
 
   // Composición: a dónde va cada peso de la venta bruta
   const donutData = useMemo(() => [
-    { name: "Ganancia neta",   value: Math.max(m.netProfit, 0),       color: "#22c55e" },
-    { name: "Costo productos", value: m.cogs,                          color: "#c026d3" },
-    { name: `IVA ${cfg.tax_rate}%`, value: m.taxAmount,                color: "#f59e0b" },
+    { name: "Ganancia neta",   value: Math.max(m.netProfit, 0),              color: "#22c55e" },
+    { name: "Costo productos", value: m.cogs,                                 color: "#c026d3" },
+    { name: "Costo envíos",    value: m.totalShippingCost,                    color: "#22d3ee" },
+    { name: `IVA ${cfg.tax_rate}%`, value: m.taxAmount,                       color: "#f59e0b" },
     { name: "Comisiones",      value: m.platformFeeAmount + m.agencyFeeAmount, color: "#8b5cf6" },
   ].filter((d) => d.value > 0), [m, cfg.tax_rate]);
 
@@ -189,6 +192,7 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
     { label: `Comisión plataforma (${cfg.platform_fee}%)`, value: -m.platformFeeAmount, kind: "out" as const },
     ...(cfg.agency_fee > 0 ? [{ label: `Comisión agencia (${cfg.agency_fee}%)`, value: -m.agencyFeeAmount, kind: "out" as const }] : []),
     ...(m.cogs > 0 ? [{ label: "Costo de productos", value: -m.cogs, kind: "out" as const }] : []),
+    ...(m.totalShippingCost > 0 ? [{ label: "Costo de envíos", value: -m.totalShippingCost, kind: "out" as const }] : []),
     { label: "Ganancia neta", value: m.netProfit, kind: "total" as const },
   ];
 
@@ -271,6 +275,7 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
                 { n: "2", t: `Restamos el IVA (${cfg.tax_rate}%)`, d: `El precio incluye IVA. Lo sacamos: −${fmt(m.taxAmount)} → quedan ${fmt(m.revenuePreTax)} netos`, c: "#f59e0b" },
                 { n: "3", t: `Restamos comisiones (${cfg.platform_fee + (cfg.agency_fee ?? 0)}%)`, d: `Plataforma + agencia sobre el neto: −${fmt(m.platformFeeAmount + m.agencyFeeAmount)}`, c: "#8b5cf6" },
                 { n: "4", t: "Restamos el costo de los productos", d: m.cogs > 0 ? `Costo de lo vendido (desde TiendaNube): −${fmt(m.cogs)}` : "Sin costos cargados — cargalos en TiendaNube para incluirlos", c: "#c026d3" },
+                { n: "5", t: "Restamos el costo de envíos", d: m.totalShippingCost > 0 ? `Promedio por envío $${Math.round(avgShippingCost).toLocaleString("es-AR")} × ${m.ordersCount} órdenes = −${fmt(m.totalShippingCost)}` : "Sin costos de envío configurados — configuralos en Costos de Envío", c: "#22d3ee" },
                 { n: "=", t: "Tu ganancia neta", d: `${fmt(m.netProfit)} — un margen del ${m.netMarginPct.toFixed(1)}% sobre la venta`, c: "#22c55e" },
               ].map((s) => (
                 <div key={s.n} className="flex items-start gap-3 rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.02)" }}>
