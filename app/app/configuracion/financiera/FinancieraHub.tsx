@@ -6,7 +6,7 @@ import FinancieraClient from "./FinancieraClient";
 import CotizacionesClient from "../cotizaciones/CotizacionesClient";
 import ComisionesClient from "../comisiones/ComisionesClient";
 import CostosAdicionalesClient, { type AdditionalCost } from "../costos-adicionales/CostosAdicionalesClient";
-import EnviosContent from "./EnviosContent";
+import EnviosContent, { type ShippingCost } from "./EnviosContent";
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -41,6 +41,7 @@ interface Props {
   additionalCosts: AdditionalCost[];
   storeName: string | null;
   isConnected: boolean;
+  shippingCosts: ShippingCost[];
 }
 
 const TABS = [
@@ -62,6 +63,7 @@ export default function FinancieraHub({
   additionalCosts,
   storeName,
   isConnected,
+  shippingCosts,
 }: Props) {
   const router   = useRouter();
   const pathname = usePathname();
@@ -143,6 +145,8 @@ export default function FinancieraHub({
           <EnviosContent
             isConnected={isConnected}
             storeName={storeName}
+            workspaceId={workspaceId}
+            initialCosts={shippingCosts}
           />
         )}
       </div>

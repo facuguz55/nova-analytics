@@ -4,6 +4,7 @@ import { getUser } from "@/lib/supabase/cached-queries";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getProducts } from "@/lib/tiendanube/client";
 import FinancieraHub from "./FinancieraHub";
+import { DEFAULT_SHIPPING_COSTS } from "./EnviosContent";
 
 export const metadata: Metadata = { title: "Configuración Financiera" };
 
@@ -28,7 +29,7 @@ export default async function FinancieraPage({
   // Fetch all financial data in parallel
   const db = supabase as unknown as { from: (t: string) => any };
 
-  const [cfgRes, costsRes, ratesRes] = await Promise.allSettled([
+  const [cfgRes, costsRes, ratesRes, shippingRes] = await Promise.allSettled([
     db.from("financial_config")
       .select("usd_rate, tax_rate, platform_fee, usd_type, usd_adjustment, custom_commission, custom_tax")
       .eq("workspace_id", workspaceId)
@@ -45,11 +46,20 @@ export default async function FinancieraPage({
     )
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null),
+    workspaceId
+      ? db.from("shipping_costs")
+          .select("method, label, cost, is_active")
+          .eq("workspace_id", workspaceId)
+          .order("label")
+      : Promise.resolve({ data: [] }),
   ]);
 
   const cfg = cfgRes.status === "fulfilled" ? (cfgRes.value as any)?.data : null;
   const costs = costsRes.status === "fulfilled" ? ((costsRes.value as any)?.data ?? []) : [];
   const ratesData = ratesRes.status === "fulfilled" ? ratesRes.value : null;
+  const savedShipping = shippingRes.status === "fulfilled" ? ((shippingRes.value as any)?.data ?? []) : [];
+  // Si no hay costos guardados, usar los defaults de mercado
+  const shippingCosts = savedShipping.length > 0 ? savedShipping : DEFAULT_SHIPPING_COSTS;
 
   const connection = await getTiendaNubeConnection();
 
@@ -143,6 +153,7 @@ export default async function FinancieraPage({
       additionalCosts={costs}
       storeName={connection?.storeName ?? null}
       isConnected={!!connection}
+      shippingCosts={shippingCosts}
     />
   );
 }
