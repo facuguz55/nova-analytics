@@ -117,7 +117,7 @@ async function getDashboardData() {
     usdRate:         cfg?.usd_rate     ?? 1100,
     taxRate:         cfg?.tax_rate     ?? 10,
     platformFee:     cfg?.platform_fee ?? 2,
-    agencyFee:       cfg?.agency_fee   ?? 0,
+    agencyFee:       cfg?.custom_commission ?? 0,
     rawOrders,
     customerCount,
     recurrenteCount,
