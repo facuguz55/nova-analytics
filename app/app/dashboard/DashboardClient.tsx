@@ -146,7 +146,7 @@ function Sparkline({ data, color, id }: { data: number[]; color: string; id: str
 
 export default function DashboardClient({ data }: { data: DashboardData }) {
   const [chartMode, setChartMode] = useState<ChartMode>("profit");
-  const [redondeo,  setRedondeo]  = useState(true);
+  const [redondeo,  setRedondeo]  = useState(false);
   const [currency,  setCurrency]  = useState("ARS");
   const [modoSimple, setModoSimple] = useState(false);
   const [preset,    setPreset]    = useState("hoy");

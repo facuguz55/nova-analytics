@@ -92,6 +92,8 @@ export default function FinancieraHub({
             avgCostPct={avgCostPct}
             productStats={productStats}
             avgShippingCost={avgShippingCost}
+            totalVariablePct={additionalCosts.filter((c) => c.type === "variable").reduce((s, c) => s + Number(c.amount), 0)}
+            hasFixedCosts={additionalCosts.some((c) => c.type === "fixed")}
           />
         )}
         {(activeTab === "costos" || activeTab === "envios" || activeTab === "comisiones" || activeTab === "cotizaciones") && (

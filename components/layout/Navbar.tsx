@@ -34,7 +34,6 @@ const SEARCH_ITEMS = [
   { label: "Configuración Financiera", href: "/app/configuracion/financiera",  category: "Configuración", keywords: ["finanzas", "iva", "impuestos", "comision", "dolar", "tipo de cambio"] },
   { label: "Cotizaciones USD",    href: "/app/configuracion/cotizaciones",     category: "Configuración", keywords: ["dolar", "blue", "oficial", "cotizacion", "ccl", "mep"] },
   { label: "Costos Adicionales",  href: "/app/configuracion/costos-adicionales", category: "Configuración", keywords: ["costos fijos", "gastos", "logistica", "envio", "extra"] },
-  { label: "Comisiones",          href: "/app/configuracion/comisiones",       category: "Configuración", keywords: ["mercadopago", "plataforma", "tarjeta", "comision"] },
   { label: "Mi Cuenta",           href: "/app/configuracion/cuenta",           category: "Configuración", keywords: ["perfil", "usuario", "contraseña", "nombre", "avatar"] },
   { label: "Notificaciones",      href: "/app/configuracion/notificaciones",   category: "Configuración", keywords: ["telegram", "whatsapp", "alertas", "email", "resumen diario"] },
 ];
@@ -44,7 +43,7 @@ export default function Navbar({ userName, avatarUrl, alertCount = 0 }: NavbarPr
   const [searchQ,       setSearchQ]       = useState("");
   const [showSecciones, setShowSecciones] = useState(false);
   const [showUserMenu,  setShowUserMenu]  = useState(false);
-  const [redondeo,      setRedondeo]      = useState(true);
+  const [redondeo,      setRedondeo]      = useState(false);
   const [modoSimple,    setModoSimple]    = useState(false);
   const [selected,      setSelected]      = useState(0);
   const inputRef     = useRef<HTMLInputElement>(null);

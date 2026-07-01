@@ -19,11 +19,15 @@ export default function FinancieraClient({
   avgCostPct,
   productStats = { total: 0, withCost: 0 },
   avgShippingCost = 0,
+  totalVariablePct = 0,
+  hasFixedCosts = false,
 }: {
   config: Config;
   avgCostPct: number;
   productStats?: { total: number; withCost: number };
   avgShippingCost?: number;
+  totalVariablePct?: number;
+  hasFixedCosts?: boolean;
 }) {
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -61,7 +65,8 @@ export default function FinancieraClient({
   const afterPlat  = afterTax - platform - extra;
   const cogs       = avgCostPct > 0 ? EXAMPLE * (avgCostPct / 100) : 0;
   const shipping   = avgShippingCost;
-  const profit     = afterPlat - cogs - shipping;
+  const variableCosts = afterTax * (totalVariablePct / 100);
+  const profit     = afterPlat - cogs - shipping - variableCosts;
   const marginPct  = (profit / EXAMPLE) * 100;
 
   const fields = [
@@ -186,6 +191,7 @@ export default function FinancieraClient({
               ...((live.custom_commission ?? 0) > 0 ? [{ label: `Comisión extra (${live.custom_commission}%)`, value: -extra, minus: true, color: "#c084fc" }] : []),
               ...(avgCostPct > 0 ? [{ label: `Costo productos (≈${avgCostPct.toFixed(0)}%)`, value: -cogs, minus: true, color: "#c026d3" }] : []),
               ...(shipping > 0 ? [{ label: `Costo envío promedio`, value: -shipping, minus: true, color: "#22d3ee" }] : []),
+              ...(totalVariablePct > 0 ? [{ label: `Costos variables (${totalVariablePct.toFixed(1)}%)`, value: -variableCosts, minus: true, color: "#f472b6" }] : []),
             ].map((row) => (
               <div key={row.label} className="flex items-center justify-between py-2.5" style={{ borderBottom: "1px solid rgba(139,92,246,0.07)" }}>
                 <span className="text-sm" style={{ color: row.strong ? "#F1F5F9" : "#94A3B8", fontWeight: row.strong ? 700 : 400 }}>{row.label}</span>
@@ -204,6 +210,7 @@ export default function FinancieraClient({
                   { v: extra, c: "#c084fc" },
                   { v: cogs, c: "#c026d3" },
                   { v: shipping, c: "#22d3ee" },
+                  { v: variableCosts, c: "#f472b6" },
                   { v: Math.max(profit, 0), c: "#22c55e" },
                 ].map((seg, i) => seg.v > 0 && (
                   <div key={i} className="bar-fill h-full" style={{ width: `${(seg.v / EXAMPLE) * 100}%`, background: seg.c, boxShadow: `0 0 8px ${seg.c}`, animationDelay: `${0.2 + i * 0.08}s` }} />
@@ -215,6 +222,7 @@ export default function FinancieraClient({
                   ...((live.custom_commission ?? 0) > 0 ? [{ l: "Extra", c: "#c084fc" }] : []),
                   ...(avgCostPct > 0 ? [{ l: "Costo", c: "#c026d3" }] : []),
                   ...(shipping > 0 ? [{ l: "Envío", c: "#22d3ee" }] : []),
+                  ...(totalVariablePct > 0 ? [{ l: "Variables", c: "#f472b6" }] : []),
                   { l: "Ganancia", c: "#22c55e" },
                 ].map((lg) => (
                   <span key={lg.l} className="flex items-center gap-1 text-[10px] text-[#64748B]">
@@ -236,6 +244,16 @@ export default function FinancieraClient({
                 <p className="text-[11px] text-[#64748B] mt-0.5">margen {marginPct.toFixed(1)}%</p>
               </div>
             </div>
+
+            {hasFixedCosts && (
+              <div className="flex items-start gap-2 rounded-xl px-3 py-2.5 mt-3" style={{ background: "rgba(244,114,182,0.06)", border: "1px solid rgba(244,114,182,0.18)" }}>
+                <Info size={13} color="#f472b6" strokeWidth={2.5} className="mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-[#94A3B8] leading-relaxed">
+                  Tenés costos fijos cargados (alquiler, sueldos, etc.). No entran en esta simulación de una venta puntual,
+                  pero sí se descuentan de tu ganancia real en <strong className="text-[#f472b6]">Rentabilidad</strong>, prorateados por el período.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </form>

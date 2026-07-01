@@ -43,10 +43,10 @@ export function getCachedFinancialConfig(workspaceId: string) {
       const db = createServiceClient() as any;
       const { data } = await db
         .from("financial_config")
-        .select("usd_rate, tax_rate, platform_fee, agency_fee")
+        .select("usd_rate, tax_rate, platform_fee, custom_commission")
         .eq("workspace_id", workspaceId)
         .single();
-      return data as { usd_rate: number; tax_rate: number; platform_fee: number; agency_fee: number } | null;
+      return data as { usd_rate: number; tax_rate: number; platform_fee: number; custom_commission: number } | null;
     },
     [`financial-config`, workspaceId],
     { revalidate: 300, tags: [`financial-config-${workspaceId}`] }

@@ -25,9 +25,10 @@ export async function updateFinancialConfig(formData: FormData) {
   if (!user) throw new Error("Unauthorized");
 
   const parsed = FinancialSchema.safeParse({
-    usd_rate:     formData.get("usd_rate"),
-    tax_rate:     formData.get("tax_rate"),
-    platform_fee: formData.get("platform_fee"),
+    usd_rate:          formData.get("usd_rate"),
+    tax_rate:          formData.get("tax_rate"),
+    platform_fee:      formData.get("platform_fee"),
+    custom_commission: formData.get("custom_commission"),
   });
   if (!parsed.success) throw new Error("Datos inválidos");
 
@@ -281,45 +282,6 @@ export async function saveCotizacion(formData: FormData) {
 
   revalidateTag(`financial-config-${(userRow as any).workspace_id}`);
   revalidatePath("/app/configuracion/cotizaciones");
-  revalidatePath("/app/configuracion/financiera");
-}
-
-// ── Comisiones ─────────────────────────────────────────────────────────
-const ComisionesSchema = z.object({
-  tax_rate:          z.coerce.number().min(0).max(100).optional(),
-  custom_commission: z.coerce.number().min(0).max(100).optional(),
-  custom_tax:        z.coerce.number().min(0).max(100).optional(),
-});
-
-export async function saveComisiones(formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const parsed = ComisionesSchema.safeParse({
-    tax_rate:          formData.get("tax_rate"),
-    custom_commission: formData.get("custom_commission"),
-    custom_tax:        formData.get("custom_tax"),
-  });
-  if (!parsed.success) throw new Error("Datos inválidos");
-
-  const { data: userRow } = await supabase
-    .from("users")
-    .select("workspace_id")
-    .eq("id", user.id)
-    .single();
-  if (!userRow) throw new Error("Sin workspace");
-
-  const update: Record<string, number> = {};
-  if (parsed.data.tax_rate          !== undefined) update.tax_rate          = parsed.data.tax_rate;
-  if (parsed.data.custom_commission !== undefined) update.custom_commission = parsed.data.custom_commission;
-  if (parsed.data.custom_tax        !== undefined) update.custom_tax        = parsed.data.custom_tax;
-
-  const db = supabase as unknown as { from: (t: string) => any };
-  await db.from("financial_config").update(update).eq("workspace_id", (userRow as any).workspace_id);
-
-  revalidateTag(`financial-config-${(userRow as any).workspace_id}`);
-  revalidatePath("/app/configuracion/comisiones");
   revalidatePath("/app/configuracion/financiera");
 }
 

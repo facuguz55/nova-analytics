@@ -309,7 +309,7 @@ export default function AnalisisClient({ initialOrders, since, until, activePres
   const [fetchError,   setFetchError]   = useState(false);
   const [currency,     setCurrency]     = useState("ARS");
   const [showCurr,     setShowCurr]     = useState(false);
-  const [redondeo,     setRedondeo]     = useState(true);
+  const [redondeo,     setRedondeo]     = useState(false);
 
   // Sincronizar preferencias globales (Navbar)
   useEffect(() => {
