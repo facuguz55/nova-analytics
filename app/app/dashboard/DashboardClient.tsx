@@ -130,8 +130,8 @@ function StatusDot({ status }: { status: string }) {
 function Sparkline({ data, color, id }: { data: number[]; color: string; id: string }) {
   const points = data.map((v, i) => ({ i, v }));
   return (
-    <div className="h-8 -mx-1 mt-1 neon-chart" style={{ opacity: 0.9 }}>
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-8 -mx-1 mt-1 neon-chart" style={{ opacity: 0.9, minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <AreaChart data={points} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
@@ -591,7 +591,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           </div>
         </div>
         <div className="p-4">
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={200} minWidth={0}>
             {isOrders ? (
               <BarChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.07)" />
@@ -634,7 +634,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
             <p className="text-[11px] text-[#64748B] mt-0.5">Últimos 30 días</p>
           </div>
           <div className="p-3">
-            <ResponsiveContainer width="100%" height={170}>
+            <ResponsiveContainer width="100%" height={170} minWidth={0}>
               <BarChart data={weekdayData} margin={{ top: 8, right: 5, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="weekdayGrad" x1="0" y1="0" x2="0" y2="1">
@@ -663,7 +663,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
             <p className="text-[11px] text-[#64748B] mt-0.5">Suma progresiva · 30 días</p>
           </div>
           <div className="p-3">
-            <ResponsiveContainer width="100%" height={170}>
+            <ResponsiveContainer width="100%" height={170} minWidth={0}>
               <AreaChart data={cumulativeData} margin={{ top: 8, right: 5, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="cumGrad" x1="0" y1="0" x2="0" y2="1">
@@ -693,7 +693,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           </div>
           <div className="p-3 flex items-center gap-4">
             <div className="relative" style={{ width: 150, height: 150, flexShrink: 0 }}>
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <PieChart>
                   <Pie data={statusData} dataKey="value" nameKey="name"
                     innerRadius={48} outerRadius={68} paddingAngle={3}
