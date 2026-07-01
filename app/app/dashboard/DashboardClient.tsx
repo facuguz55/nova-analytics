@@ -582,7 +582,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(139,92,246,0.07)" />
                 <XAxis dataKey="date" tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
                 <YAxis tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} width={42}
-                  tickFormatter={(v) => redondeo ? `${curSymbol}${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}` : `${curSymbol}${v}`} />
+                  tickFormatter={(v) => `${curSymbol}${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
                 <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "10px", color: "#F1F5F9" }}
                   formatter={(v) => [fmt(Number(v)), chartMode === "profit" ? "Profit" : "Revenue"]} />
                 <Area type="monotone" dataKey={chartKey} stroke={chartColor} strokeWidth={2}
