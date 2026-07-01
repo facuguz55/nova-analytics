@@ -13,6 +13,7 @@ import Link from "next/link";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import type { TNOrder } from "@/lib/tiendanube/client";
+import type { ProductCost } from "./page";
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -28,6 +29,10 @@ interface DashboardData {
   rawOrders: TNOrder[];
   customerCount: number;
   recurrenteCount: number;
+  products: ProductCost[];
+  avgShippingCost: number;
+  totalFixedMonthly: number;
+  totalVariablePct: number;
 }
 
 type ChartMode = "profit" | "revenue" | "orders";
@@ -192,6 +197,24 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
     [data.rawOrders]
   );
 
+  // product_id → costo promedio — misma lógica que Rentabilidad
+  const productMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of data.products) if (p.cost > 0) map.set(p.external_id, p.cost);
+    return map;
+  }, [data.products]);
+
+  function cogsOf(orders: TNOrder[]): number {
+    let cogs = 0;
+    for (const o of orders) {
+      for (const item of o.products) {
+        const cost = productMap.get(String(item.product_id));
+        if (cost) cogs += cost * item.quantity;
+      }
+    }
+    return cogs;
+  }
+
   function filterRange(orders: TNOrder[], f: Date, t: Date) {
     return orders.filter((o) => {
       const d = new Date(o.created_at);
@@ -206,14 +229,19 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
     const revenue     = periodOrders.reduce((a, o) => a + parseFloat(o.total), 0);
     const orders      = periodOrders.length;
     const aov         = orders > 0 ? revenue / orders : 0;
-    // Mismo cálculo que rentabilidad: quitar IVA, luego fee plataforma y fee agencia
-    const netRevenue  = revenue / (1 + data.taxRate / 100);
-    const netProfit   = netRevenue * (1 - data.platformFee / 100 - (data.agencyFee ?? 0) / 100);
+    // Mismo cálculo que Rentabilidad: quitar IVA, fees, costo de productos, envíos y costos adicionales
+    const netRevenue     = revenue / (1 + data.taxRate / 100);
+    const feeFactor      = 1 - data.platformFee / 100 - (data.agencyFee ?? 0) / 100 - data.totalVariablePct / 100;
+    const cogs           = cogsOf(periodOrders);
+    const shippingCost   = data.avgShippingCost * orders;
+    const periodDays     = Math.max(Math.ceil((to.getTime() - from.getTime()) / 86_400_000), 1);
+    const fixedCostsAmt  = data.totalFixedMonthly * (periodDays / 30);
+    const netProfit   = netRevenue * feeFactor - cogs - shippingCost - fixedCostsAmt;
     const profitPct   = revenue > 0 ? (netProfit / revenue) * 100 : 0;
     const prevRevenue = prevOrders.reduce((a, o) => a + parseFloat(o.total), 0);
     const cambio      = calcPct(revenue, prevRevenue);
     return { revenue, orders, aov, netRevenue, netProfit, profitPct, cambio };
-  }, [periodOrders, prevOrders, data.taxRate, data.platformFee, data.agencyFee]);
+  }, [periodOrders, prevOrders, from, to, data.taxRate, data.platformFee, data.agencyFee, data.totalVariablePct, data.avgShippingCost, data.totalFixedMonthly, productMap]);
 
   // Chart: últimos 30 días siempre (contexto de tendencia)
   const chartData = useMemo(() => {
@@ -224,7 +252,9 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       const de  = new Date(ds.getTime() + 86_400_000);
       const dayOrders  = paidOrders.filter((o) => { const d = new Date(o.created_at); return d >= ds && d < de; });
       const dayRevenue = dayOrders.reduce((a, o) => a + parseFloat(o.total), 0);
-      const dayProfit  = (dayRevenue / (1 + data.taxRate / 100)) * (1 - data.platformFee / 100 - (data.agencyFee ?? 0) / 100);
+      const dayFeeFactor = 1 - data.platformFee / 100 - (data.agencyFee ?? 0) / 100 - data.totalVariablePct / 100;
+      const dayProfit  = (dayRevenue / (1 + data.taxRate / 100)) * dayFeeFactor
+        - cogsOf(dayOrders) - data.avgShippingCost * dayOrders.length - data.totalFixedMonthly / 30;
       return {
         date: `${String(ds.getDate()).padStart(2,"0")}/${String(ds.getMonth()+1).padStart(2,"0")}`,
         revenue: dayRevenue,
@@ -232,7 +262,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
         profit:  dayProfit,
       };
     });
-  }, [paidOrders, data.taxRate, data.platformFee]);
+  }, [paidOrders, data.taxRate, data.platformFee, data.agencyFee, data.totalVariablePct, data.avgShippingCost, data.totalFixedMonthly, productMap]);
 
   // Ventas por día de semana (últimos 30 días)
   const weekdayData = useMemo(() => {

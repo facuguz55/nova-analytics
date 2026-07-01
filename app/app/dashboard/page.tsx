@@ -4,6 +4,13 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getOrdersForRange, getCustomers, type TNOrder } from "@/lib/tiendanube/client";
 import DashboardClient from "./DashboardClient";
+import { DEFAULT_SHIPPING_COSTS } from "../configuracion/financiera/shipping-defaults";
+import type { AdditionalCost } from "../configuracion/costos-adicionales/CostosAdicionalesClient";
+
+export interface ProductCost {
+  external_id: string;
+  cost: number;
+}
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -33,13 +40,40 @@ async function getDashboardData() {
   let tnConnected = false;
   let storeName: string | null = null;
 
+  // Mismas fuentes que Rentabilidad, para que el margen coincida en toda la app
+  const [productsRes, shippingRes, costsRes] = await Promise.allSettled([
+    db.from("tn_products").select("external_id, variants").eq("workspace_id", workspaceId),
+    db.from("shipping_costs").select("cost, is_active").eq("workspace_id", workspaceId),
+    db.from("additional_costs").select("type, amount").eq("workspace_id", workspaceId),
+  ]);
+
+  const productRows = productsRes.status === "fulfilled" ? ((productsRes.value.data ?? []) as { external_id: string; variants: { cost: string | null }[] }[]) : [];
+  const products: ProductCost[] = productRows.map((p) => {
+    const withCost = (p.variants ?? []).filter((v) => parseFloat(v.cost ?? "0") > 0);
+    const cost = withCost.length
+      ? withCost.reduce((a, v) => a + parseFloat(v.cost ?? "0"), 0) / withCost.length
+      : 0;
+    return { external_id: p.external_id, cost };
+  });
+
+  const shippingRows = shippingRes.status === "fulfilled" ? ((shippingRes.value.data ?? []) as { cost: number; is_active: boolean }[]) : [];
+  const shippingForAvg = shippingRows.length > 0 ? shippingRows : DEFAULT_SHIPPING_COSTS;
+  const activeShipping = shippingForAvg.filter((r) => r.is_active && r.cost > 0);
+  const avgShippingCost = activeShipping.length
+    ? activeShipping.reduce((s, r) => s + Number(r.cost), 0) / activeShipping.length
+    : 0;
+
+  const additionalCosts = costsRes.status === "fulfilled" ? ((costsRes.value.data ?? []) as AdditionalCost[]) : [];
+  const totalFixedMonthly = additionalCosts.filter((c) => c.type === "fixed").reduce((s, c) => s + Number(c.amount), 0);
+  const totalVariablePct  = additionalCosts.filter((c) => c.type === "variable").reduce((s, c) => s + Number(c.amount), 0);
+
   if (hasSyncedData) {
     // ── Leer de Supabase (~50ms) ──────────────────────────────────────
     const since120 = new Date(Date.now() - 120 * 86400000).toISOString();
 
     const [ordersRes, customersRes, intRes] = await Promise.allSettled([
       db.from("tn_orders")
-        .select("external_id, number, customer_name, customer_email, total, subtotal, discount, shipping, status, payment_status, currency, created_at")
+        .select("external_id, number, customer_name, customer_email, total, subtotal, discount, shipping, status, payment_status, currency, products, created_at")
         .eq("workspace_id", workspaceId)
         .gte("created_at", since120)
         .order("created_at", { ascending: false }),
@@ -68,7 +102,7 @@ async function getDashboardData() {
         customer:       o.customer_name
           ? { id: 0, name: o.customer_name, email: o.customer_email ?? "", phone: undefined }
           : null,
-        products:       [],
+        products:       o.products ?? [],
         created_at:     o.created_at,
         updated_at:     o.created_at,
         paid_at:        null,
@@ -121,6 +155,10 @@ async function getDashboardData() {
     rawOrders,
     customerCount,
     recurrenteCount,
+    products,
+    avgShippingCost,
+    totalFixedMonthly,
+    totalVariablePct,
   };
 }
 
