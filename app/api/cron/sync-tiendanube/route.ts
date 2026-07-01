@@ -35,7 +35,12 @@ export async function GET(req: Request) {
     .eq("provider", "tiendanube")
     .eq("status", "active");
 
-  const results: { workspaceId: string; orders?: number; products?: number; customers?: number; error?: string }[] = [];
+  const results: {
+    workspaceId: string;
+    orders?: number; ordersError?: string;
+    products?: number; productsError?: string;
+    customers?: number; customersError?: string;
+  }[] = [];
 
   for (const int of (allIntegrations ?? []) as IntRow[]) {
     if (!int.access_token_encrypted || !int.store_id) continue;
@@ -51,12 +56,15 @@ export async function GET(req: Request) {
 
       results.push({
         workspaceId: int.workspace_id,
-        orders:    ordersResult.status    === "fulfilled" ? ordersResult.value.synced    : undefined,
-        products:  productsResult.status  === "fulfilled" ? productsResult.value.synced  : undefined,
-        customers: customersResult.status === "fulfilled" ? customersResult.value.synced : undefined,
+        orders:        ordersResult.status    === "fulfilled" ? ordersResult.value.synced    : undefined,
+        ordersError:   ordersResult.status    === "rejected"  ? String(ordersResult.reason)   : undefined,
+        products:      productsResult.status  === "fulfilled" ? productsResult.value.synced  : undefined,
+        productsError: productsResult.status  === "rejected"  ? String(productsResult.reason) : undefined,
+        customers:      customersResult.status === "fulfilled" ? customersResult.value.synced  : undefined,
+        customersError: customersResult.status === "rejected"  ? String(customersResult.reason) : undefined,
       });
     } catch (err) {
-      results.push({ workspaceId: int.workspace_id, error: String(err) });
+      results.push({ workspaceId: int.workspace_id, ordersError: String(err) });
     }
   }
 

@@ -109,7 +109,7 @@ export async function syncCustomers(
     name:          c.name,
     email:         c.email,
     phone:         c.phone ?? null,
-    orders_count:  c.orders_count,
+    orders_count:  c.orders_count ?? 0,
     total_spent:   parseFloat(c.total_spent || "0"),
     created_at_tn: c.created_at,
     synced_at:     new Date().toISOString(),
