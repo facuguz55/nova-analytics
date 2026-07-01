@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import {
-  Mail, Send, Sparkles, Loader2, Inbox,
-  CheckCircle2, Copy, X, Search, RefreshCw, Circle, ExternalLink,
+  Mail, Send, Sparkles, Loader2, Inbox, PenSquare,
+  CheckCircle2, Copy, X, Search, RefreshCw, Circle, ExternalLink, AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -62,6 +62,16 @@ interface FullMessage extends EmailMessage {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Acepta emails separados por coma, punto y coma o salto de línea.
+function parseRecipients(raw: string): { valid: string[]; invalid: string[] } {
+  const tokens = raw.split(/[,;\n]/).map(t => t.trim()).filter(Boolean);
+  const valid = [...new Set(tokens.filter(t => EMAIL_REGEX.test(t)))];
+  const invalid = [...new Set(tokens.filter(t => !EMAIL_REGEX.test(t)))];
+  return { valid, invalid };
+}
 
 function parseFrom(from: string) {
   const match = from.match(/^"?([^"<]+)"?\s*<(.+)>$/);
@@ -263,6 +273,61 @@ export default function MailsClient({
   const [classifications, setClassifications] = useState<Record<string, MailCategory>>({});
   const [classifying, setClassifying] = useState(true);
 
+  // ── Redactar / envío masivo ──────────────────────────────────────────────
+  const [showCompose, setShowCompose] = useState(false);
+  const [composeTo, setComposeTo] = useState("");
+  const [composeSubject, setComposeSubject] = useState("");
+  const [composeBody, setComposeBody] = useState("");
+  const [composeSending, setComposeSending] = useState(false);
+  const [composeResults, setComposeResults] = useState<{ email: string; status: "ok" | "error" }[] | null>(null);
+
+  function openCompose() {
+    setComposeTo("");
+    setComposeSubject("");
+    setComposeBody("");
+    setComposeResults(null);
+    setShowCompose(true);
+  }
+
+  const { valid: composeValidRecipients, invalid: composeInvalidRecipients } = parseRecipients(composeTo);
+
+  async function handleComposeSend() {
+    if (composeValidRecipients.length === 0) { toast.error("Poné al menos un email válido"); return; }
+    if (!composeSubject.trim()) { toast.error("Poné un asunto"); return; }
+    if (!composeBody.trim()) { toast.error("Escribí un mensaje"); return; }
+
+    setComposeSending(true);
+    setComposeResults(null);
+    const results: { email: string; status: "ok" | "error" }[] = [];
+
+    // Secuencial — un email real por destinatario, no CC ni grupo.
+    for (const email of composeValidRecipients) {
+      try {
+        const res = await fetch("/api/mails/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ to: email, subject: composeSubject, body: composeBody }),
+        });
+        results.push({ email, status: res.ok ? "ok" : "error" });
+      } catch {
+        results.push({ email, status: "error" });
+      }
+    }
+
+    setComposeResults(results);
+    setComposeSending(false);
+
+    const okCount = results.filter(r => r.status === "ok").length;
+    if (okCount === results.length) {
+      toast.success(results.length === 1 ? "Mail enviado correctamente" : `${okCount} mails enviados correctamente`);
+      setComposeTo(""); setComposeSubject(""); setComposeBody("");
+    } else if (okCount === 0) {
+      toast.error("No se pudo enviar ningún mail");
+    } else {
+      toast.warning(`${okCount} de ${results.length} enviados — revisá los que fallaron`);
+    }
+  }
+
   // Clasificar todos los emails al montar (un solo call batch a Haiku)
   useEffect(() => {
     if (!messages.length) { setClassifying(false); return; }
@@ -428,6 +493,14 @@ export default function MailsClient({
               {gmailEmail && <p className="text-[10px] text-[#64748B]">{gmailEmail}</p>}
             </div>
             <div className="flex items-center gap-1.5">
+              <button
+                onClick={openCompose}
+                className="w-7 h-7 flex items-center justify-center rounded-lg transition-all hover:opacity-80"
+                style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa" }}
+                title="Redactar mail"
+              >
+                <PenSquare size={12} strokeWidth={2.5} />
+              </button>
               <a
                 href="https://mail.google.com"
                 target="_blank"
@@ -718,6 +791,124 @@ export default function MailsClient({
           </div>
         )}
       </div>
+
+      {/* ── MODAL: Redactar / envío masivo ─────────────────────────────────── */}
+      {showCompose && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+          onClick={(e) => { if (e.target === e.currentTarget && !composeSending) setShowCompose(false); }}
+        >
+          <div
+            className="rounded-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto"
+            style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)" }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(139,92,246,0.15)" }}>
+                  <PenSquare size={18} color="#a78bfa" strokeWidth={2} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#F1F5F9]">Redactar mail</h3>
+                  <p className="text-[11px] text-[#64748B]">Poné uno o varios destinatarios para enviar el mismo mensaje a cada uno</p>
+                </div>
+              </div>
+              <button
+                onClick={() => !composeSending && setShowCompose(false)}
+                className="text-[#64748B] hover:text-[#F1F5F9] transition-colors flex-shrink-0"
+              >
+                <X size={18} strokeWidth={2} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-[#94A3B8] uppercase tracking-widest">Para</label>
+                <textarea
+                  value={composeTo}
+                  onChange={e => setComposeTo(e.target.value)}
+                  placeholder="cliente@ejemplo.com, otro@ejemplo.com&#10;(uno por línea o separados por coma)"
+                  rows={2}
+                  className="w-full mt-1.5 rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none resize-none"
+                  style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
+                />
+                {composeTo.trim() && (
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    {composeValidRecipients.length > 0 && (
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ color: "#22c55e", background: "rgba(34,197,94,0.1)" }}>
+                        {composeValidRecipients.length} destinatario{composeValidRecipients.length > 1 ? "s" : ""} válido{composeValidRecipients.length > 1 ? "s" : ""}
+                      </span>
+                    )}
+                    {composeInvalidRecipients.length > 0 && (
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ color: "#f59e0b", background: "rgba(245,158,11,0.1)" }}>
+                        <AlertTriangle size={9} strokeWidth={2.5} /> ignorado: {composeInvalidRecipients.join(", ")}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-[#94A3B8] uppercase tracking-widest">Asunto</label>
+                <input
+                  type="text"
+                  value={composeSubject}
+                  onChange={e => setComposeSubject(e.target.value)}
+                  placeholder="Ej: Actualización sobre tu pedido"
+                  className="w-full mt-1.5 rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none"
+                  style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-[#94A3B8] uppercase tracking-widest">Mensaje</label>
+                <textarea
+                  value={composeBody}
+                  onChange={e => setComposeBody(e.target.value)}
+                  placeholder="Escribí tu mensaje acá..."
+                  rows={6}
+                  className="w-full mt-1.5 rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder:text-[#475569] outline-none resize-none"
+                  style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}
+                />
+              </div>
+            </div>
+
+            {composeResults && (
+              <div className="rounded-xl p-3 space-y-1" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                {composeResults.map(r => (
+                  <div key={r.email} className="flex items-center gap-2 text-xs">
+                    {r.status === "ok"
+                      ? <CheckCircle2 size={12} color="#22c55e" strokeWidth={2.5} className="flex-shrink-0" />
+                      : <X size={12} color="#ef4444" strokeWidth={2.5} className="flex-shrink-0" />}
+                    <span style={{ color: r.status === "ok" ? "#94A3B8" : "#f87171" }}>{r.email}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCompose(false)}
+                disabled={composeSending}
+                className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-[#64748B] transition-all hover:text-[#F1F5F9] disabled:opacity-50"
+                style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)" }}
+              >
+                Cerrar
+              </button>
+              <button
+                onClick={handleComposeSend}
+                disabled={composeSending || composeValidRecipients.length === 0}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white transition-all disabled:opacity-50"
+                style={{ background: "linear-gradient(135deg, #8b5cf6, #c026d3)" }}
+              >
+                {composeSending
+                  ? <><Loader2 size={14} className="animate-spin" /> Enviando...</>
+                  : <><Send size={14} strokeWidth={2.5} /> Enviar{composeValidRecipients.length > 1 ? ` a ${composeValidRecipients.length}` : ""}</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

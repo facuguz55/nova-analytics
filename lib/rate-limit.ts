@@ -100,4 +100,5 @@ export const RATE_LIMITS = {
   ia_chat:     { max: 20,  windowSeconds: 3600 }, // 20 mensajes/hora
   ai_suggest:  { max: 15,  windowSeconds: 3600 }, // 15 sugerencias/hora
   mail_reply:  { max: 30,  windowSeconds: 3600 }, // 30 respuestas/hora
+  mail_send:   { max: 60,  windowSeconds: 3600 }, // 60 envíos nuevos/hora (incluye envíos masivos)
 } as const;
