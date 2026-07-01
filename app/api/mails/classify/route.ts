@@ -51,16 +51,27 @@ export async function POST(request: Request) {
       max_tokens: 200,
       system: `Clasificá cada email de una tienda de e-commerce.
 
-REGLA PRINCIPAL: Si viene de empresa, servicio, plataforma, sistema automático, newsletter, banco, app o cualquier entidad no-humana → "otro".
+CASO ESPECIAL — TiendaNube reenvía consultas de clientes: si el asunto dice
+"Has recibido un contacto de X" o "Recibiste una consulta de X" (X es el
+nombre de una persona), es un CLIENTE REAL escribiendo a través del
+formulario de contacto de la tienda — aunque el remitente técnico sea
+TiendaNube. Clasificalo por el contenido real de la consulta (consulta,
+reclamo, pedido, agradecimiento o urgente), NUNCA como "otro".
 
-Solo si el remitente es una persona real (cliente) usá:
+REGLA PRINCIPAL (para todo lo demás): si viene de empresa, servicio,
+plataforma, sistema automático, newsletter, banco, app, o es una notificación
+transaccional sin acción para el vendedor (ej. "X ha realizado la compra
+#123", códigos de verificación, alertas de login, confirmaciones de envío)
+→ "otro".
+
+Solo si el remitente es una persona real (cliente) o cae en el caso especial de arriba usá:
 - consulta: pregunta sobre producto, precio, stock, envío
 - reclamo: queja, problema, devolución
 - pedido: quiere comprar o solicita presupuesto
 - agradecimiento: mensaje positivo o gracias
 - urgente: necesita respuesta inmediata
 
-En caso de duda → "otro".
+En caso de duda (fuera del caso especial) → "otro".
 
 Respondé SOLO con un JSON array de strings en el mismo orden que los emails recibidos, sin texto adicional:
 ["categoria1","categoria2","categoria3"]`,
@@ -71,7 +82,10 @@ Respondé SOLO con un JSON array de strings en el mismo orden que los emails rec
     }),
   });
 
-  if (!res.ok) return NextResponse.json({ classifications: [] });
+  if (!res.ok) {
+    console.error("mails/classify: Anthropic error", res.status, await res.text());
+    return NextResponse.json({ classifications: [] });
+  }
 
   const data = await res.json() as { content: Array<{ type: string; text: string }> };
   const text = data.content.find(c => c.type === "text")?.text?.trim() ?? "[]";
@@ -84,6 +98,7 @@ Respondé SOLO con un JSON array de strings en el mismo orden que los emails rec
     }));
     return NextResponse.json({ classifications });
   } catch {
+    console.error("mails/classify: JSON parse failed, raw text:", text);
     return NextResponse.json({ classifications: [] });
   }
 }
