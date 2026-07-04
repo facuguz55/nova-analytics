@@ -4,6 +4,7 @@ import { Users, Store, DollarSign, Activity, Plug, Sparkles, ShieldCheck } from 
 import { formatCurrency } from "@/lib/utils";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import HQCharts from "./HQCharts";
+import SyncButton from "./SyncButton";
 
 export const metadata: Metadata = { title: "Nova HQ — Super Admin" };
 
@@ -439,10 +440,12 @@ export default async function HQPage() {
         </div>
       </div>
 
+      <SyncButton />
+
       {/* Activity indicator */}
       <div className="flex items-center gap-2">
         <Activity size={13} color="#22c55e" strokeWidth={2} />
-        <span className="text-xs text-[#64748B]">
+        <span className="text-xs text-[#64748B]" suppressHydrationWarning>
           Sistema activo · {new Date().toLocaleString("es-AR", { dateStyle: "full", timeStyle: "short" })}
         </span>
       </div>
