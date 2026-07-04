@@ -3,6 +3,7 @@ import { getUser, getCachedUserRow, getCachedFinancialConfig } from "@/lib/supab
 import { createServiceClient } from "@/lib/supabase/service";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getOrdersForRange, getCustomers, type TNOrder } from "@/lib/tiendanube/client";
+import { getMetaConnection } from "@/lib/meta/connection";
 import DashboardClient from "./DashboardClient";
 import { DEFAULT_SHIPPING_COSTS } from "../configuracion/financiera/shipping-defaults";
 import type { AdditionalCost } from "../configuracion/costos-adicionales/CostosAdicionalesClient";
@@ -23,6 +24,7 @@ async function getDashboardData() {
 
   const workspaceId = userRow.workspace_id;
   const cfg = await getCachedFinancialConfig(workspaceId);
+  const metaConnected = !!(await getMetaConnection());
 
   const db = createServiceClient() as any;
 
@@ -148,6 +150,7 @@ async function getDashboardData() {
     isSuperAdmin:    userRow.role === "super_admin",
     tnConnected,
     storeName,
+    metaConnected,
     usdRate:         cfg?.usd_rate     ?? 1100,
     taxRate:         cfg?.tax_rate     ?? 10,
     platformFee:     cfg?.platform_fee ?? 2,

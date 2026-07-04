@@ -22,6 +22,7 @@ interface DashboardData {
   isSuperAdmin: boolean;
   tnConnected: boolean;
   storeName: string | null;
+  metaConnected: boolean;
   usdRate: number;
   taxRate: number;
   platformFee: number;
@@ -121,6 +122,14 @@ function calcPct(a: number, b: number): number {
   return ((a - b) / b) * 100;
 }
 
+function toISODate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function getMetaActionValue(actions: { action_type: string; value: string }[] | undefined, type: string): number {
+  return parseFloat(actions?.find((a) => a.action_type === type)?.value ?? "0") || 0;
+}
+
 function StatusDot({ status }: { status: string }) {
   const color = status === "paid" ? "#22c55e" : status === "cancelled" ? "#ef4444" : "#f59e0b";
   return <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />;
@@ -199,6 +208,40 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   // ── Métricas computadas según preset ────────────────────────────────────────
 
   const { from, to } = useMemo(() => getDateRange(preset), [preset]);
+
+  // Meta Ads: spend/purchases reales para el período seleccionado
+  const [metaSpend, setMetaSpend] = useState(0);
+  const [metaPurchases, setMetaPurchases] = useState(0);
+  const [metaPurchaseValue, setMetaPurchaseValue] = useState(0);
+  const [metaLoading, setMetaLoading] = useState(false);
+
+  useEffect(() => {
+    if (!data.metaConnected) return;
+    let cancelled = false;
+    setMetaLoading(true);
+    const since = toISODate(from);
+    const until = toISODate(to);
+    fetch(`/api/meta/insights?since=${since}&until=${until}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (cancelled) return;
+        const campaigns = (json.campaigns ?? []) as {
+          spend: string;
+          actions?: { action_type: string; value: string }[];
+          action_values?: { action_type: string; value: string }[];
+        }[];
+        // La cuenta de Meta puede facturar en una moneda distinta a ARS (ej. USD);
+        // convertimos a ARS para que sea comparable con la Facturación de TiendaNube.
+        const accountCurrency: string = json.account?.currency ?? "ARS";
+        const toArs = accountCurrency === "USD" ? data.usdRate : 1;
+        setMetaSpend(campaigns.reduce((s, c) => s + (parseFloat(c.spend) || 0), 0) * toArs);
+        setMetaPurchases(campaigns.reduce((s, c) => s + getMetaActionValue(c.actions, "purchase"), 0));
+        setMetaPurchaseValue(campaigns.reduce((s, c) => s + getMetaActionValue(c.action_values, "purchase"), 0) * toArs);
+      })
+      .catch(() => { /* deja los valores previos, se muestra "—" */ })
+      .finally(() => { if (!cancelled) setMetaLoading(false); });
+    return () => { cancelled = true; };
+  }, [data.metaConnected, from, to, data.usdRate]);
 
   const { from: prevFrom, to: prevTo } = useMemo(() => {
     const span = to.getTime() - from.getTime();
@@ -396,18 +439,24 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
     },
   ];
 
+  const mer      = metaSpend > 0 ? revenue / metaSpend : 0;
+  const roas     = metaSpend > 0 ? metaPurchaseValue / metaSpend : 0;
+  const metaCpa  = metaPurchases > 0 ? metaSpend / metaPurchases : 0;
+  const ticketNeto = metaPurchases > 0 ? (metaPurchaseValue / (1 + data.taxRate / 100)) / metaPurchases : 0;
+  const cpaReal  = profitPct > 0 ? metaCpa / (profitPct / 100) : 0;
+
   const ANUNCIOS_METRICS = [
-    { label: modoSimple ? "Inversión Ads" : "Inversión ads",  value: "—", icon: DollarSign, color: "#1877F2",
+    { label: modoSimple ? "Inversión Ads" : "Inversión ads",  rawValue: metaSpend, format: fmtC, icon: DollarSign, color: "#1877F2",
       tip: "Cuánto gastaste en publicidad de Meta en el período.", tipSimple: "Plata invertida en publicidad de Facebook e Instagram." },
-    { label: "MER",       value: "—", icon: BarChart2,  color: "#22c55e",
+    { label: "MER",       rawValue: mer, format: (n: number) => `${n.toFixed(2)}x`, icon: BarChart2,  color: "#22c55e",
       tip: "Ratio de eficiencia: Facturación ÷ Inversión ads.", tipSimple: "Cuántas veces te volvió la plata invertida en publicidad." },
-    { label: "ROAS",      value: "—", icon: TrendingUp, color: "#a78bfa",
+    { label: "ROAS",      rawValue: roas, format: (n: number) => `${n.toFixed(2)}x`, icon: TrendingUp, color: "#a78bfa",
       tip: "Retorno sobre inversión publicitaria: facturación atribuible a ads ÷ inversión.", tipSimple: "Por cada peso en ads, cuántos te vuelven en ventas." },
-    { label: modoSimple ? "Costo x venta" : "CPA", value: "—", icon: Target, color: "#f59e0b",
+    { label: modoSimple ? "Costo x venta" : "CPA", rawValue: metaCpa, format: fmtC, icon: Target, color: "#f59e0b",
       tip: "Costo por adquisición: inversión ads ÷ órdenes generadas por ads.", tipSimple: "Cuánto te cuesta conseguir un cliente nuevo desde los anuncios." },
-    { label: "Ticket neto",   value: "—", icon: DollarSign, color: "#c084fc",
+    { label: "Ticket neto",   rawValue: ticketNeto, format: fmtC, icon: DollarSign, color: "#c084fc",
       tip: "Ticket promedio neto de ventas que vinieron de ads.", tipSimple: "Ticket promedio real de clientes que vienen por publicidad." },
-    { label: "CPA real",  value: "—", icon: Zap,        color: "#c026d3",
+    { label: "CPA real",  rawValue: cpaReal, format: fmtC, icon: Zap,        color: "#c026d3",
       tip: "CPA ajustado a ganancia neta.", tipSimple: "El costo real de cada cliente nuevo considerando la ganancia que deja." },
   ];
 
@@ -548,16 +597,23 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           <Target size={14} color="#1877F2" strokeWidth={2.5} />
           <p className="text-xs font-bold tracking-widest text-[#94A3B8] uppercase">Anuncios</p>
           <div className="flex items-center gap-1.5 ml-auto">
-            <AlertCircle size={11} color="#64748B" strokeWidth={2} />
-            <span className="text-[11px] text-[#64748B]">Conectá Meta Ads para ver datos reales</span>
-            <Link href="/app/configuracion/integraciones" className="text-[11px] font-semibold hover:underline" style={{ color: "#1877F2" }}>
-              Conectar →
-            </Link>
+            {!data.metaConnected ? (
+              <>
+                <AlertCircle size={11} color="#64748B" strokeWidth={2} />
+                <span className="text-[11px] text-[#64748B]">Conectá Meta Ads para ver datos reales</span>
+                <Link href="/app/configuracion/integraciones" className="text-[11px] font-semibold hover:underline" style={{ color: "#1877F2" }}>
+                  Conectar →
+                </Link>
+              </>
+            ) : metaLoading ? (
+              <span className="text-[11px] text-[#64748B]">Cargando…</span>
+            ) : null}
           </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
           {ANUNCIOS_METRICS.map((m, i) => {
             const Icon = m.icon;
+            const value = data.metaConnected && !metaLoading && m.rawValue > 0 ? m.format(m.rawValue) : "—";
             return (
               <div key={m.label} className="p-3 sm:p-4 flex flex-col gap-1"
                 style={{ borderRight: i < ANUNCIOS_METRICS.length - 1 ? "1px solid rgba(24,119,242,0.08)" : "none" }}>
@@ -567,7 +623,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                     <Icon size={11} color={m.color} strokeWidth={2} />
                   </div>
                 </div>
-                <p className="text-xl font-black text-[#475569] leading-none">{m.value}</p>
+                <p className="text-xl font-black leading-none" style={{ color: value === "—" ? "#475569" : m.color }}>{value}</p>
               </div>
             );
           })}

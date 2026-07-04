@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     }
 
     // También traer datos de cuenta (spend total del período)
-    const accountUrl = `https://graph.facebook.com/v21.0/act_${accountId}?fields=name,currency,spend_cap,amount_spent&access_token=${conn.accessToken}`;
+    const accountUrl = `https://graph.facebook.com/v21.0/act_${accountId}?fields=name,currency&access_token=${conn.accessToken}`;
     const accountRes = await fetch(accountUrl, { next: { revalidate: 300 } });
     const accountData = await accountRes.json();
 
