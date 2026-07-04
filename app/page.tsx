@@ -184,7 +184,7 @@ export default async function LandingPage() {
               },
               {
                 icon: <Brain className="w-4 h-4 sm:w-5 sm:h-5" />,
-                title: "IA Assistant",
+                title: "Asistente IA",
                 desc: "Responde preguntas sobre tu negocio, detecta oportunidades y genera insights accionables.",
               },
               {

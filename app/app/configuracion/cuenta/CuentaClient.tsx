@@ -243,7 +243,7 @@ export default function CuentaClient({ user, workspaceId, workspace }: Props) {
           </div>
           <span className="text-[10px] font-bold px-2.5 py-1 rounded-full capitalize"
             style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>
-            {user.isOAuthUser ? (PROVIDER_LABELS[user.authProvider] ?? user.authProvider) : "Email"}
+            {user.isOAuthUser ? (PROVIDER_LABELS[user.authProvider] ?? user.authProvider) : "Correo"}
           </span>
         </div>
 

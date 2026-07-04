@@ -28,8 +28,8 @@ const fmt = (n: number) => `$${Math.round(n).toLocaleString("es-AR")}`;
 const PLAN_STYLE: Record<string, { color: string; label: string; icon: React.ReactNode }> = {
   agency: { color: "#f59e0b", label: "Agency", icon: <Crown size={9} /> },
   pro:    { color: "#8B5CF6", label: "Pro",    icon: <Zap size={9} /> },
-  trial:  { color: "#3b82f6", label: "Trial",  icon: <Clock size={9} /> },
-  free:   { color: "#64748B", label: "Free",   icon: null },
+  trial:  { color: "#3b82f6", label: "Prueba",    icon: <Clock size={9} /> },
+  free:   { color: "#64748B", label: "Gratuito", icon: null },
 };
 
 export default function ClientesHQClient({
@@ -268,7 +268,7 @@ export default function ClientesHQClient({
                     <table className="w-full text-sm">
                       <thead>
                         <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                          {["Cliente", "DNI", "Teléfono", "Email", "Notas", "Registrado"].map((h) => (
+                          {["Cliente", "DNI", "Teléfono", "Correo", "Notas", "Registrado"].map((h) => (
                             <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-[#64748B] uppercase tracking-wide whitespace-nowrap">
                               {h}
                             </th>
@@ -349,7 +349,7 @@ export default function ClientesHQClient({
                     <table className="w-full text-sm">
                       <thead>
                         <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                          {["Cliente", "Email", "Teléfono", "Órdenes", "Total gastado", "Ciudad", "Desde"].map((h) => (
+                          {["Cliente", "Correo", "Teléfono", "Órdenes", "Total gastado", "Ciudad", "Desde"].map((h) => (
                             <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-[#64748B] uppercase tracking-wide whitespace-nowrap">
                               {h}
                             </th>
@@ -433,7 +433,7 @@ export default function ClientesHQClient({
               {[
                 { icon: CreditCard, label: "DNI",      value: detail.dni },
                 { icon: Phone,      label: "Teléfono", value: detail.phone },
-                { icon: Mail,       label: "Email",    value: detail.email },
+                { icon: Mail,       label: "Correo",    value: detail.email },
                 { icon: MapPin,     label: "Notas",    value: detail.notes },
               ].map(({ icon: Icon, label, value }) => (
                 <div

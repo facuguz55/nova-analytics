@@ -16,8 +16,8 @@ interface NavbarProps {
 // ── Índice de búsqueda global ────────────────────────────────────────────────
 // keywords: términos extra que disparan este ítem aunque no estén en el label
 const SEARCH_ITEMS = [
-  { label: "Dashboard",           href: "/app/dashboard",                      category: "General",       keywords: ["inicio", "home", "métricas", "ventas", "revenue", "profit"] },
-  { label: "IA Assistant",        href: "/app/ia",                             category: "General",       keywords: ["ia", "inteligencia", "chat", "claude", "ai", "consulta"] },
+  { label: "Inicio",              href: "/app/dashboard",                      category: "General",       keywords: ["inicio", "home", "métricas", "ventas", "revenue", "profit", "dashboard"] },
+  { label: "Asistente IA",        href: "/app/ia",                             category: "General",       keywords: ["ia", "inteligencia", "chat", "claude", "ai", "consulta", "assistant"] },
   { label: "Alertas",             href: "/app/alertas",                        category: "General",       keywords: ["avisos", "stock", "notificaciones", "warning", "peligro"] },
   { label: "Planes",              href: "/app/planes",                         category: "General",       keywords: ["suscripcion", "billing", "precio", "upgrade", "trial", "pro"] },
   { label: "Novedades",           href: "/app/changelog",                      category: "General",       keywords: ["changelog", "versiones", "updates", "actualizaciones", "nuevo"] },
@@ -29,7 +29,7 @@ const SEARCH_ITEMS = [
   { label: "Rentabilidad",        href: "/app/rentabilidad",                   category: "Tienda",        keywords: ["margen", "ganancia", "costos", "utilidad", "profit", "neto"] },
   { label: "Meta Ads",            href: "/app/meta-ads",                       category: "Marketing",     keywords: ["facebook", "instagram", "roas", "cpc", "campañas", "ads", "publicidad"] },
   { label: "Campañas",            href: "/app/campanas",                       category: "Marketing",     keywords: ["campañas", "marketing", "promociones", "email marketing"] },
-  { label: "Mails",               href: "/app/mails",                          category: "Comunicación",  keywords: ["emails", "gmail", "correos", "inbox", "mensajes", "responder"] },
+  { label: "Correos",             href: "/app/mails",                          category: "Comunicación",  keywords: ["emails", "gmail", "correos", "inbox", "mensajes", "responder", "mails"] },
   { label: "Integraciones",       href: "/app/configuracion/integraciones",    category: "Configuración", keywords: ["conectar", "tiendanube", "gmail", "meta", "api", "oauth"] },
   { label: "Configuración Financiera", href: "/app/configuracion/financiera",  category: "Configuración", keywords: ["finanzas", "iva", "impuestos", "comision", "dolar", "tipo de cambio"] },
   { label: "Cotizaciones USD",    href: "/app/configuracion/cotizaciones",     category: "Configuración", keywords: ["dolar", "blue", "oficial", "cotizacion", "ccl", "mep"] },

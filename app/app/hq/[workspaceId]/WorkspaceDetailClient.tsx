@@ -24,8 +24,8 @@ function calcRevenue(orders: TNOrder[]) {
 const PLAN_BADGE: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   agency: { label: "Agency", color: "#f59e0b", icon: <Crown size={10} /> },
   pro:    { label: "Pro",    color: "#8B5CF6", icon: <Zap size={10} /> },
-  trial:  { label: "Trial", color: "#3b82f6", icon: <Clock size={10} /> },
-  free:   { label: "Free",  color: "#64748B", icon: null },
+  trial:  { label: "Prueba",    color: "#3b82f6", icon: <Clock size={10} /> },
+  free:   { label: "Gratuito", color: "#64748B", icon: null },
 };
 
 type Tab = "resumen" | "ordenes" | "clientes";
@@ -250,7 +250,7 @@ export default function WorkspaceDetailClient({
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                    {["Cliente", "Email", "Órdenes", "Total gastado", "Ciudad", "Desde"].map((h) => (
+                    {["Cliente", "Correo", "Órdenes", "Total gastado", "Ciudad", "Desde"].map((h) => (
                       <th key={h} className="text-left px-4 py-3 text-[#64748B] font-medium text-xs uppercase tracking-wide whitespace-nowrap">{h}</th>
                     ))}
                   </tr>

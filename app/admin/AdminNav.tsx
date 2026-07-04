@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, BarChart2, UserPlus, Store, Users2 } from "lucide-react";
 
 const NAV = [
-  { href: "/admin/hq",                label: "HQ Dashboard",       icon: LayoutDashboard },
+  { href: "/admin/hq",                label: "Panel HQ",           icon: LayoutDashboard },
   { href: "/admin/hq/clientes",       label: "Clientes x Tienda",  icon: Users2, sub: true },
   { href: "/admin/clientes",          label: "Cuentas Nova",        icon: UserPlus },
   { href: "/admin/workspaces",        label: "Workspaces",          icon: Store },
-  { href: "/admin/analytics",         label: "Analytics",           icon: BarChart2 },
+  { href: "/admin/analytics",         label: "Estadísticas",        icon: BarChart2 },
 ];
 
 export default function AdminNav() {

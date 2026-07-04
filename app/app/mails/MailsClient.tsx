@@ -186,7 +186,7 @@ function MailBody({ body, isHtml }: { body: string; isHtml: boolean }) {
         style={{ minHeight: "300px", border: "none", background: "#111118" }}
         sandbox=""
         // sandbox="" sin permisos — bloquea JS, cookies y acceso al DOM padre
-        title="Email"
+        title="Correo"
         referrerPolicy="no-referrer"
         onLoad={(e) => {
           // Auto-resize al contenido real del email

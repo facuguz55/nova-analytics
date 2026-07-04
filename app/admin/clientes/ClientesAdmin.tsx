@@ -323,7 +323,7 @@ function ClientRow({ client }: { client: Client }) {
         <Modal title="Editar usuario" onClose={() => setShowEdit(false)}>
           {[
             { label: "Nombre", val: editName, set: setEditName },
-            { label: "Email",  val: editEmail, set: setEditEmail },
+            { label: "Correo", val: editEmail, set: setEditEmail },
           ].map((f) => (
             <div key={f.label}>
               <label className="text-xs text-[#94A3B8] mb-1 block">{f.label}</label>
@@ -401,8 +401,8 @@ export default function ClientesAdmin({ clients }: { clients: Client[] }) {
         {[
           { label: "Total", value: stats.total, icon: Store, color: "#8b5cf6" },
           { label: "Activos",  value: stats.active,  icon: Crown,  color: "#22c55e" },
-          { label: "Trial",    value: stats.trial,   icon: Clock,  color: "#f59e0b" },
-          { label: "Free",     value: stats.free,    icon: Users,  color: "#64748B" },
+          { label: "Prueba",    value: stats.trial,  icon: Clock,  color: "#f59e0b" },
+          { label: "Gratuito", value: stats.free,   icon: Users,  color: "#64748B" },
         ].map((s) => (
           <div key={s.label} className="rounded-xl p-4 flex items-center gap-3"
             style={{ background: "#111118", border: "1px solid rgba(139,92,246,0.12)" }}>

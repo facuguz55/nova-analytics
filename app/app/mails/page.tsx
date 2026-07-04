@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getGmailToken } from "@/lib/google/gmail";
 import MailsClient from "./MailsClient";
 
-export const metadata: Metadata = { title: "Mails" };
+export const metadata: Metadata = { title: "Correos" };
 
 interface GmailMessage {
   id: string;

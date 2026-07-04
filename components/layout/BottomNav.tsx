@@ -38,7 +38,7 @@ const MORE_SECTIONS = [
     items: [
       { href: "/app/meta-ads",     label: "Meta Ads",    icon: Target },
       { href: "/app/campanas",     label: "Campañas",    icon: Megaphone },
-      { href: "/app/mails",        label: "Mails",       icon: Mail },
+      { href: "/app/mails",        label: "Correos",     icon: Mail },
     ],
   },
   {

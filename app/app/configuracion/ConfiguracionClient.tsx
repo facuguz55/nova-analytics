@@ -21,11 +21,11 @@ interface Props {
 
 const PROVIDER_LABELS: Record<string, string> = {
   google: "Google", github: "GitHub", azure: "Microsoft",
-  facebook: "Facebook", apple: "Apple", email: "Email",
+  facebook: "Facebook", apple: "Apple", email: "Correo",
 };
 
 const PLAN_LABELS: Record<string, string> = {
-  free: "Gratuito", trial: "Trial", pro: "Pro", active: "Pro", agency: "Agency",
+  free: "Gratuito", trial: "Prueba", pro: "Pro", active: "Pro", agency: "Agency",
 };
 
 const SHORTCUTS = [

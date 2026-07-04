@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import IAClient from "./IAClient";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 
-export const metadata: Metadata = { title: "IA Assistant" };
+export const metadata: Metadata = { title: "Asistente IA" };
 
 export default async function IAPage() {
   // El contexto de negocio se arma server-side dentro de /api/ia/chat

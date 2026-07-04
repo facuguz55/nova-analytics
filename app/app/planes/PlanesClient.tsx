@@ -236,7 +236,7 @@ export default function PlanesClient({ plan, trialDaysLeft, workspaceId }: Props
           {[
             { feature: "Órdenes / mes",        free: "Hasta 80",     pro: "Ilimitadas",   icon: ShoppingCart },
             { feature: "Meta Ads",              free: "—",            pro: "Completo",     icon: BarChart2 },
-            { feature: "IA Assistant",          free: "Básico",       pro: "Sin límites",  icon: Zap },
+            { feature: "Asistente IA",          free: "Básico",       pro: "Sin límites",  icon: Zap },
             { feature: "Rentabilidad real",     free: "—",            pro: "Incluida",     icon: TrendingUp },
           ].map((row) => {
             const Icon = row.icon;

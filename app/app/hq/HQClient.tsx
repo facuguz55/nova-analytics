@@ -21,8 +21,8 @@ type WsEnriched = {
 const PLAN_BADGE: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   agency: { label: "Agency", color: "#f59e0b", icon: <Crown size={10} /> },
   pro:    { label: "Pro",    color: "#8B5CF6", icon: <Zap size={10} /> },
-  trial:  { label: "Trial", color: "#3b82f6", icon: <Clock size={10} /> },
-  free:   { label: "Free",  color: "#64748B", icon: null },
+  trial:  { label: "Prueba",    color: "#3b82f6", icon: <Clock size={10} /> },
+  free:   { label: "Gratuito", color: "#64748B", icon: null },
 };
 
 const PROVIDER_ICONS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {

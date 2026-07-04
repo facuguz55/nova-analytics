@@ -156,6 +156,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const [modoSimple, setModoSimple] = useState(false);
   const [preset,    setPreset]    = useState("hoy");
   const [showCurr,  setShowCurr]  = useState(false);
+  const [monthTabs, setMonthTabs] = useState<{ key: string; label: string; offset: number }[]>([]);
 
   // Leer preferencias guardadas y escuchar cambios globales
   useEffect(() => {
@@ -174,6 +175,18 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       window.removeEventListener("nova-redondeo-change", onRedondeo);
       window.removeEventListener("nova-modo-change", onModo);
     };
+  }, []);
+
+  // monthTabs se calcula solo en el cliente para evitar mismatch de timezone (server UTC ≠ cliente AR)
+  useEffect(() => {
+    const now = new Date();
+    setMonthTabs(
+      Array.from({ length: 4 }, (_, i) => {
+        const offset = 3 - i;
+        const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+        return { key: `mes-${offset}`, label: MONTHS_ES[d.getMonth()], offset };
+      })
+    );
   }, []);
 
   function handleCurrencyChange(code: string) {
@@ -323,15 +336,6 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const fmt  = useMemo(() => makeFmt(currency, data.usdRate, redondeo), [currency, data.usdRate, redondeo]);
   const fmtC = (n: number) => fmt(n);
 
-  const now = new Date();
-
-  // Tabs de meses: últimos 4 meses visibles
-  const monthTabs = Array.from({ length: 4 }, (_, i) => {
-    const offset = 3 - i;
-    const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
-    return { key: `mes-${offset}`, label: MONTHS_ES[d.getMonth()], offset };
-  });
-
   const chartKey   = chartMode === "orders" ? "orders" : chartMode === "profit" ? "profit" : "revenue";
   const chartColor = chartMode === "orders" ? "#c026d3" : chartMode === "profit" ? "#22c55e" : "#8b5cf6";
   const isOrders   = chartMode === "orders";
@@ -349,62 +353,62 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
   const TIENDA_METRICS = [
     {
-      label: modoSimple ? "Pedidos"         : "Orders",
+      label: modoSimple ? "Pedidos"         : "Órdenes",
       rawValue: orders, format: (n: number) => String(Math.round(n)),
       icon: ShoppingCart, color: "#c026d3", spark: sparkOrders,
       tip: "Cantidad total de órdenes pagas en el período seleccionado.",
       tipSimple: "Cuántos pedidos te hicieron en total.",
     },
     {
-      label: modoSimple ? "Ventas"          : "Revenue",
+      label: modoSimple ? "Ventas"          : "Facturación",
       rawValue: revenue, format: fmtC,
       icon: DollarSign,  color: "#8b5cf6", spark: sparkRevenue,
       tip: "Facturación bruta de las órdenes pagas (antes de impuestos y comisiones).",
       tipSimple: "Plata total que entró por tus ventas.",
     },
     {
-      label: modoSimple ? "Ticket promedio" : "AOV",
+      label: modoSimple ? "Ticket promedio" : "Ticket prom.",
       rawValue: aov, format: fmtC,
       icon: TrendingUp,  color: "#a78bfa", spark: sparkAov,
-      tip: "Revenue ÷ órdenes. Cuánto gasta un cliente por compra.",
+      tip: "Facturación ÷ órdenes. Cuánto gasta un cliente por compra.",
       tipSimple: "Cuánto te gasta en promedio cada cliente.",
     },
     {
-      label: modoSimple ? "Ganancia neta"   : "Net Profit",
+      label: modoSimple ? "Ganancia neta"   : "Ganancia neta",
       rawValue: netProfit, format: fmtC,
       icon: BarChart2,   color: "#22c55e", spark: sparkProfit,
       tip: "Ingresos sin IVA, descontando fee de plataforma y fee de agencia (según tu configuración de rentabilidad).",
       tipSimple: "La plata real que te queda después de pagar impuestos, la plataforma y la agencia.",
     },
     {
-      label: modoSimple ? "% Ganancia"      : "Profit %",
+      label: modoSimple ? "% Ganancia"      : "Margen %",
       rawValue: profitPct, format: (n: number) => `${n.toFixed(1)}%`,
       icon: Target,      color: "#f59e0b", spark: sparkPct,
-      tip: "Net Profit ÷ Revenue × 100. Margen porcentual sobre tu facturación.",
+      tip: "Ganancia neta ÷ Facturación × 100. Margen porcentual sobre tu facturación.",
       tipSimple: "Qué porcentaje de tus ventas se convierte en ganancia.",
     },
     {
-      label: modoSimple ? "Sin impuestos"   : "Net Rev.",
+      label: modoSimple ? "Sin impuestos"   : "Fact. neta",
       rawValue: netRevenue, format: fmtC,
       icon: DollarSign,  color: "#c084fc", spark: sparkNetRev,
-      tip: "Revenue ÷ (1 + IVA). Tu facturación sin impuestos.",
+      tip: "Facturación ÷ (1 + IVA). Tu facturación sin impuestos.",
       tipSimple: "Lo que ganaste sin contar el IVA.",
     },
   ];
 
   const ANUNCIOS_METRICS = [
-    { label: modoSimple ? "Inversión Ads" : "Ad Spend",  value: "—", icon: DollarSign, color: "#1877F2",
+    { label: modoSimple ? "Inversión Ads" : "Inversión ads",  value: "—", icon: DollarSign, color: "#1877F2",
       tip: "Cuánto gastaste en publicidad de Meta en el período.", tipSimple: "Plata invertida en publicidad de Facebook e Instagram." },
     { label: "MER",       value: "—", icon: BarChart2,  color: "#22c55e",
-      tip: "Marketing Efficiency Ratio: Revenue ÷ Ad Spend.", tipSimple: "Cuántas veces te volvió la plata invertida en publicidad." },
+      tip: "Ratio de eficiencia: Facturación ÷ Inversión ads.", tipSimple: "Cuántas veces te volvió la plata invertida en publicidad." },
     { label: "ROAS",      value: "—", icon: TrendingUp, color: "#a78bfa",
-      tip: "Return on Ad Spend: Revenue atribuible a ads ÷ Ad Spend.", tipSimple: "Por cada peso en ads, cuántos te vuelven en ventas." },
+      tip: "Retorno sobre inversión publicitaria: facturación atribuible a ads ÷ inversión.", tipSimple: "Por cada peso en ads, cuántos te vuelven en ventas." },
     { label: modoSimple ? "Costo x venta" : "CPA", value: "—", icon: Target, color: "#f59e0b",
-      tip: "Cost Per Acquisition: Ad Spend ÷ órdenes de ads.", tipSimple: "Cuánto te cuesta conseguir un cliente nuevo desde los anuncios." },
-    { label: "Net AOV",   value: "—", icon: DollarSign, color: "#c084fc",
+      tip: "Costo por adquisición: inversión ads ÷ órdenes generadas por ads.", tipSimple: "Cuánto te cuesta conseguir un cliente nuevo desde los anuncios." },
+    { label: "Ticket neto",   value: "—", icon: DollarSign, color: "#c084fc",
       tip: "Ticket promedio neto de ventas que vinieron de ads.", tipSimple: "Ticket promedio real de clientes que vienen por publicidad." },
-    { label: "True CPA",  value: "—", icon: Zap,        color: "#c026d3",
-      tip: "CPA ajustado a Net Profit.", tipSimple: "El costo real de cada cliente nuevo considerando la ganancia que deja." },
+    { label: "CPA real",  value: "—", icon: Zap,        color: "#c026d3",
+      tip: "CPA ajustado a ganancia neta.", tipSimple: "El costo real de cada cliente nuevo considerando la ganancia que deja." },
   ];
 
   return (
@@ -578,7 +582,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           <div className="flex items-center gap-0.5 rounded-lg p-1"
             style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)" }}>
             {(["profit","revenue","orders"] as ChartMode[]).map((mode) => {
-              const labels = { profit: "Profit", revenue: "Revenue", orders: "Orders" };
+              const labels = { profit: "Ganancia", revenue: "Facturación", orders: "Órdenes" };
               const active = chartMode === mode;
               return (
                 <button key={mode} onClick={() => setChartMode(mode)}
@@ -614,7 +618,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                 <YAxis tick={{ fill: "#64748B", fontSize: 10 }} axisLine={false} tickLine={false} width={42}
                   tickFormatter={(v) => `${curSymbol}${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
                 <Tooltip contentStyle={{ background: "#111118", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "10px", color: "#F1F5F9" }}
-                  formatter={(v) => [fmt(Number(v)), chartMode === "profit" ? "Profit" : "Revenue"]} />
+                  formatter={(v) => [fmt(Number(v)), chartMode === "profit" ? "Ganancia" : "Facturación"]} />
                 <Area type="monotone" dataKey={chartKey} stroke={chartColor} strokeWidth={2}
                   fill="url(#areaGrad)" dot={false} activeDot={{ r: 4, fill: chartColor }} />
               </AreaChart>

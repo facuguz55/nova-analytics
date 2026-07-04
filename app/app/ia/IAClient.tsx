@@ -138,7 +138,7 @@ export default function IAClient({ connected, storeName }: { connected: boolean;
           <Bot size={18} color="#a78bfa" strokeWidth={2} />
         </div>
         <div>
-          <p className="font-bold text-[#F1F5F9] text-sm">IA Assistant</p>
+          <p className="font-bold text-[#F1F5F9] text-sm">Asistente IA</p>
           <p className="text-xs text-[#94A3B8]">Claude · Datos del negocio cargados</p>
         </div>
         <div className="ml-auto flex items-center gap-1.5">

@@ -12,7 +12,7 @@ export interface ProductCost {
   cost: number;
 }
 
-export const metadata: Metadata = { title: "Dashboard" };
+export const metadata: Metadata = { title: "Inicio" };
 
 async function getDashboardData() {
   const user = await getUser();
