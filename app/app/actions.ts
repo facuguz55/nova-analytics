@@ -398,7 +398,7 @@ export async function completeOnboarding() {
       usd_rate: 1000,
       tax_rate: 21,
       platform_fee: 8,
-      agency_fee: 15,
+      custom_commission: 15,
     }, { onConflict: "workspace_id" });
   }
 
@@ -407,6 +407,10 @@ export async function completeOnboarding() {
     .eq("id", workspaceId);
 
   if (error) throw new Error(error.message);
+
+  // El layout de /app lee el workspace vía getCachedUserRow (TTL 5 min);
+  // sin invalidar el tag, redirige de nuevo a /onboarding con el dato viejo.
+  revalidateTag(`user-row-${user.id}`);
 }
 
 export async function markAlertRead(alertId: string) {
