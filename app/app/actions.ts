@@ -122,7 +122,7 @@ export async function deleteAccount(_formData: FormData) {
 }
 
 
-const VALID_PROVIDERS = ["tiendanube", "gmail", "meta"] as const;
+const VALID_PROVIDERS = ["tiendanube", "shopify", "gmail", "meta"] as const;
 type ValidProvider = typeof VALID_PROVIDERS[number];
 
 export async function disconnectIntegration(provider: string) {

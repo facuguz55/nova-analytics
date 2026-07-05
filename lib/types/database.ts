@@ -143,6 +143,79 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["tn_customers"]["Insert"]>;
       };
+      shopify_orders: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          external_id: string;
+          customer_name: string | null;
+          customer_email: string | null;
+          total: number;
+          status: string | null;
+          created_at: string | null;
+          synced_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          external_id: string;
+          customer_name?: string | null;
+          customer_email?: string | null;
+          total?: number;
+          status?: string | null;
+          created_at?: string | null;
+          synced_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["shopify_orders"]["Insert"]>;
+      };
+      shopify_products: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          external_id: string;
+          name: string;
+          stock: number;
+          price: number;
+          cost: number;
+          variants: Json;
+          synced_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          external_id: string;
+          name: string;
+          stock?: number;
+          price?: number;
+          cost?: number;
+          variants?: Json;
+          synced_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["shopify_products"]["Insert"]>;
+      };
+      shopify_customers: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          external_id: string;
+          name: string | null;
+          email: string | null;
+          orders_count: number;
+          total_spent: number;
+          synced_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          external_id: string;
+          name?: string | null;
+          email?: string | null;
+          orders_count?: number;
+          total_spent?: number;
+          synced_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["shopify_customers"]["Insert"]>;
+      };
       financial_config: {
         Row: {
           id: string;

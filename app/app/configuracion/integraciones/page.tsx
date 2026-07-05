@@ -18,6 +18,7 @@ export default async function IntegracionesPage() {
   return (
     <IntegracionesClient
       tiendanube={byProvider["tiendanube"] ?? null}
+      shopify={byProvider["shopify"] ?? null}
       gmail={byProvider["gmail"] ?? null}
       meta={byProvider["meta"] ?? null}
     />

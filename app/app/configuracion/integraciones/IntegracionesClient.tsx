@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import {
-  Store, Mail, Target, CheckCircle2, AlertCircle,
+  Store, ShoppingBag, Mail, Target, CheckCircle2, AlertCircle,
   Link2Off, RefreshCw, ExternalLink, Shield, Lock, Eye, Server, Zap,
   X, Loader2, Key,
 } from "lucide-react";
@@ -21,6 +21,7 @@ interface IntegrationRow {
 
 interface Props {
   tiendanube: IntegrationRow | null;
+  shopify: IntegrationRow | null;
   gmail: IntegrationRow | null;
   meta: IntegrationRow | null;
 }
@@ -410,6 +411,88 @@ function MetaConnectModal({ onClose, onSuccess }: { onClose: () => void; onSucce
   );
 }
 
+const SHOP_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9-]*\.myshopify\.com$/;
+
+function ShopifyConnectModal({ onClose }: { onClose: () => void }) {
+  const [shop, setShop] = useState("");
+  const [error, setError] = useState("");
+
+  function handleConnect() {
+    const value = shop.trim().toLowerCase();
+    if (!SHOP_REGEX.test(value)) {
+      setError("Ingresá el dominio completo, ej: mitienda.myshopify.com");
+      return;
+    }
+    window.location.href = `/api/auth/shopify?shop=${encodeURIComponent(value)}`;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(4px)" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="rounded-2xl w-full max-w-lg overflow-hidden flex flex-col"
+        style={{ background: "#111118", border: "1px solid rgba(149,191,71,0.3)" }}>
+
+        <div className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: "1px solid rgba(149,191,71,0.15)" }}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: "rgba(149,191,71,0.12)" }}>
+              <ShoppingBag size={18} color="#95BF47" strokeWidth={1.5} />
+            </div>
+            <div>
+              <p className="font-bold text-[#F1F5F9] text-sm">Conectar Shopify</p>
+              <p className="text-xs text-[#64748B]">Te vamos a redirigir a Shopify para autorizar el acceso</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-[#64748B] hover:text-[#F1F5F9] transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[#94A3B8]">Dominio de tu tienda</label>
+            <input
+              value={shop}
+              onChange={(e) => { setShop(e.target.value); setError(""); }}
+              placeholder="mitienda.myshopify.com"
+              className="w-full rounded-xl px-4 py-3 text-sm text-[#F1F5F9] placeholder-[#475569] outline-none transition-all"
+              style={{ background: "#0a0a0f", border: "1px solid rgba(149,191,71,0.2)" }}
+            />
+          </div>
+
+          {error && (
+            <div className="rounded-xl px-4 py-3 text-xs text-[#ef4444] flex items-center gap-2"
+              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+              <AlertCircle size={13} strokeWidth={2} />
+              {error}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between px-6 py-4 gap-3"
+          style={{ borderTop: "1px solid rgba(149,191,71,0.15)" }}>
+          <button onClick={onClose} className="text-xs text-[#64748B] hover:text-[#94A3B8] transition-colors">
+            Cancelar
+          </button>
+          <button
+            onClick={handleConnect}
+            disabled={!shop.trim()}
+            className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-80 disabled:opacity-40"
+            style={{ background: "linear-gradient(135deg, #95BF47, #5E8E3E)" }}
+          >
+            <ExternalLink size={14} strokeWidth={2.5} />
+            Continuar a Shopify
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const SECURITY_ITEMS = [
   {
     icon: Lock,
@@ -445,6 +528,7 @@ function URLParamHandler() {
     const success = params.get("success");
 
     if (success === "tiendanube") toast.success("TiendaNube conectado correctamente");
+    else if (success === "shopify") toast.success("Shopify conectado correctamente");
     else if (success === "gmail") toast.success("Gmail conectado correctamente");
     else if (success === "meta") toast.success("Meta Ads conectado correctamente");
     else if (error === "token_failed") toast.error("Error al obtener el token. Intentá conectar de nuevo.");
@@ -452,12 +536,17 @@ function URLParamHandler() {
     else if (error === "no_workspace") toast.error("No se encontró tu workspace. Contactá soporte.");
     else if (error === "meta_denied") toast.error("Cancelaste la conexión con Meta.");
     else if (error === "no_ad_accounts") toast.error("No se encontraron cuentas publicitarias activas en tu Meta.");
+    else if (error === "shopify_invalid_shop") toast.error("Dominio de Shopify inválido. Usá el formato mitienda.myshopify.com.");
+    else if (error === "shopify_hmac_invalid") toast.error("No se pudo verificar la conexión con Shopify. Intentá de nuevo.");
+    else if (error === "oauth_invalid") toast.error("La conexión expiró o es inválida. Intentá de nuevo.");
   }, [params]);
 
   return null;
 }
 
-export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) {
+export default function IntegracionesClient({ tiendanube, shopify, gmail, meta }: Props) {
+  const [showShopifyModal, setShowShopifyModal] = useState(false);
+
   const cards = [
     {
       icon: Store,
@@ -470,6 +559,18 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
       onDisconnect: () => disconnectIntegration("tiendanube"),
       comingSoon: false,
       onManualConnect: undefined as (() => void) | undefined,
+    },
+    {
+      icon: ShoppingBag,
+      name: "Shopify",
+      description: "Conectá tu tienda Shopify para sincronizar órdenes, productos y clientes.",
+      color: "#95BF47",
+      bgColor: "rgba(149,191,71,0.12)",
+      integration: shopify,
+      connectHref: "",
+      onDisconnect: () => disconnectIntegration("shopify"),
+      comingSoon: false,
+      onManualConnect: () => setShowShopifyModal(true),
     },
     {
       icon: Mail,
@@ -497,10 +598,11 @@ export default function IntegracionesClient({ tiendanube, gmail, meta }: Props) 
     },
   ];
 
-  const connectedCount = [tiendanube, gmail, meta].filter((i) => i?.status === "active").length;
+  const connectedCount = [tiendanube, shopify, gmail, meta].filter((i) => i?.status === "active").length;
 
   return (
     <Suspense>
+      {showShopifyModal && <ShopifyConnectModal onClose={() => setShowShopifyModal(false)} />}
       <URLParamHandler />
       <div className="p-4 sm:p-6 space-y-8">
 
