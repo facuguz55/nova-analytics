@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Política de privacidad de Nova Analytics. Cómo recopilamos, usamos y protegemos tu información.",
 };
 
-const LAST_UPDATED = "30 de mayo de 2025";
+const LAST_UPDATED = "5 de julio de 2026";
 const CONTACT_EMAIL = "novaagencytec@gmail.com";
 
 export default function PrivacidadPage() {
@@ -51,7 +51,7 @@ export default function PrivacidadPage() {
 
           <Section title="1. Quiénes somos">
             <p>
-              Nova Analytics es un servicio operado por <strong className="text-white">Nova Agency</strong> (en adelante, &ldquo;Nova&rdquo;, &ldquo;nosotros&rdquo; o &ldquo;la plataforma&rdquo;), con sede en Argentina. Proveemos un dashboard de analítica unificada para comercios electrónicos que integra TiendaNube, Meta Ads y Gmail.
+              Nova Analytics es un servicio operado por <strong className="text-white">Nova Agency</strong> (en adelante, &ldquo;Nova&rdquo;, &ldquo;nosotros&rdquo; o &ldquo;la plataforma&rdquo;), con sede en Argentina. Proveemos un dashboard de analítica unificada para comercios electrónicos que integra TiendaNube, Shopify, Meta Ads y Gmail.
             </p>
             <p className="mt-3">
               Al utilizar Nova Analytics aceptás esta Política de Privacidad. Si tenés dudas podés contactarnos en <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#a78bfa] hover:underline">{CONTACT_EMAIL}</a>.
@@ -68,8 +68,8 @@ export default function PrivacidadPage() {
             <Subtitle>2.3 Datos de uso de la IA</Subtitle>
             <p>Los mensajes que enviás al Asistente IA se procesan por Anthropic (Claude) y se registra la cantidad de tokens utilizados por workspace con fines de billing interno. No almacenamos el contenido de los chats en nuestra base de datos.</p>
 
-            <Subtitle>2.4 Datos de terceros (sin almacenamiento propio)</Subtitle>
-            <p>Los datos de órdenes, productos, clientes (TiendaNube) y correos (Gmail) se consultan directamente desde las APIs de cada plataforma y se muestran en tiempo real. <strong className="text-white">Nova Analytics no guarda copias de estos datos en sus propias bases de datos.</strong></p>
+            <Subtitle>2.4 Datos de tienda (TiendaNube y Shopify)</Subtitle>
+            <p>Cuando conectás TiendaNube o Shopify, consultamos órdenes, productos y clientes de tu tienda directamente desde la API de cada plataforma. Para que el dashboard cargue rápido, guardamos una copia sincronizada de esos datos (número de orden, nombre y email del cliente, montos, estado de pago, productos y stock) en nuestra base de datos, asociada únicamente a tu workspace. Los correos electrónicos (Gmail) no se almacenan: se consultan en tiempo real y no persisten en nuestra base.</p>
 
             <Subtitle>2.5 Datos técnicos y de auditoría</Subtitle>
             <p>Registramos acciones sensibles (cambio de contraseña, eliminación de cuenta, desconexión de integraciones) en un log de auditoría a los efectos de seguridad y trazabilidad.</p>
@@ -93,7 +93,7 @@ export default function PrivacidadPage() {
                 { name: "Supabase", desc: "Base de datos PostgreSQL, autenticación y almacenamiento. Datos alojados en la región us-east-1." },
                 { name: "Vercel", desc: "Infraestructura de hosting y edge functions. Procesamiento en servidores de EE.UU. y Europa." },
                 { name: "Anthropic (Claude)", desc: "Procesamiento del Asistente IA. Los mensajes se envían a Anthropic para su procesamiento y no se almacenan en nuestros servidores." },
-                { name: "TiendaNube, Meta, Google", desc: "Plataformas de terceros que autorizás voluntariamente al conectar tus integraciones." },
+                { name: "TiendaNube, Shopify, Meta, Google", desc: "Plataformas de terceros que autorizás voluntariamente al conectar tus integraciones." },
               ].map((s) => (
                 <div key={s.name} className="flex gap-3 p-3 rounded-xl bg-[#111118] border border-[rgba(139,92,246,0.1)]">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6] mt-2 flex-shrink-0" />
@@ -128,7 +128,17 @@ export default function PrivacidadPage() {
             <p className="mt-3">Los registros de auditoría pueden conservarse por hasta 90 días adicionales por razones de seguridad.</p>
           </Section>
 
-          <Section title="7. Tus derechos">
+          <Section title="7. Datos de clientes de tiendas Shopify">
+            <p>Cuando un comercio conecta su tienda Shopify a Nova Analytics, procesamos datos de sus clientes finales (nombre, email, historial de compras) únicamente para mostrárselos al comercio dentro de su propio dashboard — nunca los usamos con fines propios ni los compartimos con terceros.</p>
+            <p className="mt-3">Cumplimos con los requisitos de protección de datos de Shopify:</p>
+            <ul className="list-disc list-inside space-y-2 mt-3">
+              <li><strong className="text-white">Solicitud de datos del cliente:</strong> si un cliente final le pide sus datos a un comercio, Shopify nos notifica y respondemos dentro de los plazos exigidos.</li>
+              <li><strong className="text-white">Eliminación de datos del cliente:</strong> ante un pedido de borrado, eliminamos los datos de ese cliente de nuestra base de datos.</li>
+              <li><strong className="text-white">Desinstalación de la app:</strong> a las 48 horas de que un comercio desinstala Nova Analytics de su tienda Shopify, borramos automáticamente todos los datos sincronizados de esa tienda.</li>
+            </ul>
+          </Section>
+
+          <Section title="8. Tus derechos">
             <p>De acuerdo con la <strong className="text-white">Ley 25.326 de Protección de Datos Personales</strong> (Argentina) tenés derecho a:</p>
             <ul className="list-disc list-inside space-y-2 mt-3">
               <li><strong className="text-white">Acceso:</strong> solicitar una copia de los datos que almacenamos sobre vos.</li>
@@ -140,15 +150,15 @@ export default function PrivacidadPage() {
             <p className="mt-3">Para ejercer cualquiera de estos derechos escribinos a <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#a78bfa] hover:underline">{CONTACT_EMAIL}</a>.</p>
           </Section>
 
-          <Section title="8. Cookies">
+          <Section title="9. Cookies">
             <p>Nova Analytics utiliza únicamente las cookies estrictamente necesarias para mantener la sesión autenticada (gestionadas por Supabase Auth). No utilizamos cookies de rastreo publicitario ni analítica de terceros.</p>
           </Section>
 
-          <Section title="9. Cambios a esta política">
+          <Section title="10. Cambios a esta política">
             <p>Podemos actualizar esta política periódicamente. Te notificaremos por correo electrónico ante cambios materiales. El uso continuado del servicio luego de la notificación implica tu aceptación de la versión actualizada.</p>
           </Section>
 
-          <Section title="10. Contacto">
+          <Section title="11. Contacto">
             <p>
               Si tenés preguntas sobre esta Política de Privacidad o el tratamiento de tus datos personales podés contactarnos en:
             </p>
