@@ -8,7 +8,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 204 });
   }
 
-  const body = await req.text();
+  let payload: unknown;
+  try {
+    payload = await req.json();
+  } catch {
+    return NextResponse.json({ ok: false }, { status: 400 });
+  }
+
+  const body = JSON.stringify(normalizarPayload(payload));
 
   try {
     await fetch(webhookUrl, {
@@ -24,4 +31,37 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ ok: true });
+}
+
+function normalizarPayload(payload: unknown) {
+  const data = (payload && typeof payload === "object" ? payload : {}) as Record<string, unknown>;
+
+  // Ya viene en el formato que espera nova-agency-os: {app, asunto, error: {...}}
+  if (data.error && typeof data.error === "object") {
+    const error = data.error as Record<string, unknown>;
+    return {
+      app: data.app || "nova-analytics",
+      asunto: (data.asunto as string) || String(error.mensaje || "Error desconocido").slice(0, 120),
+      error: {
+        id: error.id || crypto.randomUUID(),
+        ...error,
+      },
+    };
+  }
+
+  // Formato plano: {app, donde, mensaje, stack, detalle, ...}
+  const mensaje = (data.mensaje as string) || "Error desconocido";
+  return {
+    app: data.app || "nova-analytics",
+    asunto: mensaje.toString().slice(0, 120),
+    error: {
+      id: crypto.randomUUID(),
+      donde: data.donde,
+      mensaje: data.mensaje,
+      stack: data.stack,
+      url: data.url,
+      navegador: data.navegador,
+      detalle: data.detalle || {},
+    },
+  };
 }
