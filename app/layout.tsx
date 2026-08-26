@@ -62,7 +62,7 @@ export default function RootLayout({
     >
       <head>
         {/* Reporte de errores a nova-agency-os */}
-        <script src="/errores.js" />
+        <Script src="/errores.js" strategy="afterInteractive" />
         <link rel="icon" type="image/png" sizes="96x96" href="/logo-favicon.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
         {/* Previene flash de tema incorrecto */}
