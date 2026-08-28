@@ -57,15 +57,12 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      // Dark mode por defecto — la clase se maneja desde ThemeProvider
       suppressHydrationWarning
     >
       <head>
-        {/* Reporte de errores a nova-agency-os */}
         <Script src="/errores.js" strategy="afterInteractive" />
         <link rel="icon" type="image/png" sizes="96x96" href="/logo-favicon.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
-        {/* Previene flash de tema incorrecto */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -93,7 +90,6 @@ export default function RootLayout({
         {children}
         <AuthErrorHandler />
         <Toaster theme="dark" />
-        {/* Metricool tracking */}
         <Script
           id="metricool-tracker"
           strategy="lazyOnload"
