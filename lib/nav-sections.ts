@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard, Bell, BarChart2, ShoppingCart, Package, Users,
-  TrendingUp, Target, Megaphone, Mail, Globe, Brain, Store, Receipt,
+  TrendingUp, Target, Megaphone, Mail, Globe, Brain, Store,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -46,10 +46,7 @@ export const ALL_NAV_SECTIONS: NavSection[] = [
     accentColor: "#e1691e",
     requiresPlan: true,
     items: [
-      { href: "/app/local",           label: "Dashboard",  icon: Store },
-      { href: "/app/local/ventas",    label: "Ventas",     icon: Receipt },
-      { href: "/app/local/clientes",  label: "Clientes",   icon: Users },
-      { href: "/app/local/productos", label: "Productos",  icon: Package },
+      { href: "/app/local", label: "Nova Local", icon: Store },
     ],
   },
 ];
