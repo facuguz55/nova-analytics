@@ -63,8 +63,15 @@ export default async function RentabilidadPage() {
     if (process.env.NOVA_LOCAL_SUPABASE_URL) {
       const local = createNovaLocalClient();
 
+      if (!user.email_confirmed_at) {
+        localData = { linked: false, sales: [], products: [], costs: { fixedMonthly: 0, variablePct: 0 } };
+      }
+
       const { data: { users: localUsers } } = await local.auth.admin.listUsers();
-      const matchedUser = localUsers.find((u) => u.email === user.email);
+      const normalizedEmail = user.email!.toLowerCase().trim();
+      const matchedUser = localUsers.find(
+        (u) => u.email?.toLowerCase().trim() === normalizedEmail && u.email_confirmed_at
+      );
 
       let tiendaId: string | null = null;
       if (matchedUser) {

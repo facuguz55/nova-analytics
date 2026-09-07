@@ -17,9 +17,16 @@ export async function GET(req: NextRequest) {
   try {
     const local = createNovaLocalClient();
 
-    // Auto-detectar tienda: buscar en Nova Local un usuario con el mismo email
+    // Auto-detectar tienda: buscar en Nova Local un usuario con el mismo email verificado
+    if (!user.email_confirmed_at) {
+      return NextResponse.json({ linked: false, sales: [], products: [], costs: {} });
+    }
+
     const { data: { users: localUsers } } = await local.auth.admin.listUsers();
-    const matchedUser = localUsers.find((u) => u.email === user.email);
+    const normalizedEmail = user.email!.toLowerCase().trim();
+    const matchedUser = localUsers.find(
+      (u) => u.email?.toLowerCase().trim() === normalizedEmail && u.email_confirmed_at
+    );
 
     let tiendaId: string | null = null;
 
