@@ -56,7 +56,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' blob: data: https:",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://api.resend.com https://api.tiendanube.com https://gmail.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://accounts.google.com https://www.tiendanube.com https://api.mercadopago.com https://*.hcaptcha.com https://tracker.metricool.com",
-              "frame-src https://*.hcaptcha.com",
+              "frame-src https://*.hcaptcha.com https://local.novaagency.info",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self' https://www.mercadopago.com.ar https://mercadopago.com.ar",
