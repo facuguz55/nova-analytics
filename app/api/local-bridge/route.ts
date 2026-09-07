@@ -7,43 +7,40 @@ export async function GET(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const days = parseInt(req.nextUrl.searchParams.get("days") ?? "90", 10);
-  const since = new Date(Date.now() - days * 86_400_000).toISOString();
-
-  const { data: rawUserRow } = await supabase
-    .from("users")
-    .select("workspace_id")
-    .eq("id", user.id)
-    .single();
-
-  const userRow = rawUserRow as { workspace_id: string } | null;
-  if (!userRow?.workspace_id) {
-    return NextResponse.json({ error: "Sin workspace" }, { status: 400 });
-  }
-
-  const { data: rawIntegration } = await supabase
-    .from("integrations")
-    .select("config")
-    .eq("workspace_id", userRow.workspace_id)
-    .eq("provider", "nova_local")
-    .single();
-
-  const integration = rawIntegration as { config: Record<string, unknown> } | null;
-  const tiendaId = (integration?.config?.tienda_id as string) ?? null;
-  if (!tiendaId) {
+  if (!process.env.NOVA_LOCAL_SUPABASE_URL) {
     return NextResponse.json({ linked: false, sales: [], products: [], costs: {} });
   }
+
+  const days = parseInt(req.nextUrl.searchParams.get("days") ?? "90", 10);
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
 
   try {
     const local = createNovaLocalClient();
 
+    // Auto-detectar tienda: buscar en Nova Local un usuario con el mismo email
+    const { data: { users: localUsers } } = await local.auth.admin.listUsers();
+    const matchedUser = localUsers.find((u) => u.email === user.email);
+
+    let tiendaId: string | null = null;
+
+    if (matchedUser) {
+      const { data: tienda } = await local
+        .from("tiendas")
+        .select("id")
+        .eq("owner_id", matchedUser.id)
+        .limit(1)
+        .single();
+      tiendaId = tienda?.id ?? null;
+    }
+
+    if (!tiendaId) {
+      return NextResponse.json({ linked: false, sales: [], products: [], costs: {} });
+    }
+
     const [salesResult, productsResult, costsFijosResult, costosVarResult] = await Promise.all([
       local
         .from("local_ventas")
-        .select(`
-          id, total, created_at, medio_pago, cancelada,
-          grupo:local_venta_grupo!inner(id)
-        `)
+        .select("id, total, created_at, medio_pago, cancelada")
         .eq("tienda_id", tiendaId)
         .eq("cancelada", false)
         .gte("created_at", since)
