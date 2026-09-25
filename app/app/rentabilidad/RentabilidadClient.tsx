@@ -21,6 +21,13 @@ interface FinConfig {
   usd_rate: number;
 }
 
+export interface LocalSalesData {
+  linked: boolean;
+  sales: { id: string; total: number; created_at: string; medio_pago: string }[];
+  products: { id: string; name: string; cost: number; price: number }[];
+  costs: { fixedMonthly: number; variablePct: number };
+}
+
 interface Props {
   connected: boolean;
   rawOrders: TNOrder[];
@@ -29,6 +36,7 @@ interface Props {
   avgShippingCost: number;
   totalFixedMonthly: number;
   totalVariablePct: number;
+  localData?: LocalSalesData | null;
 }
 
 const DATE_PRESETS = [
@@ -71,7 +79,7 @@ function prodName(p: TNProduct): string {
   return typeof p.name === "string" ? p.name : (p.name?.es ?? "Producto");
 }
 
-export default function RentabilidadClient({ connected, rawOrders, products, cfg, avgShippingCost, totalFixedMonthly, totalVariablePct }: Props) {
+export default function RentabilidadClient({ connected, rawOrders, products, cfg, avgShippingCost, totalFixedMonthly, totalVariablePct, localData }: Props) {
   const [preset, setPreset] = useState("30d");
   const [showHow, setShowHow] = useState(false);
 
@@ -461,6 +469,104 @@ export default function RentabilidadClient({ connected, rawOrders, products, cfg
           </div>
         </>
       )}
+
+      {/* Resumen combinado: Online + Local Físico */}
+      {localData?.linked && localData.sales.length > 0 && (
+        <LocalSummarySection localData={localData} onlineRevenue={m.totalRevenue} onlineProfit={m.netProfit} from={from} to={to} />
+      )}
+
+      {localData && !localData.linked && (
+        <div className="anim-up rounded-2xl p-5" style={{ background: "#111118", border: "1px dashed rgba(225,105,30,0.3)" }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(225,105,30,0.12)" }}>
+              <Store size={18} color="#e1691e" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[#F1F5F9]">Conectá Nova Local</p>
+              <p className="text-xs text-[#94A3B8]">Vinculá tu local físico para ver la rentabilidad combinada (online + local) en un solo lugar.</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LocalSummarySection({ localData, onlineRevenue, onlineProfit, from, to }: {
+  localData: LocalSalesData;
+  onlineRevenue: number;
+  onlineProfit: number;
+  from: Date;
+  to: Date;
+}) {
+  const fmt = formatCurrency;
+
+  const filteredSales = localData.sales.filter((s) => {
+    const d = new Date(s.created_at);
+    return d >= from && d <= to;
+  });
+
+  const localRevenue = filteredSales.reduce((acc, s) => acc + s.total, 0);
+  const localCosts = localData.costs;
+  const periodDays = Math.max(Math.ceil((to.getTime() - from.getTime()) / 86_400_000), 1);
+  const localFixedProrated = localCosts.fixedMonthly * (periodDays / 30);
+  const localVariableAmount = localRevenue * (localCosts.variablePct / 100);
+  const localProfit = localRevenue - localFixedProrated - localVariableAmount;
+
+  const combinedRevenue = onlineRevenue + localRevenue;
+  const combinedProfit = onlineProfit + localProfit;
+  const combinedMargin = combinedRevenue > 0 ? (combinedProfit / combinedRevenue) * 100 : 0;
+
+  const onlinePct = combinedRevenue > 0 ? (onlineRevenue / combinedRevenue) * 100 : 0;
+  const localPct = combinedRevenue > 0 ? (localRevenue / combinedRevenue) * 100 : 0;
+
+  return (
+    <div className="anim-up space-y-4" style={{ animationDelay: "0.55s" }}>
+      <div className="flex items-center gap-2">
+        <div className="w-1 h-5 rounded-full" style={{ background: "#e1691e" }} />
+        <h2 className="text-lg font-bold text-[#F1F5F9]">Rentabilidad combinada</h2>
+        <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: "rgba(225,105,30,0.12)", color: "#e1691e" }}>
+          Online + Local
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: "Ingresos totales", value: combinedRevenue, color: "#a78bfa" },
+          { label: "Ganancia total", value: combinedProfit, color: "#22c55e" },
+          { label: "Margen combinado", value: combinedMargin, color: "#c084fc", isMg: true },
+          { label: "Ventas local", value: filteredSales.length, color: "#e1691e", isCount: true },
+        ].map((s) => (
+          <div key={s.label} className="rounded-2xl p-4" style={{ background: "#111118", border: "1px solid rgba(225,105,30,0.2)" }}>
+            <AnimatedNumber
+              value={s.value}
+              format={s.isMg ? ((n: number) => `${n.toFixed(1)}%`) : s.isCount ? ((n: number) => String(Math.round(n))) : fmt}
+              className="text-xl font-black text-[#F1F5F9] leading-none"
+            />
+            <p className="text-xs text-[#94A3B8] mt-1">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-2xl p-5" style={{ background: "#111118", border: "1px solid rgba(225,105,30,0.15)" }}>
+        <p className="text-sm font-semibold text-[#F1F5F9] mb-3">Distribución de ingresos</p>
+        <div className="h-3 rounded-full overflow-hidden flex" style={{ background: "rgba(255,255,255,0.04)" }}>
+          <div className="h-full transition-all" style={{ width: `${onlinePct}%`, background: "#8b5cf6" }} />
+          <div className="h-full transition-all" style={{ width: `${localPct}%`, background: "#e1691e" }} />
+        </div>
+        <div className="flex justify-between mt-2">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full" style={{ background: "#8b5cf6" }} />
+            <span className="text-xs text-[#94A3B8]">Online {onlinePct.toFixed(0)}%</span>
+            <span className="text-xs font-bold text-[#F1F5F9]">{fmt(onlineRevenue)}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full" style={{ background: "#e1691e" }} />
+            <span className="text-xs text-[#94A3B8]">Local {localPct.toFixed(0)}%</span>
+            <span className="text-xs font-bold text-[#F1F5F9]">{fmt(localRevenue)}</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

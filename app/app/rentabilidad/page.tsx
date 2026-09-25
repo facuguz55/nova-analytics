@@ -4,8 +4,10 @@ import { getUser } from "@/lib/supabase/cached-queries";
 import { getTiendaNubeConnection } from "@/lib/tiendanube/connection";
 import { getOrdersForRange, getAllProducts } from "@/lib/tiendanube/client";
 import RentabilidadClient from "./RentabilidadClient";
+import type { LocalSalesData } from "./RentabilidadClient";
 import { DEFAULT_SHIPPING_COSTS } from "../configuracion/financiera/shipping-defaults";
 import type { AdditionalCost } from "../configuracion/costos-adicionales/CostosAdicionalesClient";
+import { createNovaLocalClient } from "@/lib/supabase/nova-local";
 
 export const metadata: Metadata = { title: "Rentabilidad" };
 
@@ -56,6 +58,66 @@ export default async function RentabilidadPage() {
     if (productsRes.status === "fulfilled") products = productsRes.value;
   }
 
+  let localData: LocalSalesData | null = null;
+  try {
+    if (process.env.NOVA_LOCAL_SUPABASE_URL) {
+      const local = createNovaLocalClient();
+
+      if (!user.email_confirmed_at) {
+        localData = { linked: false, sales: [], products: [], costs: { fixedMonthly: 0, variablePct: 0 } };
+      }
+
+      const { data: { users: localUsers } } = await local.auth.admin.listUsers();
+      const normalizedEmail = user.email!.toLowerCase().trim();
+      const matchedUser = localUsers.find(
+        (u) => u.email?.toLowerCase().trim() === normalizedEmail && u.email_confirmed_at
+      );
+
+      let tiendaId: string | null = null;
+      if (matchedUser) {
+        const { data: tienda } = await local
+          .from("tiendas")
+          .select("id")
+          .eq("owner_id", matchedUser.id)
+          .limit(1)
+          .single();
+        tiendaId = tienda?.id ?? null;
+      }
+
+      if (tiendaId) {
+        const since = new Date(Date.now() - 90 * 86_400_000).toISOString();
+
+        const [salesRes, prodsRes, fixedRes, varRes] = await Promise.all([
+          local.from("local_ventas").select("id, total, created_at, medio_pago, cancelada")
+            .eq("tienda_id", tiendaId).eq("cancelada", false).gte("created_at", since),
+          local.from("local_modelos").select("id, marca, modelo, costo, precio").eq("tienda_id", tiendaId),
+          local.from("local_costos_extra").select("nombre, monto").eq("tienda_id", tiendaId),
+          local.from("local_costos_variables").select("nombre, porcentaje, aplica_a").eq("tienda_id", tiendaId),
+        ]);
+
+        localData = {
+          linked: true,
+          sales: (salesRes.data ?? []).map((s) => ({
+            id: s.id, total: Number(s.total), created_at: s.created_at, medio_pago: s.medio_pago,
+          })),
+          products: (prodsRes.data ?? []).map((p) => ({
+            id: p.id, name: `${p.marca} ${p.modelo}`.trim(), cost: Number(p.costo), price: Number(p.precio),
+          })),
+          costs: {
+            fixedMonthly: (fixedRes.data ?? []).reduce((s, c) => s + Number(c.monto), 0),
+            variablePct: (varRes.data ?? []).reduce((s, c) => s + Number(c.porcentaje), 0),
+          },
+        };
+      } else {
+        localData = { linked: false, sales: [], products: [], costs: { fixedMonthly: 0, variablePct: 0 } };
+      }
+    } else {
+      localData = { linked: false, sales: [], products: [], costs: { fixedMonthly: 0, variablePct: 0 } };
+    }
+  } catch {
+    localData = null;
+  }
+
   return (
     <RentabilidadClient
       connected={!!connection}
@@ -65,6 +127,7 @@ export default async function RentabilidadPage() {
       avgShippingCost={avgShippingCost}
       totalFixedMonthly={totalFixedMonthly}
       totalVariablePct={totalVariablePct}
+      localData={localData}
     />
   );
 }
