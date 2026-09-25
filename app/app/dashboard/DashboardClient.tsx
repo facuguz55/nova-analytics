@@ -159,6 +159,14 @@ function Sparkline({ data, color, id }: { data: number[]; color: string; id: str
 // ── Componente principal ─────────────────────────────────────────────────────
 
 export default function DashboardClient({ data }: { data: DashboardData }) {
+  // Fechas/métricas dependen de la zona horaria (server UTC ≠ cliente): render solo tras montar para evitar React #418
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+  return <DashboardInner data={data} />;
+}
+
+function DashboardInner({ data }: { data: DashboardData }) {
   const [chartMode, setChartMode] = useState<ChartMode>("profit");
   const [redondeo,  setRedondeo]  = useState(false);
   const [currency,  setCurrency]  = useState("ARS");
